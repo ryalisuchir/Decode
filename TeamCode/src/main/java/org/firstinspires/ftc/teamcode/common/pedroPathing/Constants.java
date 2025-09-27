@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.pedroPathing;
+package org.firstinspires.ftc.teamcode.common.pedroPathing;
 
 import com.pedropathing.follower.Follower;
 import com.pedropathing.follower.FollowerConstants;
@@ -44,6 +44,7 @@ public class Constants {
     public static Follower createFollower(HardwareMap hardwareMap) {
         return new FollowerBuilder(followerConstants, hardwareMap)
                 .pathConstraints(pathConstraints)
+                .pinpointLocalizer(localizerConstants)
                 .mecanumDrivetrain(driveConstants)
                 .build();
     }
