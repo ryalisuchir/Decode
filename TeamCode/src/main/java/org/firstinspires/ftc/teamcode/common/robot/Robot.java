@@ -1,16 +1,17 @@
 package org.firstinspires.ftc.teamcode.common.robot;
 
-import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.hardwareMap;
-
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.lynx.LynxModule;
-import com.qualcomm.robotcore.hardware.AnalogInput;
+import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 import com.qualcomm.robotcore.hardware.configuration.LynxConstants;
+
+import org.firstinspires.ftc.teamcode.opmode.tuning.ColorRangefinder;
 
 import java.util.List;
 
@@ -24,7 +25,7 @@ public class Robot {
     public List<LynxModule> allHubs;
     public LynxModule ControlHub;
 
-    AnalogInput brushlands1, brushlands2, brushlands3;
+    public RevColorSensorV3 brushlands1, brushlands2, brushlands3;
 
     public Robot(HardwareMap hardwareMap, Pose initialPose, boolean autoBoolean) {
         //Drivetrain Motors:
@@ -64,9 +65,9 @@ public class Robot {
         intake.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         //Color Sensors:
-        brushlands1 = hardwareMap.analogInput.get("color1");
-        brushlands2 = hardwareMap.analogInput.get("color2");
-        brushlands3 = hardwareMap.analogInput.get("color3");
+        brushlands1 = (RevColorSensorV3) hardwareMap.colorSensor.get("color1");
+        brushlands2 = (RevColorSensorV3) hardwareMap.colorSensor.get("color2");
+        brushlands3 = (RevColorSensorV3) hardwareMap.colorSensor.get("color3");
 
         kicker3.setDirection(Servo.Direction.REVERSE);
 
