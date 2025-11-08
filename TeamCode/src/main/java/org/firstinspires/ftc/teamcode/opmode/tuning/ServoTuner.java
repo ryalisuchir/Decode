@@ -4,6 +4,7 @@ import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.common.robot.Globals;
 import org.firstinspires.ftc.teamcode.common.robot.Robot;
 
@@ -37,8 +38,8 @@ public class ServoTuner extends OpMode {
         robot.transfer.setPower(transferSpeed);
         robot.shooterSpinner.setPower(shooterSpeed);
 
-        telemetry.addData("Transfer Motor Velocity:", robot.transfer.getVelocity());
-        telemetry.addData("Shooter Motor Velocity:", robot.shooterSpinner.getVelocity());
+        telemetry.addData("Transfer Motor Velocity:", robot.transfer.getVelocity(AngleUnit.DEGREES));
+        telemetry.addData("Shooter Motor Velocity:", robot.shooterSpinner.getVelocity(AngleUnit.DEGREES));
 
         telemetry.update();
     }
