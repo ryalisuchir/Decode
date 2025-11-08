@@ -28,9 +28,17 @@ public class Globals {
     public static double KICKER3_RESET = 0.5;
     public static double KICKER3_KICK = 1;
 
+    public static double MAX_TIME_SPENT_INTAKING = 5.0; //seconds
+
     public static double MAX_SHOOTER_POWER = 1;
     public static double MAX_TRANSFER_POWER = 1;
     public static double MAX_INTAKING_POWER = 1;
+
+    public static double MIN_TRANSFER_VELOCITY = 5; //degrees, yet to be tuned
+    public static double MIN_SHOOTER_VELOCITY = 5; //degrees, yet to be tuned
+
+    public static double MAX_TRANSFER_SPINUP_WAIT = 500; //ms
+    public static double KICK_WAIT_TIME = 20;
 
     //Pre-Match Configuration:
     public enum OpMode {
