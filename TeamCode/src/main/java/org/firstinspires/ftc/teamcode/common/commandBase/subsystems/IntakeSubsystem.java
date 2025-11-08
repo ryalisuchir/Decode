@@ -12,8 +12,8 @@ public class IntakeSubsystem extends SubsystemBase {
     private final ElapsedTime intakeTimer = new ElapsedTime();
     Robot robot;
 
-    private boolean isRunning = false;
-    private boolean manualStopRequested = false;
+    private boolean isRunning;
+    public boolean manualStopRequested;
 
     private static final double INTAKE_POWER = Globals.MAX_INTAKING_POWER;
     private static final double HSV_GREEN_MIN_H = 60;
@@ -76,7 +76,11 @@ public class IntakeSubsystem extends SubsystemBase {
             return;
         }
 
-        if (Globals.opMode.equals(Globals.OpMode.AUTO) && intakeTimer.seconds() > 5.0) {
+        //Manual-Automatic Stops:
+        if (
+                Globals.opMode.equals(Globals.OpMode.AUTO) && intakeTimer.seconds() > Globals.MAX_TIME_SPENT_INTAKING ||
+                manualStopRequested //have teleop button set this true
+        ) {
             stopIntake();
         }
     }
