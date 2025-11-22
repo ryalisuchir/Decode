@@ -21,6 +21,7 @@ public class ServoTuner extends OpMode {
 
     public static double transferSpeed = 0;
     public static double shooterSpeed = 0;
+    public static double intakeSpeed = 0;
 
     @Override
     public void init() {
@@ -42,6 +43,7 @@ public class ServoTuner extends OpMode {
         robot.transfer.setPower(transferSpeed);
         robot.shooterSpinner1.setPower(shooterSpeed);
         robot.shooterSpinner2.setPower(shooterSpeed);
+        robot.intake.setPower(intakeSpeed);
 
         telemetry.addData("Transfer Motor Velocity:", robot.transfer.getVelocity(AngleUnit.DEGREES));
         telemetry.addData("Shooter 1 Motor Velocity:", robot.shooterSpinner1.getVelocity(AngleUnit.DEGREES));
