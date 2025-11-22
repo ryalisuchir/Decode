@@ -6,12 +6,10 @@ import java.util.TreeMap;
 public class InterpolatedLUT {
     private final TreeMap<Double, Double> lut = new TreeMap<>();
 
-    // Add calibration data
     public void addPoint(double key, double value) {
         lut.put(key, value);
     }
 
-    // Interpolate between nearest points
     public double get(double key) {
         if (lut.containsKey(key)) return lut.get(key);
 

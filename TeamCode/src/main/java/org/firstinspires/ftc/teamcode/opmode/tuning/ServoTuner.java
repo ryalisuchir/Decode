@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.opmode.tuning;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -9,12 +10,14 @@ import org.firstinspires.ftc.teamcode.common.robot.Globals;
 import org.firstinspires.ftc.teamcode.common.robot.Robot;
 
 @Autonomous
+@Config
 public class ServoTuner extends OpMode {
     Robot robot;
     public static double kicker1 = Globals.KICKER1_RESET;
     public static double kicker2 = Globals.KICKER2_RESET;
     public static double kicker3 = Globals.KICKER3_RESET;
     public static double turret = 0;
+    public static double hood = 0;
 
     public static double transferSpeed = 0;
     public static double shooterSpeed = 0;
@@ -34,12 +37,15 @@ public class ServoTuner extends OpMode {
         robot.kicker3.setPosition(kicker3);
         robot.turret1.setPosition(turret);
         robot.turret2.setPosition(turret);
+        robot.hood.setPosition(hood);
 
         robot.transfer.setPower(transferSpeed);
-        robot.shooterSpinner.setPower(shooterSpeed);
+        robot.shooterSpinner1.setPower(shooterSpeed);
+        robot.shooterSpinner2.setPower(shooterSpeed);
 
         telemetry.addData("Transfer Motor Velocity:", robot.transfer.getVelocity(AngleUnit.DEGREES));
-        telemetry.addData("Shooter Motor Velocity:", robot.shooterSpinner.getVelocity(AngleUnit.DEGREES));
+        telemetry.addData("Shooter 1 Motor Velocity:", robot.shooterSpinner1.getVelocity(AngleUnit.DEGREES));
+        telemetry.addData("Shooter 2 Motor Velocity:", robot.shooterSpinner2.getVelocity(AngleUnit.DEGREES));
 
         telemetry.update();
     }

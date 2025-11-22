@@ -8,6 +8,9 @@ public class Globals {
     public static Globals.OpMode opMode = OpMode.AUTO;
     public static Globals.Side side = BLUE;
     public static Globals.ObeliskOptions obeliskOptions = ObeliskOptions.PPG;
+    public static Globals.BallColor1 ballColor1 = BallColor1.NONE;
+    public static Globals.BallColor2 ballColor2 = BallColor2.NONE;
+    public static Globals.BallColor3 ballColor3 = BallColor3.NONE;
     public static Globals.IntakeState intakeState = IntakeState.STOPPED;
     public static Globals.TransferState transferState = TransferState.STOPPED;
     public static Globals.ShooterState shooterState = ShooterState.STOPPED;
@@ -21,12 +24,12 @@ public class Globals {
     public static Pose RED_CLOSE_START = new Pose(0, 0, Math.toRadians(0)); //intake faces small triangle
     public static Pose RED_FAR_START = new Pose(0, 0, Math.toRadians(0)); //intake faces big triangle
 
-    public static double KICKER1_RESET = 0.5;
-    public static double KICKER1_KICK = 1;
-    public static double KICKER2_RESET = 0.5;
-    public static double KICKER2_KICK = 1;
-    public static double KICKER3_RESET = 0.5;
-    public static double KICKER3_KICK = 1;
+    public static double KICKER1_RESET = 0.485;
+    public static double KICKER1_KICK = 0.59;
+    public static double KICKER2_RESET = 0.019;
+    public static double KICKER2_KICK = 0.11;
+    public static double KICKER3_RESET = 0.46;
+    public static double KICKER3_KICK = 0.357;
 
     public static double MAX_TIME_SPENT_INTAKING = 5.0; //seconds
 
@@ -55,6 +58,23 @@ public class Globals {
         PPG,
         PGP,
         GPP
+    }
+
+    //Ball Color Options:
+    public enum BallColor1{
+        P,
+        G,
+        NONE
+    }
+    public enum BallColor2{
+        P,
+        G,
+        NONE
+    }
+    public enum BallColor3{
+        P,
+        G,
+        NONE
     }
 
     //Robot Configurations:

@@ -5,6 +5,7 @@ Servo Hub:
 2: kicker1
 3: kicker2
 4: kicker3
+5: hood
 
 ## Control Hub:
 # Motors:

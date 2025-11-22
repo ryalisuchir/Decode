@@ -4,7 +4,6 @@ import java.util.Map;
 import java.util.TreeMap;
 
 public class InterpolatedLUT2D {
-    // Structure: distance → (angle → ShooterParams)
     private final TreeMap<Double, TreeMap<Double, ShooterParams>> lut = new TreeMap<>();
 
     // Add calibration point
@@ -13,7 +12,6 @@ public class InterpolatedLUT2D {
         lut.get(distance).put(angle, params);
     }
 
-    // Get interpolated ShooterParams for given distance & angle
     public ShooterParams get(double distance, double angle) {
         Map.Entry<Double, TreeMap<Double, ShooterParams>> lowerDist = lut.floorEntry(distance);
         Map.Entry<Double, TreeMap<Double, ShooterParams>> upperDist = lut.ceilingEntry(distance);
@@ -32,7 +30,6 @@ public class InterpolatedLUT2D {
         return new ShooterParams(hood, velocity);
     }
 
-    // Interpolates along the angle dimension for a fixed distance
     private ShooterParams interpolateAngle(TreeMap<Double, ShooterParams> angleMap, double angle) {
         Map.Entry<Double, ShooterParams> lower = angleMap.floorEntry(angle);
         Map.Entry<Double, ShooterParams> upper = angleMap.ceilingEntry(angle);
