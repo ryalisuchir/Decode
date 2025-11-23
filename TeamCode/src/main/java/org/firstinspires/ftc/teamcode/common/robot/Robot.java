@@ -1,7 +1,16 @@
 package org.firstinspires.ftc.teamcode.common.robot;
 
+import static com.qualcomm.robotcore.hardware.DcMotor.ZeroPowerBehavior.BRAKE;
+
 import com.pedropathing.follower.Follower;
+import com.pedropathing.ftc.FTCCoordinates;
+import com.pedropathing.ftc.InvertedFTCCoordinates;
+import com.pedropathing.ftc.PoseConverter;
+import com.pedropathing.geometry.PedroCoordinates;
 import com.pedropathing.geometry.Pose;
+import com.qualcomm.hardware.limelightvision.LLResult;
+import com.qualcomm.hardware.limelightvision.LLResultTypes;
+import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -12,6 +21,11 @@ import com.qualcomm.robotcore.hardware.ServoImplEx;
 import com.qualcomm.robotcore.hardware.configuration.LynxConstants;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
 
+import org.firstinspires.ftc.robotcontroller.external.samples.SensorGoBildaPinpoint;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.teamcode.common.commandBase.subsystems.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.common.pedroPathing.Constants;
 
@@ -26,6 +40,8 @@ public class Robot {
     public ServoImplEx turret1, turret2;
     public ServoImplEx hood;
 
+    public Limelight3A ll;
+
     public List<LynxModule> allHubs;
     public LynxModule ControlHub;
     public Follower follower;
@@ -34,7 +50,7 @@ public class Robot {
     DigitalChannel brushlands2pin0, brushlands2pin1; //Middle Brushlands (2)
     DigitalChannel brushlands3pin0, brushlands3pin1; //Far Brushlands (3)
 
-    public Robot(HardwareMap hardwareMap, Pose initialPose, boolean autoBoolean) {
+    public Robot(HardwareMap hardwareMap, Pose initialPose, Globals.Side side, boolean autoBoolean) {
         //Drivetrain Motors:
         leftFront = hardwareMap.get(DcMotorEx.class, "leftFront");
         leftRear = hardwareMap.get(DcMotorEx.class, "leftRear");
@@ -66,19 +82,17 @@ public class Robot {
 
         turret2.setDirection(Servo.Direction.REVERSE);
 
-        leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        leftRear.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        rightRear.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        shooterSpinner1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        shooterSpinner2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        transfer.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        brake(leftFront, leftRear, rightFront, rightRear, shooterSpinner1, shooterSpinner2, transfer, intake);
 
         shooterSpinner1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         shooterSpinner2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         transfer.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         intake.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        ll = hardwareMap.get(Limelight3A.class, "limelight");
+        ll.setPollRateHz(100);
+        ll.start();
+        ll.pipelineSwitch(2);
 
         //Color Sensor - Digital:
 //        brushlands1pin0 = hardwareMap.digitalChannel.get("digital0");
@@ -133,6 +147,102 @@ public class Robot {
         if (!brushlands3pin1.getState() && !brushlands3pin0.getState()) {
             Globals.ballColor3 = Globals.BallColor3.NONE;
         }
+    }
+
+    public void getObeliskFiducial() {
+        LLResult result = ll.getLatestResult();
+        if (result == null) {
+            Globals.obeliskOptions = Globals.ObeliskOptions.NOT_FOUND;
+            return;
+        }
+
+        List<LLResultTypes.FiducialResult> fiducials = result.getFiducialResults();
+        if (fiducials == null || fiducials.isEmpty()) {
+            Globals.obeliskOptions = Globals.ObeliskOptions.NOT_FOUND;
+            return;
+        }
+
+        for (LLResultTypes.FiducialResult fiducial : fiducials) {
+            switch (fiducial.getFiducialId()) {
+                case 21:
+                    Globals.obeliskOptions = Globals.ObeliskOptions.GPP;
+                    return;
+                case 22:
+                    Globals.obeliskOptions = Globals.ObeliskOptions.PGP;
+                    return;
+                case 23:
+                    Globals.obeliskOptions = Globals.ObeliskOptions.PPG;
+                    return;
+            }
+        }
+
+        Globals.obeliskOptions = Globals.ObeliskOptions.NOT_FOUND;
+    }
+
+    public double getGoalDistance(Robot robot) {
+        LLResult result = ll.getLatestResult();
+
+        double robotYaw = robot.follower.getHeading();
+        ll.updateRobotOrientation(robotYaw);
+
+        if (result == null || !result.isValid()) return -1;
+
+        List<LLResultTypes.FiducialResult> fiducials = result.getFiducialResults();
+        for (LLResultTypes.FiducialResult fiducial : fiducials) {
+            switch (fiducial.getFiducialId()) {
+                case 21:
+                case 22:
+                case 23:
+                    return -1;
+            }
+        }
+
+        Pose3D botpose = result.getBotpose_MT2();
+        if (botpose == null) return -1;
+
+        Pose currentDetectedPose = PoseConverter.pose2DToPose(new Pose2D(DistanceUnit.INCH, botpose.getPosition().x, botpose.getPosition().y, AngleUnit.RADIANS, robotYaw), InvertedFTCCoordinates.INSTANCE);
+
+        double goalX, goalY;
+
+        if (Globals.side == Globals.Side.RED) {
+            goalX = Globals.RED_CASTLE.getX();
+            goalY = Globals.RED_CASTLE.getY();
+        } else {
+            goalX = Globals.BLUE_CASTLE.getX();
+            goalY = Globals.BLUE_CASTLE.getY();
+        }
+
+        double dx = currentDetectedPose.getX() - goalX;
+        double dy = currentDetectedPose.getY() - goalY;
+
+        return Math.hypot(dx, dy);
+    }
+
+    public Pose getLLPosition(Robot robot) {
+        LLResult result = ll.getLatestResult();
+        double robotYaw = robot.follower.getHeading();
+        ll.updateRobotOrientation(robotYaw);
+
+        if (result == null || !result.isValid()) return null;
+
+        List<LLResultTypes.FiducialResult> fiducials = result.getFiducialResults();
+        for (LLResultTypes.FiducialResult fiducial : fiducials) {
+            switch (fiducial.getFiducialId()) {
+                case 21:
+                case 22:
+                case 23:
+                    return null;
+            }
+        }
+
+        Pose3D botpose = result.getBotpose_MT2();
+        if (botpose == null) return null;
+
+        return PoseConverter.pose2DToPose(new Pose2D(DistanceUnit.INCH, botpose.getPosition().x, botpose.getPosition().y, AngleUnit.RADIANS, robotYaw), InvertedFTCCoordinates.INSTANCE);
+    }
+
+    private void brake(DcMotorEx... motors) {
+        for (DcMotorEx m : motors) m.setZeroPowerBehavior(BRAKE);
     }
 
     public void clearCache() {

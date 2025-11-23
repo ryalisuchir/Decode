@@ -24,7 +24,7 @@ public class SubsystemTest extends CommandOpMode {
 
     @Override
     public void initialize() {
-        robot = new Robot(hardwareMap, new Pose(0, 0, Math.toRadians(0)), true);
+        robot = new Robot(hardwareMap, new Pose(0, 0, Math.toRadians(0)), Globals.Side.BLUE, true);
         intakeCommand = new IntakeCommand(robot.intakeSubsystem);
     }
 

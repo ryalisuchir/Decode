@@ -14,7 +14,7 @@ public class ColorDetectionTest extends OpMode {
 
     @Override
     public void init() {
-        robot = new Robot(hardwareMap, new Pose(0, 0, Math.toRadians(0)), true);
+        robot = new Robot(hardwareMap, new Pose(0, 0, Math.toRadians(0)), Globals.Side.BLUE, true);
     }
 
     @Override

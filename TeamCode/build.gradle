@@ -42,5 +42,5 @@ dependencies {
     implementation project(':FtcRobotController')
 
     implementation "com.acmerobotics.dashboard:dashboard:0.4.16"
-    implementation "org.solverslib:core:0.3.2" // add SolversLib core
+    implementation "org.solverslib:core:0.3.3" // add SolversLib core
 }

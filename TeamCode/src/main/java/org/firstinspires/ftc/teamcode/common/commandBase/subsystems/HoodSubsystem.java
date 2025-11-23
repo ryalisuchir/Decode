@@ -7,7 +7,7 @@ import com.seattlesolvers.solverslib.command.SubsystemBase;
 import org.firstinspires.ftc.teamcode.common.robot.Globals;
 import org.firstinspires.ftc.teamcode.common.robot.TurretLUT;
 
-public class TurretSubsystem extends SubsystemBase {
+public class HoodSubsystem extends SubsystemBase {
 
     public final ServoImplEx servo1, servo2;
     public final Follower follower;
@@ -40,7 +40,8 @@ public class TurretSubsystem extends SubsystemBase {
         return turretAngle; //in radians
     }
 
-    public void sync() {
+    @Override
+    public void periodic() {
         if (Globals.turretState == Globals.TurretState.FOLLOWING) {
             servo1.setPosition(turretLUT.getServoValue(turretAngle));
             servo2.setPosition(turretLUT.getServoValue(turretAngle));

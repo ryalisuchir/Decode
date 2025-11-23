@@ -25,7 +25,7 @@ public class ServoTuner extends OpMode {
 
     @Override
     public void init() {
-        robot = new Robot(hardwareMap, new Pose(0, 0, Math.toRadians(0)), true);
+        robot = new Robot(hardwareMap, Globals.DEFAULT_START_POSE, Globals.Side.BLUE, true);
         telemetry.addLine("Reset all encoders.");
         telemetry.update();
 
@@ -45,10 +45,19 @@ public class ServoTuner extends OpMode {
         robot.shooterSpinner2.setPower(shooterSpeed);
         robot.intake.setPower(intakeSpeed);
 
+        robot.getObeliskFiducial();
+
         telemetry.addData("Transfer Motor Velocity:", robot.transfer.getVelocity(AngleUnit.DEGREES));
         telemetry.addData("Shooter 1 Motor Velocity:", robot.shooterSpinner1.getVelocity(AngleUnit.DEGREES));
         telemetry.addData("Shooter 2 Motor Velocity:", robot.shooterSpinner2.getVelocity(AngleUnit.DEGREES));
+        telemetry.addData("Obelisk:", Globals.obeliskOptions);
+        telemetry.addData("Distance to tag:", robot.getGoalDistance(robot));
+        telemetry.addData("Pinpoint x:", robot.follower.getPose().getX());
+        telemetry.addData("Pinpoint y:", robot.follower.getPose().getY());
+        telemetry.addData("Limelight x:", robot.getLLPosition(robot).getX());
+        telemetry.addData("Limelight y:", robot.getLLPosition(robot).getY());
 
         telemetry.update();
+        robot.clearCache();
     }
 }
