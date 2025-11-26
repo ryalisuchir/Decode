@@ -5,49 +5,34 @@ import com.qualcomm.robotcore.hardware.ServoImplEx;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 
 import org.firstinspires.ftc.teamcode.common.robot.Globals;
+import org.firstinspires.ftc.teamcode.common.robot.Robot;
 import org.firstinspires.ftc.teamcode.common.robot.TurretLUT;
 
 public class TurretSubsystem extends SubsystemBase {
 
-    public final ServoImplEx servo1, servo2;
-    public final Follower follower;
+    private final ServoImplEx turret1, turret2;
     private final TurretLUT turretLUT = new TurretLUT();
-    double turretAngle;
-    double goalX, goalY;
+    Robot robot;
+    Follower follower;
 
-    public TurretSubsystem(ServoImplEx servo1Input, ServoImplEx servo2Input, Follower followerInput) {
-        servo1 = servo1Input;
-        servo2 = servo2Input;
-        follower = followerInput;
-    }
-
-    public double getTurretAngleToGoal(Globals.Side side, double robotX, double robotY, double robotHeadingRadians) {
-        if (side == Globals.Side.BLUE) {
-            goalX = Globals.BLUE_CASTLE.getX();
-            goalY = Globals.BLUE_CASTLE.getY();
-        } else if (side == Globals.Side.RED) {
-            goalX = Globals.RED_CASTLE.getX();
-            goalY = Globals.RED_CASTLE.getX();
-        }
-
-        double dx = goalX - robotX;
-        double dy = goalY - robotY;
-        double absoluteAngle = Math.atan2(dy, dx);
-
-        turretAngle = absoluteAngle - robotHeadingRadians;
-        turretAngle = Math.atan2(Math.sin(turretAngle), Math.cos(turretAngle)); //normalizes
-
-        return turretAngle; //in radians
+    public TurretSubsystem(ServoImplEx turret1, ServoImplEx turret2, Follower follower) {
+        this.turret1 = turret1;
+        this.turret2 = turret2;
+        this.follower = follower;
     }
 
     public void sync() {
         if (Globals.turretState == Globals.TurretState.FOLLOWING) {
-            servo1.setPosition(turretLUT.getServoValue(turretAngle));
-            servo2.setPosition(turretLUT.getServoValue(turretAngle));
-        } else {
-            servo1.setPosition(Globals.TURRET_RESET);
-            servo2.setPosition(Globals.TURRET_RESET);
-        }
-    }
+            double servoPosition = turretLUT.getServoValue(robot.getTurretAngleToGoal(Globals.side, follower.getPose().getX(), follower.getPose().getY(), follower.getPose().getHeading()));
 
+            if(Math.abs(turret1.getPosition() - servoPosition) < 0.02) return;
+
+            turret1.setPosition(servoPosition);
+            turret2.setPosition(servoPosition);
+        } else {
+            turret1.setPosition(Globals.TURRET_RESET);
+            turret2.setPosition(Globals.TURRET_RESET);
+        }
+
+    }
 }

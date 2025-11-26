@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.common.robot;
 
 import static com.qualcomm.robotcore.hardware.DcMotor.ZeroPowerBehavior.BRAKE;
 
+import com.bylazar.camerastream.PanelsCameraStream;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.ftc.FTCCoordinates;
 import com.pedropathing.ftc.InvertedFTCCoordinates;
@@ -12,8 +13,10 @@ import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.lynx.LynxModule;
+import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -27,7 +30,11 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.teamcode.common.commandBase.subsystems.IntakeSubsystem;
+import org.firstinspires.ftc.teamcode.common.commandBase.subsystems.KickerSubsystem;
+import org.firstinspires.ftc.teamcode.common.commandBase.subsystems.ShooterSubsystem;
+import org.firstinspires.ftc.teamcode.common.commandBase.subsystems.TurretSubsystem;
 import org.firstinspires.ftc.teamcode.common.pedroPathing.Constants;
+import org.firstinspires.ftc.teamcode.common.robot.utility.DenoiseFilter;
 
 import java.util.List;
 
@@ -35,6 +42,11 @@ public class Robot {
     public DcMotorEx leftFront, rightFront, leftRear, rightRear; //Drivetrain motors
     public DcMotorEx shooterSpinner1, shooterSpinner2, transfer, intake; //Intake, Transfer, Shooter motors
     public IntakeSubsystem intakeSubsystem;
+    public KickerSubsystem kickerSubsystem;
+    public ShooterSubsystem shooterSubsystem;
+    public TurretSubsystem turretSubsystem;
+
+    private DenoiseFilter denoise1, denoise2, denoise3;
 
     public ServoImplEx kicker1, kicker2, kicker3;
     public ServoImplEx turret1, turret2;
@@ -46,9 +58,10 @@ public class Robot {
     public LynxModule ControlHub;
     public Follower follower;
 
-    DigitalChannel brushlands1pin0, brushlands1pin1; //Close Brushlands (1)
-    DigitalChannel brushlands2pin0, brushlands2pin1; //Middle Brushlands (2)
-    DigitalChannel brushlands3pin0, brushlands3pin1; //Far Brushlands (3)
+    public AnalogInput sensor1, sensor2, sensor3;
+
+    public double goalX, goalY;
+    public double turretAngle;
 
     public Robot(HardwareMap hardwareMap, Pose initialPose, Globals.Side side, boolean autoBoolean) {
         //Drivetrain Motors:
@@ -72,11 +85,23 @@ public class Robot {
         //Hood Servo:
         hood = hardwareMap.get(ServoImplEx.class, "hood");
 
+        Globals.intakeState = Globals.IntakeState.STOPPED;
+        Globals.transferState = Globals.TransferState.STOPPED;
+        Globals.shooterState = Globals.ShooterState.STOPPED;
+        Globals.kicker1State = Globals.Kicker1State.RESET;
+        Globals.kicker2State = Globals.Kicker2State.RESET;
+        Globals.kicker3State = Globals.Kicker3State.RESET;
+        Globals.turretState = Globals.TurretState.RESET;
+        Globals.hoodState = Globals.HoodState.RESET;
+
         //Reversing of Motors:
         rightRear.setDirection(DcMotorEx.Direction.FORWARD);
         rightFront.setDirection(DcMotorEx.Direction.FORWARD);
         leftFront.setDirection(DcMotorEx.Direction.REVERSE);
         leftRear.setDirection(DcMotorEx.Direction.REVERSE);
+
+        follower = Constants.createFollower(hardwareMap);
+        follower.setStartingPose(initialPose);
 
         shooterSpinner2.setDirection(DcMotorEx.Direction.REVERSE);
 
@@ -94,20 +119,35 @@ public class Robot {
         ll.start();
         ll.pipelineSwitch(2);
 
+        Globals.side = side;
+
+        if (Globals.side == Globals.Side.RED) {
+            goalX = Globals.RED_CASTLE.getX();
+            goalY = Globals.RED_CASTLE.getY();
+        } else {
+            goalX = Globals.BLUE_CASTLE.getX();
+            goalY = Globals.BLUE_CASTLE.getY();
+        }
+
         //Color Sensor - Digital:
-//        brushlands1pin0 = hardwareMap.digitalChannel.get("digital0");
-//        brushlands1pin1 = hardwareMap.digitalChannel.get("digital1");
-//        brushlands2pin0 = hardwareMap.digitalChannel.get("digital0");
-//        brushlands2pin1 = hardwareMap.digitalChannel.get("digital1");
-//        brushlands3pin0 = hardwareMap.digitalChannel.get("digital0");
-//        brushlands3pin1 = hardwareMap.digitalChannel.get("digital1");
+        sensor1 = hardwareMap.analogInput.get("analog1");
+        sensor2 = hardwareMap.analogInput.get("analog2");
+        sensor3 = hardwareMap.analogInput.get("analog3");
+
+        denoise1 = new DenoiseFilter(5);
+        denoise2 = new DenoiseFilter(5);
+        denoise3 = new DenoiseFilter(5);
 
         intakeSubsystem = new IntakeSubsystem(intake);
-        follower = Constants.createFollower(hardwareMap);
-        follower.setStartingPose(initialPose);
+        kickerSubsystem = new KickerSubsystem(kicker1, kicker2, kicker3);
+        shooterSubsystem = new ShooterSubsystem(shooterSpinner1, shooterSpinner2, transfer, hood, follower);
+        turretSubsystem = new TurretSubsystem(turret1, turret2, follower);
 
         CommandScheduler.getInstance().registerSubsystem(
-                intakeSubsystem
+                intakeSubsystem,
+                kickerSubsystem,
+                shooterSubsystem,
+                turretSubsystem
         );
 
         allHubs = hardwareMap.getAll(LynxModule.class);
@@ -119,34 +159,103 @@ public class Robot {
         }
     }
 
-    public void determineColor() {
-        if (brushlands1pin0.getState()) {
-            Globals.ballColor1 = Globals.BallColor1.P;
+    public void readColor(double hue, DenoiseFilter denoise) {
+        Globals.BallColor1 color = null;
+
+        if (hue < 120) {
+            color = Globals.BallColor1.NONE;
         }
-        if (brushlands1pin1.getState()) {
-            Globals.ballColor1 = Globals.BallColor1.G;
+        else if (hue >= 120 && hue < 125) {
+            color = Globals.BallColor1.G;
         }
-        if (!brushlands1pin1.getState() && !brushlands1pin0.getState()) {
-            Globals.ballColor1 = Globals.BallColor1.NONE;
+        else if (hue >= 125 && hue < 180) {
+            color = Globals.BallColor1.P;
         }
-        if (brushlands2pin0.getState()) {
-            Globals.ballColor2 = Globals.BallColor2.P;
+
+        if (color == null) {
+            denoise.reset();
+            color = Globals.BallColor1.NONE;
         }
-        if (brushlands2pin1.getState()) {
-            Globals.ballColor2 = Globals.BallColor2.G;
+        else if (denoise.isWindowFull()) {
+            int avgIndex = (int)Math.round(denoise.filter(color.ordinal()));
+            color = Globals.BallColor1.values()[avgIndex];
         }
-        if (!brushlands2pin1.getState() && !brushlands2pin0.getState()) {
-            Globals.ballColor2 = Globals.BallColor2.NONE;
+        else {
+            denoise.filter(color.ordinal());
+            color = Globals.BallColor1.NONE;
         }
-        if (brushlands3pin0.getState()) {
-            Globals.ballColor3 = Globals.BallColor3.P;
+
+        Globals.ballColor1 = color;
+    }
+
+    public void readColor2(double hue, DenoiseFilter denoise) {
+        Globals.BallColor2 color = null;
+
+        if (hue < 120) {
+            color = Globals.BallColor2.NONE;
         }
-        if (brushlands3pin1.getState()) {
-            Globals.ballColor3 = Globals.BallColor3.G;
+        else if (hue >= 120 && hue < 125) {
+            color = Globals.BallColor2.G;
         }
-        if (!brushlands3pin1.getState() && !brushlands3pin0.getState()) {
-            Globals.ballColor3 = Globals.BallColor3.NONE;
+        else if (hue >= 125 && hue < 180) {
+            color = Globals.BallColor2.P;
         }
+
+        if (color == null) {
+            denoise.reset();
+            color = Globals.BallColor2.NONE;
+        }
+        else if (denoise.isWindowFull()) {
+            int avgIndex = (int)Math.round(denoise.filter(color.ordinal()));
+            color = Globals.BallColor2.values()[avgIndex];
+        }
+        else {
+            denoise.filter(color.ordinal());
+            color = Globals.BallColor2.NONE;
+        }
+
+        Globals.ballColor2 = color;
+    }
+
+    public void readColor3(double hue, DenoiseFilter denoise) {
+        Globals.BallColor3 color = null;
+
+        if (hue < 120) {
+            color = Globals.BallColor3.NONE;
+        }
+        else if (hue >= 120 && hue < 125) {
+            color = Globals.BallColor3.G;
+        }
+        else if (hue >= 125 && hue < 180) {
+            color = Globals.BallColor3.P;
+        }
+
+        if (color == null) {
+            denoise.reset();
+            color = Globals.BallColor3.NONE;
+        }
+        else if (denoise.isWindowFull()) {
+            int avgIndex = (int)Math.round(denoise.filter(color.ordinal()));
+            color = Globals.BallColor3.values()[avgIndex];
+        }
+        else {
+            denoise.filter(color.ordinal());
+            color = Globals.BallColor3.NONE;
+        }
+
+        Globals.ballColor3 = color;
+    }
+
+    public double getTurretAngleToGoal(Globals.Side side, double robotX, double robotY, double robotHeadingRadians) {
+
+        double dx = goalX - robotX;
+        double dy = goalY - robotY;
+        double absoluteAngle = Math.atan2(dy, dx);
+
+        turretAngle = absoluteAngle - robotHeadingRadians;
+        turretAngle = Math.atan2(Math.sin(turretAngle), Math.cos(turretAngle)); //normalizes
+
+        return turretAngle; //in radians
     }
 
     public void getObeliskFiducial() {
@@ -179,13 +288,13 @@ public class Robot {
         Globals.obeliskOptions = Globals.ObeliskOptions.NOT_FOUND;
     }
 
-    public double getGoalDistance(Robot robot) {
+    public double getGoalDistance(Follower follower) {
         LLResult result = ll.getLatestResult();
 
-        double robotYaw = robot.follower.getHeading();
+        double robotYaw = follower.getHeading();
         ll.updateRobotOrientation(robotYaw);
 
-        if (result == null || !result.isValid()) return -1;
+        if (result == null || !result.isValid()) return Math.hypot(follower.getPose().getX() - goalX, follower.getPose().getY() - goalY);
 
         List<LLResultTypes.FiducialResult> fiducials = result.getFiducialResults();
         for (LLResultTypes.FiducialResult fiducial : fiducials) {
@@ -193,24 +302,14 @@ public class Robot {
                 case 21:
                 case 22:
                 case 23:
-                    return -1;
+                    return Math.hypot(follower.getPose().getX() - goalX, follower.getPose().getY() - goalY);
             }
         }
 
         Pose3D botpose = result.getBotpose_MT2();
-        if (botpose == null) return -1;
+        if (botpose == null) return Math.hypot(follower.getPose().getX() - goalX, follower.getPose().getY() - goalY);
 
         Pose currentDetectedPose = PoseConverter.pose2DToPose(new Pose2D(DistanceUnit.INCH, botpose.getPosition().x, botpose.getPosition().y, AngleUnit.RADIANS, robotYaw), InvertedFTCCoordinates.INSTANCE);
-
-        double goalX, goalY;
-
-        if (Globals.side == Globals.Side.RED) {
-            goalX = Globals.RED_CASTLE.getX();
-            goalY = Globals.RED_CASTLE.getY();
-        } else {
-            goalX = Globals.BLUE_CASTLE.getX();
-            goalY = Globals.BLUE_CASTLE.getY();
-        }
 
         double dx = currentDetectedPose.getX() - goalX;
         double dy = currentDetectedPose.getY() - goalY;
@@ -218,9 +317,9 @@ public class Robot {
         return Math.hypot(dx, dy);
     }
 
-    public Pose getLLPosition(Robot robot) {
+    public Pose getLLPosition(Follower follower) {
         LLResult result = ll.getLatestResult();
-        double robotYaw = robot.follower.getHeading();
+        double robotYaw = follower.getHeading();
         ll.updateRobotOrientation(robotYaw);
 
         if (result == null || !result.isValid()) return null;
@@ -245,12 +344,24 @@ public class Robot {
         for (DcMotorEx m : motors) m.setZeroPowerBehavior(BRAKE);
     }
 
-    public void clearCache() {
+    public void loop(Robot robot) {
         for (LynxModule hub : allHubs) {
             if (hub.getDeviceName().equals("Servo Hub") || hub.getDeviceName().equals("pinpoint"))
                 return;
             hub.clearBulkCache();
         }
+
+        double hue1 = sensor1.getVoltage() / 3.3 * 360;
+        double hue2 = sensor2.getVoltage() / 3.3 * 360;
+        double hue3 = sensor3.getVoltage() / 3.3 * 360;
+
         follower.update();
+        if (intakeSubsystem != null) { robot.intakeSubsystem.sync(); }
+        if (kickerSubsystem != null) { robot.kickerSubsystem.sync(); }
+        if (shooterSubsystem != null) { robot.shooterSubsystem.sync(); }
+        if (turretSubsystem != null) { robot.turretSubsystem.sync(); }
+        readColor(hue1, denoise1);
+        readColor2(hue2, denoise2);
+        readColor3(hue3, denoise3);
     }
 }

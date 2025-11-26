@@ -14,6 +14,7 @@ public class Globals {
     public static Globals.BallColor1 ballColor1 = BallColor1.NONE;
     public static Globals.BallColor2 ballColor2 = BallColor2.NONE;
     public static Globals.BallColor3 ballColor3 = BallColor3.NONE;
+
     public static Globals.IntakeState intakeState = IntakeState.STOPPED;
     public static Globals.TransferState transferState = TransferState.STOPPED;
     public static Globals.ShooterState shooterState = ShooterState.STOPPED;
@@ -39,21 +40,24 @@ public class Globals {
     public static double KICKER3_RESET = 0.46;
     public static double KICKER3_KICK = 0.357;
 
-    public static double TURRET_RESET = 0;
-    public static double TURRET_BLUE_OBELISK = 0;
-    public static double TURRET_RED_OBELISK = 0;
+    public static double TURRET_RESET = 0.290;
+    public static double TURRET_BLUE_OBELISK = 0.21;
+    public static double TURRET_RED_OBELISK = 0.32;
+
+    public static double HOOD_LOWERED = 0.23;
+    public static double HOOD_MAX = 0.95;
 
     public static double MAX_TIME_SPENT_INTAKING = 5.0; //seconds
 
-    public static double MAX_SHOOTER_POWER = 1;
+    public static double MIN_SHOOTER_POWER = 0.2; //used to prevent current draw issues
+
     public static double MAX_TRANSFER_POWER = 1;
     public static double MAX_INTAKING_POWER = 1;
 
-    public static double MIN_TRANSFER_VELOCITY = 5; //degrees, yet to be tuned
-    public static double MIN_SHOOTER_VELOCITY = 5; //degrees, yet to be tuned
+    public static double MAX_SHOOTER_VELOCITY = 150; //degrees, yet to be tuned
+    public static double SHOOTER_VELOCITY_TOLERANCE = 10; //degrees, yet to be tuned
 
-    public static double MAX_TRANSFER_SPINUP_WAIT = 500; //ms
-    public static double KICK_WAIT_TIME = 20;
+    public static double KICK_WAIT_TIME = 200;
 
     //Pre-Match Configuration:
     public enum OpMode {
@@ -100,13 +104,11 @@ public class Globals {
 
     public enum TransferState{
         TRANSFERRING,
-        REVERSING,
         STOPPED
     }
 
     public enum ShooterState{
         SHOOTING,
-        REGAINING_VELOCITY,
         STOPPED
     }
 

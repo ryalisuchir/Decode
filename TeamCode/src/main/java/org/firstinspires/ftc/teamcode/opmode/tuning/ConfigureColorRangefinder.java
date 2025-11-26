@@ -1,23 +1,30 @@
 package org.firstinspires.ftc.teamcode.opmode.tuning;
 
 import com.qualcomm.hardware.rev.RevColorSensorV3;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.I2cDeviceSynchSimple;
 
 
+@Disabled
 @TeleOp
 public class ConfigureColorRangefinder extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
-        ColorRangefinder crf = new ColorRangefinder(hardwareMap.get(RevColorSensorV3.class, "Color"));
+        ColorRangefinder crf = new ColorRangefinder(hardwareMap.get(RevColorSensorV3.class, "color1"));
         waitForStart();
+
         crf.setLedBrightness(50);
-        crf.setPin0Digital(ColorRangefinder.DigitalMode.HSV, 160 / 360.0 * 255, 190 / 360.0 * 255); // purple
-        crf.setPin1Digital(ColorRangefinder.DigitalMode.HSV, 110 / 360.0 * 255, 140 / 360.0 * 255); // green
+        crf.setPin0Analog(ColorRangefinder.AnalogMode.HSV); // purple
+        crf.setPin1Digital(ColorRangefinder.DigitalMode.HSV, 55 / 360.0 * 255, 90 / 360.0 * 255);
     }
 }
 
+/**
+ * Helper class for configuring the Brushland Labs Color Rangefinder.
+ * Online documentation: <a href="https://docs.brushlandlabs.com">...</a>
+ */
 class ColorRangefinder {
     private final I2cDeviceSynchSimple i2c;
 
@@ -26,36 +33,74 @@ class ColorRangefinder {
         this.i2c.enableWriteCoalescing(true);
     }
 
+    /**
+     * Configure Pin 0 to be in digital mode, and add a threshold.
+     * Multiple thresholds can be added to the same pin by calling this function repeatedly.
+     * For colors, bounds should be from 0-255, and for distance, bounds should be from 0-100 (mm).
+     */
     public void setPin0Digital(DigitalMode digitalMode, double lowerBound, double higherBound) {
         setDigital(PinNum.PIN0, digitalMode, lowerBound, higherBound);
     }
 
+    /**
+     * Configure Pin 1 to be in digital mode, and add a threshold.
+     * Multiple thresholds can be added to the same pin by calling this function repeatedly.
+     * For colors, bounds should be from 0-255, and for distance, bounds should be from 0-100 (mm).
+     */
     public void setPin1Digital(DigitalMode digitalMode, double lowerBound, double higherBound) {
         setDigital(PinNum.PIN1, digitalMode, lowerBound, higherBound);
     }
 
+    /**
+     * Sets the maximum distance (in millimeters) within which an object must be located for Pin 0's thresholds to trigger.
+     * This is most useful when we want to know if an object is both close and the correct color.
+     */
     public void setPin0DigitalMaxDistance(DigitalMode digitalMode, double mmRequirement) {
         setPin0Digital(digitalMode, mmRequirement, mmRequirement);
     }
 
+    /**
+     * Sets the maximum distance (in millimeters) within which an object must be located for Pin 1's thresholds to trigger.
+     * This is most useful when we want to know if an object is both close and the correct color.
+     */
     public void setPin1DigitalMaxDistance(DigitalMode digitalMode, double mmRequirement) {
         setPin1Digital(digitalMode, mmRequirement, mmRequirement);
     }
 
+    /**
+     * Invert the hue value before thresholding it, meaning that the colors become their opposite.
+     * This is useful if we want to threshold red; instead of having two thresholds we would invert
+     * the color and look for blue.
+     */
     public void setPin0InvertHue() {
         setPin0DigitalMaxDistance(DigitalMode.HSV, 200);
     }
 
+    /**
+     * Invert the hue value before thresholding it, meaning that the colors become their opposite.
+     * This is useful if we want to threshold red; instead of having two thresholds we would invert
+     * the color and look for blue.
+     */
     public void setPin1InvertHue() {
         setPin1DigitalMaxDistance(DigitalMode.HSV, 200);
     }
 
+    /**
+     * The denominator is what the raw sensor readings will be divided by before being scaled to 12-bit analog.
+     * For the full range of that channel, leave the denominator as 65535 for colors or 100 for distance.
+     * Smaller values will clip off higher ranges of the data in exchange for higher resolution within a lower range.
+     */
     public void setPin0Analog(AnalogMode analogMode, int denominator) {
         byte denom0 = (byte) (denominator & 0xFF);
         byte denom1 = (byte) ((denominator & 0xFF00) >> 8);
         i2c.write(PinNum.PIN0.modeAddress, new byte[]{analogMode.value, denom0, denom1});
     }
 
+    /**
+     * Configure Pin 0 as analog output of one of the six data channels.
+     * To read analog, make sure the physical switch on the sensor is flipped away from the
+     * connector side.
+     */
     public void setPin0Analog(AnalogMode analogMode) {
         setPin0Analog(analogMode, analogMode == AnalogMode.DISTANCE ? 100 : 0xFFFF);
     }
@@ -66,15 +111,29 @@ class ColorRangefinder {
         return new float[]{bytes.getFloat(), bytes.getFloat(), bytes.getFloat(), bytes.getFloat()};
     }
 
-
+    /**
+     * Save a brightness value of the LED to the sensor.
+     *
+     * @param value brightness between 0-255
+     */
     public void setLedBrightness(int value) {
         i2c.write8(LED_BRIGHTNESS, value);
     }
 
+    /**
+     * Change the I2C address at which the sensor will be found. The address can be reset to the
+     * default of 0x52 by holding the reset button.
+     *
+     * @param value new I2C address from 1 to 127
+     */
     public void setI2cAddress(int value) {
         i2c.write8(I2C_ADDRESS_REG, value << 1);
     }
 
+    /**
+     * Read distance via I2C
+     * @return distance in millimeters
+     */
     public double readDistance() {
         java.nio.ByteBuffer bytes =
                 java.nio.ByteBuffer.wrap(i2c.read(PS_DISTANCE_0, 4)).order(java.nio.ByteOrder.LITTLE_ENDIAN);
