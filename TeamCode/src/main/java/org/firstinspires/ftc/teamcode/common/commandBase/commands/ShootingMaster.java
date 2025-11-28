@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.common.commandBase.commands;
 
 import com.seattlesolvers.solverslib.command.CommandBase;
+
+import org.firstinspires.ftc.teamcode.common.commandBase.subsystems.ShooterSubsystem;
 import org.firstinspires.ftc.teamcode.common.robot.Globals;
 
 import java.util.ArrayList;
@@ -13,8 +15,9 @@ public class ShootingMaster extends CommandBase {
     private long waitStart = 0;
     private boolean waiting = false;
     private boolean finished = false;
+    ShooterSubsystem shooterSubsystem;
 
-    public ShootingMaster() {}
+    public ShootingMaster(ShooterSubsystem shooterSubsystem) {this.shooterSubsystem = shooterSubsystem;}
 
     @Override
     public void initialize() {
@@ -59,8 +62,15 @@ public class ShootingMaster extends CommandBase {
             }
         }
 
-        if (firingOrder.isEmpty()) {
+        if (firingOrder.isEmpty() && shooterSubsystem.shooterIsSpunUp()) {
             finished = true;
+            Globals.transferState = Globals.TransferState.STOPPED;
+            Globals.shooterState  = Globals.ShooterState.STOPPED;
+            Globals.kicker1State  = Globals.Kicker1State.RESET;
+            Globals.kicker2State  = Globals.Kicker2State.RESET;
+            Globals.kicker3State  = Globals.Kicker3State.RESET;
+            Globals.turretState   = Globals.TurretState.RESET;
+            Globals.hoodState     = Globals.HoodState.RESET;
         }
     }
 
@@ -75,8 +85,15 @@ public class ShootingMaster extends CommandBase {
                 waiting = false;
                 currentIndex++;
 
-                if (currentIndex >= firingOrder.size()) {
+                if (currentIndex >= firingOrder.size() && shooterSubsystem.shooterIsSpunUp()) {
                     finished = true;
+                    Globals.transferState = Globals.TransferState.STOPPED;
+                    Globals.shooterState  = Globals.ShooterState.STOPPED;
+                    Globals.kicker1State  = Globals.Kicker1State.RESET;
+                    Globals.kicker2State  = Globals.Kicker2State.RESET;
+                    Globals.kicker3State  = Globals.Kicker3State.RESET;
+                    Globals.turretState   = Globals.TurretState.RESET;
+                    Globals.hoodState     = Globals.HoodState.RESET;
                 }
             }
             return;

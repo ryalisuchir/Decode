@@ -42,6 +42,10 @@ public class ShooterSubsystem extends SubsystemBase {
         controller.setSetPoint(0);
     }
 
+    public boolean shooterIsSpunUp() {
+        return controller.atSetPoint();
+    }
+
     public void syncer() {
         if (Globals.shooterState == Globals.ShooterState.SHOOTING) {
             ShooterParams currentShooterParam = shooterLUT.getShooterValue(robot.getDistanceToGoalPinpoint());

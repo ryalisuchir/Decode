@@ -58,6 +58,7 @@ public class Robot {
     public List<LynxModule> allHubs;
     public LynxModule ControlHub;
     public Follower follower;
+    public static Pose endPose;
 
     public AnalogInput sensor1, sensor2, sensor3;
 
@@ -378,6 +379,10 @@ public class Robot {
                 return;
             hub.clearBulkCache();
         }
+    }
+
+    public void stop() {
+        endPose = follower.getPose();
     }
 
     public void loop(Robot robot) {

@@ -34,6 +34,7 @@ public class IntakeSubsystem extends SubsystemBase {
 
             if (isBallDetected()) {
                 Globals.shooterState = Globals.ShooterState.SHOOTING;
+                Globals.transferState = Globals.TransferState.TRANSFERRING;
                 Globals.turretState = Globals.TurretState.FOLLOWING;
             }
             if (threeBallsDetected()) {
