@@ -42,9 +42,9 @@ public class ShooterSubsystem extends SubsystemBase {
         controller.setSetPoint(0);
     }
 
-    public void sync() {
+    public void syncer() {
         if (Globals.shooterState == Globals.ShooterState.SHOOTING) {
-            ShooterParams currentShooterParam = shooterLUT.getShooterValue(robot.getGoalDistance(follower));
+            ShooterParams currentShooterParam = shooterLUT.getShooterValue(robot.getDistanceToGoalPinpoint());
 
             hood.setPosition(currentShooterParam.hoodPos);
 

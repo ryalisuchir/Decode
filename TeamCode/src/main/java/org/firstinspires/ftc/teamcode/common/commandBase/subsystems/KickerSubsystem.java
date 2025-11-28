@@ -15,7 +15,7 @@ public class KickerSubsystem extends SubsystemBase {
         this.kicker3 = kicker3;
     }
 
-    public void sync() {
+    public void syncer() {
         if (Globals.kicker1State == Globals.Kicker1State.KICK) kicker1.setPosition(Globals.KICKER1_KICK);
         if (Globals.kicker2State == Globals.Kicker2State.KICK) kicker2.setPosition(Globals.KICKER2_KICK);
         if (Globals.kicker3State == Globals.Kicker3State.KICK) kicker3.setPosition(Globals.KICKER3_KICK);

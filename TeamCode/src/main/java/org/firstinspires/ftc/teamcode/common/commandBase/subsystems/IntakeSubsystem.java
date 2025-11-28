@@ -25,7 +25,7 @@ public class IntakeSubsystem extends SubsystemBase {
                 Globals.ballColor3 != Globals.BallColor3.NONE;
     }
 
-    public void sync() {
+    public void syncer() {
         if (Globals.intakeState == Globals.IntakeState.INTAKING) {
             intakeMotor.setPower(Globals.MAX_INTAKING_POWER);
             Globals.kicker1State = Globals.Kicker1State.RESET;

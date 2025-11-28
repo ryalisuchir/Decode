@@ -35,6 +35,7 @@ import org.firstinspires.ftc.teamcode.common.commandBase.subsystems.ShooterSubsy
 import org.firstinspires.ftc.teamcode.common.commandBase.subsystems.TurretSubsystem;
 import org.firstinspires.ftc.teamcode.common.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.common.robot.utility.DenoiseFilter;
+import org.firstinspires.ftc.teamcode.common.robot.utility.OneDKalmanFilter;
 
 import java.util.List;
 
@@ -62,6 +63,8 @@ public class Robot {
 
     public double goalX, goalY;
     public double turretAngle;
+
+    public OneDKalmanFilter filter;
 
     public Robot(HardwareMap hardwareMap, Pose initialPose, Globals.Side side, boolean autoBoolean) {
         //Drivetrain Motors:
@@ -134,6 +137,13 @@ public class Robot {
         sensor2 = hardwareMap.analogInput.get("analog2");
         sensor3 = hardwareMap.analogInput.get("analog3");
 
+        filter = new OneDKalmanFilter(
+                0,
+                10,
+                0.1, //higher q means we trust odometry less (assumes more drift)
+                2.0 //higher r means we trust limelight less (noisy cam)
+        );
+
         denoise1 = new DenoiseFilter(5);
         denoise2 = new DenoiseFilter(5);
         denoise3 = new DenoiseFilter(5);
@@ -141,7 +151,7 @@ public class Robot {
         intakeSubsystem = new IntakeSubsystem(intake);
         kickerSubsystem = new KickerSubsystem(kicker1, kicker2, kicker3);
         shooterSubsystem = new ShooterSubsystem(shooterSpinner1, shooterSpinner2, transfer, hood, follower);
-        turretSubsystem = new TurretSubsystem(turret1, turret2, follower);
+        turretSubsystem = new TurretSubsystem(side, turret1, turret2, follower);
 
         CommandScheduler.getInstance().registerSubsystem(
                 intakeSubsystem,
@@ -246,7 +256,7 @@ public class Robot {
         Globals.ballColor3 = color;
     }
 
-    public double getTurretAngleToGoal(Globals.Side side, double robotX, double robotY, double robotHeadingRadians) {
+    public double getTurretAngleToGoal(double robotX, double robotY, double robotHeadingRadians) {
 
         double dx = goalX - robotX;
         double dy = goalY - robotY;
@@ -288,13 +298,13 @@ public class Robot {
         Globals.obeliskOptions = Globals.ObeliskOptions.NOT_FOUND;
     }
 
-    public double getGoalDistance(Follower follower) {
+    public double getGoalDistance() {
         LLResult result = ll.getLatestResult();
 
         double robotYaw = follower.getHeading();
         ll.updateRobotOrientation(robotYaw);
 
-        if (result == null || !result.isValid()) return Math.hypot(follower.getPose().getX() - goalX, follower.getPose().getY() - goalY);
+        if (result == null || !result.isValid()) return 0;
 
         List<LLResultTypes.FiducialResult> fiducials = result.getFiducialResults();
         for (LLResultTypes.FiducialResult fiducial : fiducials) {
@@ -302,27 +312,43 @@ public class Robot {
                 case 21:
                 case 22:
                 case 23:
-                    return Math.hypot(follower.getPose().getX() - goalX, follower.getPose().getY() - goalY);
+                    return 0;
             }
         }
 
         Pose3D botpose = result.getBotpose_MT2();
-        if (botpose == null) return Math.hypot(follower.getPose().getX() - goalX, follower.getPose().getY() - goalY);
+        if (botpose != null) {
+            Pose currentDetectedPose = PoseConverter.pose2DToPose(new Pose2D(DistanceUnit.METER, botpose.getPosition().x, botpose.getPosition().y, AngleUnit.RADIANS, robotYaw), InvertedFTCCoordinates.INSTANCE);
+            double dx = currentDetectedPose.getX() - goalX;
+            double dy = currentDetectedPose.getY() - goalY;
 
-        Pose currentDetectedPose = PoseConverter.pose2DToPose(new Pose2D(DistanceUnit.INCH, botpose.getPosition().x, botpose.getPosition().y, AngleUnit.RADIANS, robotYaw), InvertedFTCCoordinates.INSTANCE);
-
-        double dx = currentDetectedPose.getX() - goalX;
-        double dy = currentDetectedPose.getY() - goalY;
-
-        return Math.hypot(dx, dy);
+            return Math.hypot(dx, dy);
+        }
+        return 0;
     }
 
-    public Pose getLLPosition(Follower follower) {
+    public double getCorrectedGoalDistance() {
+        double llDistance = getGoalDistance();
+        double dxOdo = follower.getPose().getX() - goalX;
+        double dyOdo = follower.getPose().getY() - goalY;
+        double odoDistance = Math.hypot(dxOdo, dyOdo);
+
+        filter.update(odoDistance);
+        return filter.update(llDistance);
+    }
+
+    public double getDistanceToGoalPinpoint() {
+        double dxOdo = follower.getPose().getX() - goalX;
+        double dyOdo = follower.getPose().getY() - goalY;
+        return Math.hypot(dxOdo, dyOdo);
+    }
+
+    public Pose getLLPosition() {
         LLResult result = ll.getLatestResult();
         double robotYaw = follower.getHeading();
         ll.updateRobotOrientation(robotYaw);
 
-        if (result == null || !result.isValid()) return null;
+        if (result == null || !result.isValid()) return new Pose(0,0,Math.toRadians(0));
 
         List<LLResultTypes.FiducialResult> fiducials = result.getFiducialResults();
         for (LLResultTypes.FiducialResult fiducial : fiducials) {
@@ -335,13 +361,23 @@ public class Robot {
         }
 
         Pose3D botpose = result.getBotpose_MT2();
-        if (botpose == null) return null;
+        if (botpose == null) {
+            return new Pose(0,0,Math.toRadians(0));
+        }
 
         return PoseConverter.pose2DToPose(new Pose2D(DistanceUnit.INCH, botpose.getPosition().x, botpose.getPosition().y, AngleUnit.RADIANS, robotYaw), InvertedFTCCoordinates.INSTANCE);
     }
 
     private void brake(DcMotorEx... motors) {
         for (DcMotorEx m : motors) m.setZeroPowerBehavior(BRAKE);
+    }
+
+    public void clearCache() {
+        for (LynxModule hub : allHubs) {
+            if (hub.getDeviceName().equals("Servo Hub") || hub.getDeviceName().equals("pinpoint"))
+                return;
+            hub.clearBulkCache();
+        }
     }
 
     public void loop(Robot robot) {
@@ -356,10 +392,10 @@ public class Robot {
         double hue3 = sensor3.getVoltage() / 3.3 * 360;
 
         follower.update();
-        if (intakeSubsystem != null) { robot.intakeSubsystem.sync(); }
-        if (kickerSubsystem != null) { robot.kickerSubsystem.sync(); }
-        if (shooterSubsystem != null) { robot.shooterSubsystem.sync(); }
-        if (turretSubsystem != null) { robot.turretSubsystem.sync(); }
+        if (intakeSubsystem != null) { robot.intakeSubsystem.syncer(); }
+        if (kickerSubsystem != null) { robot.kickerSubsystem.syncer(); }
+        if (shooterSubsystem != null) { robot.shooterSubsystem.syncer(); }
+        if (turretSubsystem != null) { robot.turretSubsystem.syncer(); }
         readColor(hue1, denoise1);
         readColor2(hue2, denoise2);
         readColor3(hue3, denoise3);

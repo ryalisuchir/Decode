@@ -3,6 +3,8 @@ package org.firstinspires.ftc.teamcode.opmode.testing;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
+
+import org.firstinspires.ftc.teamcode.common.commandBase.commands.ShootingMaster;
 import org.firstinspires.ftc.teamcode.common.robot.Globals;
 import org.firstinspires.ftc.teamcode.common.robot.Robot;
 
@@ -21,6 +23,10 @@ public class SubsystemTest extends CommandOpMode {
 
         if (gamepad1.left_bumper) {
             Globals.intakeState = Globals.IntakeState.INTAKING;
+        }
+
+        if (gamepad1.right_bumper) {
+            schedule(new ShootingMaster());
         }
 
         robot.loop(robot);
