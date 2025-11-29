@@ -23,6 +23,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 import com.qualcomm.robotcore.hardware.configuration.LynxConstants;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
+import com.seattlesolvers.solverslib.hardware.motors.Motor;
 
 import org.firstinspires.ftc.robotcontroller.external.samples.SensorGoBildaPinpoint;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -41,7 +42,8 @@ import java.util.List;
 
 public class Robot {
     public DcMotorEx leftFront, rightFront, leftRear, rightRear; //Drivetrain motors
-    public DcMotorEx shooterSpinner1, shooterSpinner2, transfer, intake; //Intake, Transfer, Shooter motors
+    public DcMotorEx transfer, intake; //Intake, Transfer, Shooter motors
+    public Motor shooterSpinner1, shooterSpinner2; //Intake, Transfer, Shooter motors
     public IntakeSubsystem intakeSubsystem;
     public KickerSubsystem kickerSubsystem;
     public ShooterSubsystem shooterSubsystem;
@@ -74,8 +76,8 @@ public class Robot {
         rightRear = hardwareMap.get(DcMotorEx.class, "rightRear");
         rightFront = hardwareMap.get(DcMotorEx.class, "rightFront");
         //Shooter Motors:
-        shooterSpinner1 = hardwareMap.get(DcMotorEx.class, "shooterSpinner1");
-        shooterSpinner2 = hardwareMap.get(DcMotorEx.class, "shooterSpinner2");
+        shooterSpinner1 = new Motor(hardwareMap, "shooterSpinner1", Motor.GoBILDA.BARE);
+        shooterSpinner2 = new Motor(hardwareMap, "shooterSpinner2", Motor.GoBILDA.BARE);
         //Intake + Transfer Motors:
         transfer = hardwareMap.get(DcMotorEx.class, "transfer");
         intake = hardwareMap.get(DcMotorEx.class, "intake");
@@ -107,14 +109,12 @@ public class Robot {
         follower = Constants.createFollower(hardwareMap);
         follower.setStartingPose(initialPose);
 
-        shooterSpinner2.setDirection(DcMotorEx.Direction.REVERSE);
+        shooterSpinner2.setInverted(true);
 
         turret2.setDirection(Servo.Direction.REVERSE);
 
-        brake(leftFront, leftRear, rightFront, rightRear, shooterSpinner1, shooterSpinner2, transfer, intake);
+        brake(leftFront, leftRear, rightFront, rightRear, transfer, intake);
 
-        shooterSpinner1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        shooterSpinner2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         transfer.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         intake.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
@@ -151,8 +151,8 @@ public class Robot {
 
         intakeSubsystem = new IntakeSubsystem(intake);
         kickerSubsystem = new KickerSubsystem(kicker1, kicker2, kicker3);
-        shooterSubsystem = new ShooterSubsystem(shooterSpinner1, shooterSpinner2, transfer, hood, follower);
-        turretSubsystem = new TurretSubsystem(side, turret1, turret2, follower);
+        shooterSubsystem = new ShooterSubsystem(shooterSpinner1, shooterSpinner2, transfer, hood, follower, goalX, goalY);
+        turretSubsystem = new TurretSubsystem(side, turret1, turret2, follower, goalX, goalY);
 
         CommandScheduler.getInstance().registerSubsystem(
                 intakeSubsystem,
@@ -258,15 +258,13 @@ public class Robot {
     }
 
     public double getTurretAngleToGoal(double robotX, double robotY, double robotHeadingRadians) {
-
         double dx = goalX - robotX;
         double dy = goalY - robotY;
-        double absoluteAngle = Math.atan2(dy, dx);
+        double angleToGoal = Math.atan2(dy, dx);
+        double turretAngle = angleToGoal - robotHeadingRadians;
+        turretAngle = Math.atan2(Math.sin(turretAngle), Math.cos(turretAngle));
 
-        turretAngle = absoluteAngle - robotHeadingRadians;
-        turretAngle = Math.atan2(Math.sin(turretAngle), Math.cos(turretAngle)); //normalizes
-
-        return turretAngle; //in radians
+        return turretAngle;
     }
 
     public void getObeliskFiducial() {
@@ -398,7 +396,7 @@ public class Robot {
 
         follower.update();
         if (intakeSubsystem != null) { robot.intakeSubsystem.syncer(); }
-        if (kickerSubsystem != null) { robot.kickerSubsystem.syncer(); }
+        robot.kickerSubsystem.syncer();
         if (shooterSubsystem != null) { robot.shooterSubsystem.syncer(); }
         if (turretSubsystem != null) { robot.turretSubsystem.syncer(); }
         readColor(hue1, denoise1);
