@@ -17,12 +17,25 @@ public class TurretSubsystem extends SubsystemBase {
     Robot robot;
     Follower follower;
     Globals.Side side;
+    double goalX, goalY;
 
-    public TurretSubsystem(Globals.Side side, ServoImplEx turret1, ServoImplEx turret2, Follower follower) {
+    public TurretSubsystem(Globals.Side side, ServoImplEx turret1, ServoImplEx turret2, Follower follower, double goalX, double goalY) {
         this.turret1 = turret1;
         this.turret2 = turret2;
         this.follower = follower;
         this.side = side;
+        this.goalX = goalX;
+        this.goalY = goalY;
+    }
+
+    public double getTurretAngleToGoal(double robotX, double robotY, double robotHeadingRadians) {
+        double dx = goalX - robotX;
+        double dy = goalY - robotY;
+        double angleToGoal = Math.atan2(dy, dx);
+        double turretAngle = angleToGoal - robotHeadingRadians;
+        turretAngle = Math.atan2(Math.sin(turretAngle), Math.cos(turretAngle));
+
+        return turretAngle;
     }
 
     public void syncer() {
@@ -31,12 +44,10 @@ public class TurretSubsystem extends SubsystemBase {
             double servoPosition;
 
             if (side == Globals.Side.BLUE) {
-                servoPosition = blueTurretLUT.getServoValue(robot.getTurretAngleToGoal(follower.getPose().getX(), follower.getPose().getY(), follower.getPose().getHeading()));
+                servoPosition = blueTurretLUT.getServoValue(getTurretAngleToGoal(follower.getPose().getX(), follower.getPose().getY(), follower.getPose().getHeading()));
             } else {
-                servoPosition = redTurretLUT.getServoValue(robot.getTurretAngleToGoal(follower.getPose().getX(), follower.getPose().getY(), follower.getPose().getHeading()));
+                servoPosition = redTurretLUT.getServoValue(getTurretAngleToGoal(follower.getPose().getX(), follower.getPose().getY(), follower.getPose().getHeading()));
             }
-
-            if(Math.abs(turret1.getPosition() - servoPosition) < 0.02) return;
 
             turret1.setPosition(servoPosition);
             turret2.setPosition(servoPosition);

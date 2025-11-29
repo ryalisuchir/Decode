@@ -19,21 +19,26 @@ public class TurretTester extends OpMode {
     @Override
     public void init() {
         robot = new Robot(hardwareMap, Globals.DEFAULT_START_POSE, Globals.Side.BLUE, true);
+        robot.follower.startTeleOpDrive();
     }
+
 
     @Override
     public void loop() {
         double servoPosition;
 
-        if (Globals.side == Globals.Side.RED) {
-            servoPosition = redTurretLUT.getServoValue(robot.getTurretAngleToGoal(robot.follower.getPose().getX(), robot.follower.getPose().getY(), robot.follower.getPose().getHeading()));
-        } else {
-            servoPosition = blueTurretLUT.getServoValue(robot.getTurretAngleToGoal(robot.follower.getPose().getX(), robot.follower.getPose().getY(), robot.follower.getPose().getHeading()));
-        }
+        robot.follower.setTeleOpDrive(
+                -0.5 * Math.tan(1.12 * gamepad1.left_stick_y),
+                -0.5 * Math.tan(1.12 * gamepad1.left_stick_x),
+                -0.5 * Math.tan(1.12 * gamepad1.right_stick_x),
+                true);
 
-        if(Math.abs(robot.turret1.getPosition() - servoPosition) < 0.02) return;
+        servoPosition = blueTurretLUT.getServoValue(robot.getTurretAngleToGoal(robot.follower.getPose().getX(), robot.follower.getPose().getY(), robot.follower.getPose().getHeading()));
 
         robot.turret1.setPosition(servoPosition);
         robot.turret2.setPosition(servoPosition);
+
+        robot.clearCache();
+        robot.follower.update();
     }
 }
