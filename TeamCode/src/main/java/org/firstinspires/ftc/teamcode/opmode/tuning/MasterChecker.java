@@ -56,8 +56,8 @@ public class MasterChecker extends OpMode {
         robot.rightRear.setPower(dtSpeed4);
 
         robot.transfer.setPower(transferSpeed);
-        robot.shooterSpinner1.setPower(shooterSpeed);
-        robot.shooterSpinner2.setPower(shooterSpeed);
+        robot.shooterSpinner1.set(shooterSpeed);
+        robot.shooterSpinner2.set(shooterSpeed);
         robot.intake.setPower(intakeSpeed);
 
         robot.getObeliskFiducial();
@@ -66,8 +66,8 @@ public class MasterChecker extends OpMode {
         Pose fpose = robot.follower.getPose();
 
         telemetry.addData("Transfer Motor Velocity:", robot.transfer.getVelocity(AngleUnit.DEGREES));
-        telemetry.addData("Shooter 1 Motor Velocity:", robot.shooterSpinner1.getVelocity(AngleUnit.DEGREES));
-        telemetry.addData("Shooter 2 Motor Velocity:", robot.shooterSpinner2.getVelocity(AngleUnit.DEGREES));
+        telemetry.addData("Shooter 1 Motor Velocity:", robot.shooterSpinner1.getCorrectedVelocity());
+        telemetry.addData("Shooter 2 Motor Velocity:", robot.shooterSpinner2.getCorrectedVelocity());
         telemetry.addData("Transfer Velocity: ", robot.transfer.getVelocity(AngleUnit.DEGREES));
         telemetry.addData("Obelisk:", Globals.obeliskOptions);
         telemetry.addData("Distance to tag (ll):", robot.getGoalDistance());
