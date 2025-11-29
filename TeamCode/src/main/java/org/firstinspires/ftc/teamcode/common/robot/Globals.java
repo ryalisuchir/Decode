@@ -8,9 +8,10 @@ import com.seattlesolvers.solverslib.geometry.Vector2d;
 import java.util.Vector;
 
 public class Globals {
+
     public static Globals.OpMode opMode = OpMode.AUTO;
     public static Globals.Side side = BLUE;
-    public static Globals.ObeliskOptions obeliskOptions = ObeliskOptions.NOT_FOUND;
+    public static Globals.ObeliskOptions obeliskOptions = ObeliskOptions.PPG;
     public static Globals.BallColor1 ballColor1 = BallColor1.NONE;
     public static Globals.BallColor2 ballColor2 = BallColor2.NONE;
     public static Globals.BallColor3 ballColor3 = BallColor3.NONE;
@@ -33,30 +34,31 @@ public class Globals {
     public static Vector2d BLUE_CASTLE = new Vector2d(15, 133);
     public static Vector2d RED_CASTLE = new Vector2d(130, 133);
 
-    public static double KICKER1_RESET = 0.48;
-    public static double KICKER1_KICK = 0.59;
-    public static double KICKER2_RESET = 0.045;
-    public static double KICKER2_KICK = 0.15;
-    public static double KICKER3_RESET = 0.44;
-    public static double KICKER3_KICK = 0.35;
+    public static double KICKER1_RESET = 0.475;
+    public static double KICKER1_KICK = 0.585;
+    public static double KICKER2_RESET = 0.024;
+    public static double KICKER2_KICK = 0.145;
+    public static double KICKER3_RESET = 0.45;
+    public static double KICKER3_KICK = 0.345;
 
-    public static double TURRET_RESET = 0.290;
-    public static double TURRET_BLUE_OBELISK = 0.21;
-    public static double TURRET_RED_OBELISK = 0.32;
+    public static double TURRET_RESET = 0.43;
+    public static double TURRET_BLUE_OBELISK = 0.43;
+    public static double TURRET_RED_OBELISK = 0.43;
 
     public static double HOOD_LOWERED = 0.2;
     public static double HOOD_MAX = 0.8;
 
     public static double MAX_TIME_SPENT_INTAKING = 5.0; //seconds
 
-    public static double MIN_SHOOTER_POWER = 0.2; //used to prevent current draw issues
+    public static double MIN_SHOOTER_POWER = 0.4; //used to prevent current draw issues
 
     public static double MAX_TRANSFER_POWER = 1;
     public static double MAX_INTAKING_POWER = 1;
     public static double MIN_INTAKING_POWER = 0.2;
 
-    public static double MAX_SHOOTER_VELOCITY = 150; //degrees, yet to be tuned
-    public static double SHOOTER_VELOCITY_TOLERANCE = 10; //degrees, yet to be tuned
+    public static double MAX_SHOOTER_VELOCITY = 1900; //degrees, yet to be tuned
+    public static double MIN_SHOOTER_VELOCITY = 500; //degrees, yet to be tuned
+    public static double SHOOTER_VELOCITY_TOLERANCE = 100; //degrees, yet to be tuned
 
     public static double KICK_WAIT_TIME = 200;
 
