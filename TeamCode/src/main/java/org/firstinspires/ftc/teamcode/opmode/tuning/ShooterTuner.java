@@ -41,15 +41,14 @@ public class ShooterTuner extends OpMode {
         controller.setI(F);
 
         controller.setSetPoint(setVelocity);
-        power = controller.calculate(robot.shooterSpinner2.getVelocity(AngleUnit.DEGREES), setVelocity);
+        power = controller.calculate(robot.shooterSpinner2.getCorrectedVelocity(), setVelocity);
 
         robot.hood.setPosition(hoodPosition);
         robot.follower.update();
 
         telemetry.addData("Limelight Distance from Blue Goal: ", robot.getGoalDistance());
         telemetry.addData("Use this distance: ", robot.getDistanceToGoalPinpoint());
-        telemetry.addData("Current Velocity: ", robot.shooterSpinner2.getVelocity(AngleUnit.DEGREES));
-        telemetry.addData("Current Power: ", robot.shooterSpinner2.getPower());
+        telemetry.addData("Current Velocity: ", robot.shooterSpinner2.getCorrectedVelocity());
         telemetry.addData("Hood Value: ", robot.hood.getPosition());
         telemetry.update();
 

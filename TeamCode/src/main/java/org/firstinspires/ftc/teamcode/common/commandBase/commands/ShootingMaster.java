@@ -1,116 +1,70 @@
 package org.firstinspires.ftc.teamcode.common.commandBase.commands;
 
-import com.seattlesolvers.solverslib.command.CommandBase;
-
-import org.firstinspires.ftc.teamcode.common.commandBase.subsystems.ShooterSubsystem;
+import com.seattlesolvers.solverslib.command.*;
 import org.firstinspires.ftc.teamcode.common.robot.Globals;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class ShootingMaster extends CommandBase {
+public class ShootingMaster extends SequentialCommandGroup {
 
-    private final List<Integer> firingOrder = new ArrayList<>();
-    private int currentIndex = 0;
-    private long waitStart = 0;
-    private boolean waiting = false;
-    private boolean finished = false;
-    ShooterSubsystem shooterSubsystem;
+    public ShootingMaster() {
+        List<Integer> firingOrder = computeFiringOrder();
 
-    public ShootingMaster(ShooterSubsystem shooterSubsystem) {this.shooterSubsystem = shooterSubsystem;}
-
-    @Override
-    public void initialize() {
-        Globals.BallColor1 c1 = Globals.ballColor1;
-        Globals.BallColor2 c2 = Globals.ballColor2;
-        Globals.BallColor3 c3 = Globals.ballColor3;
-
-        if (c1 == Globals.BallColor1.NONE &&
-                c2 == Globals.BallColor2.NONE &&
-                c3 == Globals.BallColor3.NONE) {
-            finished = true;
+        if (firingOrder.isEmpty()) {
+            addCommands(resetAll());
             return;
         }
 
-        List<Character> targetColors = getTargetColorSequence();
+        List<Command> sequence = new ArrayList<>();
 
-        // Convert slot colors to list of pairs (slotIndex, colorChar)
+        for (int slot : firingOrder) {
+            sequence.add(new InstantCommand(() -> kick(slot)));
+            sequence.add(new WaitCommand(1000));
+            sequence.add(new InstantCommand(() -> resetKicker(slot)));
+        }
+
+        sequence.add(resetAll());
+
+        addCommands(sequence.toArray(new Command[0]));
+    }
+
+    private List<Integer> computeFiringOrder() {
+
+        char c1 = toChar(Globals.ballColor1);
+        char c2 = toChar(Globals.ballColor2);
+        char c3 = toChar(Globals.ballColor3);
+
+        if (c1 == 'N' && c2 == 'N' && c3 == 'N')
+            return new ArrayList<>();
+
+        List<Character> target = getTargetColorSequence();
+
         List<SlotInfo> slots = new ArrayList<>();
-        slots.add(new SlotInfo(1, toChar(c1)));
-        slots.add(new SlotInfo(2, toChar(c2)));
-        slots.add(new SlotInfo(3, toChar(c3)));
+        slots.add(new SlotInfo(1, c1));
+        slots.add(new SlotInfo(2, c2));
+        slots.add(new SlotInfo(3, c3));
 
-        List<Integer> matchedOrder = new ArrayList<>();
+        List<Integer> order = new ArrayList<>();
 
-        for (char desired : targetColors) {
+        for (char desired : target) {
             for (SlotInfo s : slots) {
                 if (!s.used && s.color == desired) {
-                    matchedOrder.add(s.slot);
+                    order.add(s.slot);
                     s.used = true;
                     break;
                 }
             }
         }
 
-        if (matchedOrder.size() == targetColors.size()) {
-            firingOrder.addAll(matchedOrder);
-        } else {
+        if (order.size() != target.size()) {
+            order.clear();
             for (SlotInfo s : slots) {
-                if (s.color != 'N') {
-                    firingOrder.add(s.slot);
-                }
+                if (s.color != 'N') order.add(s.slot);
             }
         }
 
-        if (firingOrder.isEmpty() && shooterSubsystem.shooterIsSpunUp()) {
-            finished = true;
-            Globals.transferState = Globals.TransferState.STOPPED;
-            Globals.shooterState  = Globals.ShooterState.STOPPED;
-            Globals.kicker1State  = Globals.Kicker1State.RESET;
-            Globals.kicker2State  = Globals.Kicker2State.RESET;
-            Globals.kicker3State  = Globals.Kicker3State.RESET;
-            Globals.turretState   = Globals.TurretState.RESET;
-            Globals.hoodState     = Globals.HoodState.RESET;
-        }
-    }
-
-    @Override
-    public void execute() {
-        if (finished) return;
-
-        if (waiting) {
-            long now = System.currentTimeMillis();
-            if (now - waitStart >= Globals.KICK_WAIT_TIME) {
-                resetKicker(firingOrder.get(currentIndex));
-                waiting = false;
-                currentIndex++;
-
-                if (currentIndex >= firingOrder.size() && shooterSubsystem.shooterIsSpunUp()) {
-                    finished = true;
-                    Globals.transferState = Globals.TransferState.STOPPED;
-                    Globals.shooterState  = Globals.ShooterState.STOPPED;
-                    Globals.kicker1State  = Globals.Kicker1State.RESET;
-                    Globals.kicker2State  = Globals.Kicker2State.RESET;
-                    Globals.kicker3State  = Globals.Kicker3State.RESET;
-                    Globals.turretState   = Globals.TurretState.RESET;
-                    Globals.hoodState     = Globals.HoodState.RESET;
-                }
-            }
-            return;
-        }
-
-        if (currentIndex < firingOrder.size()) {
-            int slot = firingOrder.get(currentIndex);
-            kick(slot);
-
-            waiting = true;
-            waitStart = System.currentTimeMillis();
-        }
-    }
-
-    @Override
-    public boolean isFinished() {
-        return finished;
+        return order;
     }
 
     private char toChar(Globals.BallColor1 c) {
@@ -135,7 +89,7 @@ public class ShootingMaster extends CommandBase {
             case PPG: seq.add('P'); seq.add('P'); seq.add('G'); break;
             case PGP: seq.add('P'); seq.add('G'); seq.add('P'); break;
             case GPP: seq.add('G'); seq.add('P'); seq.add('P'); break;
-            default: break; //not found - ll doesn't see anything/obelisk
+            default: break; // vision didn't see anything
         }
 
         return seq;
@@ -155,6 +109,18 @@ public class ShootingMaster extends CommandBase {
             case 2: Globals.kicker2State = Globals.Kicker2State.RESET; break;
             case 3: Globals.kicker3State = Globals.Kicker3State.RESET; break;
         }
+    }
+
+    private InstantCommand resetAll() {
+        return new InstantCommand(() -> {
+            Globals.transferState = Globals.TransferState.STOPPED;
+            Globals.shooterState  = Globals.ShooterState.STOPPED;
+            Globals.kicker1State  = Globals.Kicker1State.RESET;
+            Globals.kicker2State  = Globals.Kicker2State.RESET;
+            Globals.kicker3State  = Globals.Kicker3State.RESET;
+            Globals.turretState   = Globals.TurretState.RESET;
+            Globals.hoodState     = Globals.HoodState.RESET;
+        });
     }
 
     private static class SlotInfo {
