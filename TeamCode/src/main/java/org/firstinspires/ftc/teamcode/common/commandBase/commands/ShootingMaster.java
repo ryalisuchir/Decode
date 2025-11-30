@@ -20,7 +20,7 @@ public class ShootingMaster extends SequentialCommandGroup {
 
         for (int slot : firingOrder) {
             sequence.add(new InstantCommand(() -> kick(slot)));
-            sequence.add(new WaitCommand(1000));
+            sequence.add(new WaitCommand(Globals.KICK_WAIT_TIME));
             sequence.add(new InstantCommand(() -> resetKicker(slot)));
         }
 
