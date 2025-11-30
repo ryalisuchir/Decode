@@ -9,21 +9,21 @@ import java.util.Vector;
 
 public class Globals {
 
-    public static Globals.OpMode opMode = OpMode.AUTO;
-    public static Globals.Side side = BLUE;
-    public static Globals.ObeliskOptions obeliskOptions = ObeliskOptions.PPG;
-    public static Globals.BallColor1 ballColor1 = BallColor1.NONE;
-    public static Globals.BallColor2 ballColor2 = BallColor2.NONE;
-    public static Globals.BallColor3 ballColor3 = BallColor3.NONE;
+    public static Globals.Side side;
+    public static Globals.ObeliskOptions obeliskOptions;
+    public static Globals.BallColor1 ballColor1;
+    public static Globals.BallColor2 ballColor2;
+    public static Globals.BallColor3 ballColor3;
 
-    public static Globals.IntakeState intakeState = IntakeState.STOPPED;
-    public static Globals.TransferState transferState = TransferState.STOPPED;
-    public static Globals.ShooterState shooterState = ShooterState.STOPPED;
-    public static Globals.Kicker1State kicker1State = Kicker1State.RESET;
-    public static Globals.Kicker2State kicker2State = Kicker2State.RESET;
-    public static Globals.Kicker3State kicker3State = Kicker3State.RESET;
-    public static Globals.TurretState turretState = TurretState.RESET;
-    public static Globals.HoodState hoodState = HoodState.RESET;
+    public static Globals.IntakeState intakeState;
+    public static Globals.TransferState transferState;
+    public static Globals.ShooterState shooterState;
+    public static Globals.Kicker1State kicker1State;
+    public static Globals.Kicker2State kicker2State;
+    public static Globals.Kicker3State kicker3State;
+    public static Globals.TurretState turretState;
+    public static Globals.HoodState hoodState;
+    public static Globals.GateState gateState;
 
     public static Pose DEFAULT_START_POSE = new Pose(8.507204610951009, 9.129682997118156, Math.toRadians(90));
     public static Pose BLUE_CLOSE_START = new Pose(34.149, 134.126, Math.toRadians(270)); //intake faces small triangle
@@ -40,6 +40,9 @@ public class Globals {
     public static double KICKER2_KICK = 0.145;
     public static double KICKER3_RESET = 0.45;
     public static double KICKER3_KICK = 0.345;
+
+    public static double GATE_OPEN = 0.5;
+    public static double GATE_CLOSED = 0.5;
 
     public static double TURRET_RESET = 0.43;
     public static double TURRET_BLUE_OBELISK = 0.43;
@@ -60,13 +63,9 @@ public class Globals {
     public static double MIN_SHOOTER_VELOCITY = 500; //degrees, yet to be tuned
     public static double SHOOTER_VELOCITY_TOLERANCE = 100; //degrees, yet to be tuned
 
-    public static double KICK_WAIT_TIME = 200;
+    public static long KICK_WAIT_TIME = 1000;
 
     //Pre-Match Configuration:
-    public enum OpMode {
-        AUTO,
-        TELEOP
-    }
     public enum Side {
         RED,
         BLUE
@@ -103,6 +102,11 @@ public class Globals {
         INTAKING,
         REVERSING,
         STOPPED
+    }
+
+    public enum GateState{
+        OPEN,
+        CLOSED
     }
 
     public enum TransferState{

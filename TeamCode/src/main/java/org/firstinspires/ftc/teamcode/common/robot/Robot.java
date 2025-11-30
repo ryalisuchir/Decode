@@ -30,6 +30,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
+import org.firstinspires.ftc.teamcode.common.commandBase.subsystems.GateSubsystem;
 import org.firstinspires.ftc.teamcode.common.commandBase.subsystems.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.common.commandBase.subsystems.KickerSubsystem;
 import org.firstinspires.ftc.teamcode.common.commandBase.subsystems.ShooterSubsystem;
@@ -48,12 +49,14 @@ public class Robot {
     public KickerSubsystem kickerSubsystem;
     public ShooterSubsystem shooterSubsystem;
     public TurretSubsystem turretSubsystem;
+    public GateSubsystem gateSubsystem;
 
     private DenoiseFilter denoise1, denoise2, denoise3;
 
     public ServoImplEx kicker1, kicker2, kicker3;
     public ServoImplEx turret1, turret2;
     public ServoImplEx hood;
+    public ServoImplEx gate;
 
     public Limelight3A ll;
 
@@ -90,15 +93,52 @@ public class Robot {
         kicker3 = hardwareMap.get(ServoImplEx.class, "kicker3");
         //Hood Servo:
         hood = hardwareMap.get(ServoImplEx.class, "hood");
+        //Intake Gate Servo:
+        gate = hardwareMap.get(ServoImplEx.class, "gate");
 
-        Globals.intakeState = Globals.IntakeState.STOPPED;
-        Globals.transferState = Globals.TransferState.STOPPED;
-        Globals.shooterState = Globals.ShooterState.STOPPED;
-        Globals.kicker1State = Globals.Kicker1State.RESET;
-        Globals.kicker2State = Globals.Kicker2State.RESET;
-        Globals.kicker3State = Globals.Kicker3State.RESET;
-        Globals.turretState = Globals.TurretState.RESET;
-        Globals.hoodState = Globals.HoodState.RESET;
+        if (autoBoolean) {
+            Globals.intakeState = Globals.IntakeState.STOPPED;
+            Globals.transferState = Globals.TransferState.STOPPED;
+            Globals.shooterState = Globals.ShooterState.STOPPED;
+            Globals.kicker1State = Globals.Kicker1State.RESET;
+            Globals.kicker2State = Globals.Kicker2State.RESET;
+            Globals.kicker3State = Globals.Kicker3State.RESET;
+            Globals.turretState = Globals.TurretState.RESET;
+            Globals.hoodState = Globals.HoodState.RESET;
+            Globals.gateState = Globals.GateState.CLOSED;
+            Globals.obeliskOptions = Globals.ObeliskOptions.NOT_FOUND;
+        } else {
+            if (Globals.intakeState == null) {
+                Globals.intakeState = Globals.IntakeState.STOPPED;
+            }
+            if (Globals.transferState == null) {
+                Globals.transferState = Globals.TransferState.STOPPED;
+            }
+            if (Globals.shooterState == null) {
+                Globals.shooterState = Globals.ShooterState.STOPPED;
+            }
+            if (Globals.kicker1State == null) {
+                Globals.kicker1State = Globals.Kicker1State.RESET;
+            }
+            if (Globals.kicker2State == null) {
+                Globals.kicker2State = Globals.Kicker2State.RESET;
+            }
+            if (Globals.kicker3State == null) {
+                Globals.kicker3State = Globals.Kicker3State.RESET;
+            }
+            if (Globals.turretState == null) {
+                Globals.turretState = Globals.TurretState.RESET;
+            }
+            if (Globals.hoodState == null) {
+                Globals.hoodState = Globals.HoodState.RESET;
+            }
+            if (Globals.obeliskOptions == null) {
+                Globals.obeliskOptions = Globals.ObeliskOptions.NOT_FOUND;
+            }
+            if (Globals.gateState == null) {
+                Globals.gateState = Globals.GateState.CLOSED;
+            }
+        }
 
         //Reversing of Motors:
         rightRear.setDirection(DcMotorEx.Direction.FORWARD);
@@ -141,8 +181,8 @@ public class Robot {
         filter = new OneDKalmanFilter(
                 0,
                 10,
-                0.1, //higher q means we trust odometry less (assumes more drift)
-                2.0 //higher r means we trust limelight less (noisy cam)
+                0.1,
+                2.0
         );
 
         denoise1 = new DenoiseFilter(5);
@@ -153,12 +193,14 @@ public class Robot {
         kickerSubsystem = new KickerSubsystem(kicker1, kicker2, kicker3);
         shooterSubsystem = new ShooterSubsystem(shooterSpinner1, shooterSpinner2, transfer, hood, follower, goalX, goalY);
         turretSubsystem = new TurretSubsystem(side, turret1, turret2, follower, goalX, goalY);
+        gateSubsystem = new GateSubsystem(gate);
 
         CommandScheduler.getInstance().registerSubsystem(
                 intakeSubsystem,
                 kickerSubsystem,
                 shooterSubsystem,
-                turretSubsystem
+                turretSubsystem,
+                gateSubsystem
         );
 
         allHubs = hardwareMap.getAll(LynxModule.class);
@@ -395,10 +437,11 @@ public class Robot {
         double hue3 = sensor3.getVoltage() / 3.3 * 360;
 
         follower.update();
-        if (intakeSubsystem != null) { robot.intakeSubsystem.syncer(); }
+        robot.intakeSubsystem.syncer();
         robot.kickerSubsystem.syncer();
-        if (shooterSubsystem != null) { robot.shooterSubsystem.syncer(); }
-        if (turretSubsystem != null) { robot.turretSubsystem.syncer(); }
+        robot.shooterSubsystem.syncer();
+        robot.turretSubsystem.syncer();
+        robot.gateSubsystem.syncer();
         readColor(hue1, denoise1);
         readColor2(hue2, denoise2);
         readColor3(hue3, denoise3);

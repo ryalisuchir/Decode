@@ -22,6 +22,7 @@ public class MasterChecker extends OpMode {
     public static double kicker3 = Globals.KICKER3_RESET;
     public static double turret = Globals.TURRET_RESET;
     public static double hood = Globals.HOOD_MAX;
+    public static double gate = Globals.GATE_OPEN;
 
     public static double transferSpeed = 0;
     public static double shooterSpeed = 0;
@@ -49,6 +50,7 @@ public class MasterChecker extends OpMode {
         robot.turret1.setPosition(turret);
         robot.turret2.setPosition(turret);
         robot.hood.setPosition(hood);
+        robot.gate.setPosition(gate);
 
         robot.leftFront.setPower(dtSpeed1);
         robot.rightFront.setPower(dtSpeed2);
@@ -62,7 +64,6 @@ public class MasterChecker extends OpMode {
 
         robot.getObeliskFiducial();
 
-        Pose llpose = robot.getLLPosition();
         Pose fpose = robot.follower.getPose();
 
         telemetry.addData("Transfer Motor Velocity:", robot.transfer.getVelocity(AngleUnit.DEGREES));
@@ -75,12 +76,9 @@ public class MasterChecker extends OpMode {
         telemetry.addData("Corrected distance to tag:", robot.getCorrectedGoalDistance());
         telemetry.addData("Pinpoint x:", fpose.getX());
         telemetry.addData("Pinpoint y:", fpose.getY());
-//        telemetry.addData("Limelight x:", llpose.getX());
-//        telemetry.addData("Limelight y:", llpose.getY());
 
         telemetry.update();
         robot.follower.update();
         robot.clearCache();
-//        robot.loop(robot);
     }
 }

@@ -31,6 +31,7 @@ public class IntakeSubsystem extends SubsystemBase {
             Globals.kicker1State = Globals.Kicker1State.RESET;
             Globals.kicker2State = Globals.Kicker2State.RESET;
             Globals.kicker3State = Globals.Kicker3State.RESET;
+            Globals.gateState = Globals.GateState.OPEN;
 
             if (isBallDetected()) {
                 Globals.shooterState = Globals.ShooterState.SHOOTING;
@@ -39,6 +40,7 @@ public class IntakeSubsystem extends SubsystemBase {
             }
             if (threeBallsDetected()) {
                 Globals.intakeState = Globals.IntakeState.STOPPED;
+                Globals.gateState = Globals.GateState.CLOSED;
             }
         } else {
             intakeMotor.setPower(0);
