@@ -16,7 +16,6 @@ import org.firstinspires.ftc.teamcode.common.robot.Robot;
 public class SubsystemTest extends CommandOpMode {
 
     Robot robot;
-    private boolean isAutomated = true;
 
     @Override
     public void initialize() {
@@ -79,4 +78,3 @@ public class SubsystemTest extends CommandOpMode {
 
     }
 }
-

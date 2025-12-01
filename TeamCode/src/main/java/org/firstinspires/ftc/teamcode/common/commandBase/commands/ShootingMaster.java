@@ -9,6 +9,7 @@ import java.util.List;
 public class ShootingMaster extends SequentialCommandGroup {
 
     public ShootingMaster() {
+
         List<Integer> firingOrder = computeFiringOrder();
 
         if (firingOrder.isEmpty()) {
@@ -29,17 +30,28 @@ public class ShootingMaster extends SequentialCommandGroup {
         addCommands(sequence.toArray(new Command[0]));
     }
 
+    // ------------------------------------------------------------------------
+    // COMPUTE FIRING ORDER
+    // ------------------------------------------------------------------------
+
     private List<Integer> computeFiringOrder() {
 
         char c1 = toChar(Globals.ballColor1);
         char c2 = toChar(Globals.ballColor2);
         char c3 = toChar(Globals.ballColor3);
 
+        // If there are no balls at all
         if (c1 == 'N' && c2 == 'N' && c3 == 'N')
             return new ArrayList<>();
 
         List<Character> target = getTargetColorSequence();
 
+        // If vision didn't detect anything → fire all available balls in order
+        if (target.isEmpty()) {
+            return simpleFallback(c1, c2, c3);
+        }
+
+        // Prepare slots
         List<SlotInfo> slots = new ArrayList<>();
         slots.add(new SlotInfo(1, c1));
         slots.add(new SlotInfo(2, c2));
@@ -47,37 +59,54 @@ public class ShootingMaster extends SequentialCommandGroup {
 
         List<Integer> order = new ArrayList<>();
 
+        // Try matching each desired color to a real slot
         for (char desired : target) {
+            boolean matched = false;
+
             for (SlotInfo s : slots) {
                 if (!s.used && s.color == desired) {
                     order.add(s.slot);
                     s.used = true;
+                    matched = true;
                     break;
                 }
             }
-        }
 
-        if (order.size() != target.size()) {
-            order.clear();
-            for (SlotInfo s : slots) {
-                if (s.color != 'N') order.add(s.slot);
+            if (!matched) {
+                // Could not match target sequence → fallback
+                return simpleFallback(c1, c2, c3);
             }
         }
 
         return order;
     }
 
+    // ------------------------------------------------------------------------
+    // HELPERS
+    // ------------------------------------------------------------------------
+
+    private List<Integer> simpleFallback(char c1, char c2, char c3) {
+        List<Integer> fallback = new ArrayList<>();
+        if (c1 != 'N') fallback.add(1);
+        if (c2 != 'N') fallback.add(2);
+        if (c3 != 'N') fallback.add(3);
+        return fallback;
+    }
+
     private char toChar(Globals.BallColor1 c) {
+        if (c == null) return 'N';
         return c == Globals.BallColor1.P ? 'P' :
                 c == Globals.BallColor1.G ? 'G' : 'N';
     }
 
     private char toChar(Globals.BallColor2 c) {
+        if (c == null) return 'N';
         return c == Globals.BallColor2.P ? 'P' :
                 c == Globals.BallColor2.G ? 'G' : 'N';
     }
 
     private char toChar(Globals.BallColor3 c) {
+        if (c == null) return 'N';
         return c == Globals.BallColor3.P ? 'P' :
                 c == Globals.BallColor3.G ? 'G' : 'N';
     }

@@ -16,13 +16,13 @@ import org.firstinspires.ftc.teamcode.common.robot.Robot;
 @Config
 public class ShooterTuner extends OpMode {
     Robot robot;
-    static double hoodPosition = Globals.HOOD_LOWERED;
+    public static double hoodPosition = Globals.HOOD_LOWERED;
 
     public static double setPoint = 0;
 
     private com.pedropathing.control.PIDFController b, s;
 
-    public static double bp = 0.007, bd = 0.0, bf = 0.0, sp = 0.005, sd = 0, sf = 0.0;
+    public static double bp = 0.0015, bd = 0.0, bf = 0.0, sp = 0.001, sd = 0, sf = 0.0;
     public static double pSwitch = 150;
 
     @Override

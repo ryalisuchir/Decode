@@ -27,7 +27,7 @@ public class Globals {
 
     public static Pose DEFAULT_START_POSE = new Pose(8.507204610951009, 9.129682997118156, Math.toRadians(90));
     public static Pose BLUE_CLOSE_START = new Pose(34.149, 134.126, Math.toRadians(270)); //intake faces small triangle
-    public static Pose BLUE_FAR_START = new Pose(57.2, 9.5, Math.toRadians(90)); //intake faces big triangle
+    public static Pose BLUE_FAR_START = new Pose(41.29106628242074, 9.129682997118156, Math.toRadians(90)); //intake faces big triangle
     public static Pose RED_CLOSE_START = new Pose(0, 0, Math.toRadians(0)); //intake faces small triangle
     public static Pose RED_FAR_START = new Pose(0, 0, Math.toRadians(0)); //intake faces big triangle
 
@@ -41,10 +41,10 @@ public class Globals {
     public static double KICKER3_RESET = 0.45;
     public static double KICKER3_KICK = 0.345;
 
-    public static double GATE_OPEN = 0.5;
-    public static double GATE_CLOSED = 0.5;
+    public static double GATE_OPEN = 0;
+    public static double GATE_CLOSED = 0.61;
 
-    public static double TURRET_RESET = 0.43;
+    public static double TURRET_RESET = 0.33;
     public static double TURRET_BLUE_OBELISK = 0.43;
     public static double TURRET_RED_OBELISK = 0.43;
 

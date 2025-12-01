@@ -15,21 +15,16 @@ import org.firstinspires.ftc.teamcode.common.robot.Robot;
 
 @TeleOp
 @Config
-public class SpinnerTuner extends OpMode {
+public class DarnSimpleTuner extends OpMode {
     Robot robot;
     public static double setPoint = 0;
 
-    private PIDFController b, s;
-
-    public static double bp = 0.0015, bd = 0.0, bf = 0.0, sp = 0.001, sd = 0, sf = 0.0;
-    public static double pSwitch = 150;
+    public static double P, F;
 
     @Override
     public void init() {
         robot = new Robot(hardwareMap, Globals.DEFAULT_START_POSE, Globals.Side.BLUE, true);
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
-        b = new PIDFController(new PIDFCoefficients(bp, 0, bd, bf));
-        s = new PIDFController(new PIDFCoefficients(sp, 0, sd, sf));
     }
 
 
@@ -42,18 +37,17 @@ public class SpinnerTuner extends OpMode {
 
     @Override
     public void loop() {
-        b.setCoefficients(new PIDFCoefficients(bp, 0, bd, bf));
-        s.setCoefficients(new PIDFCoefficients(sp, 0, sd, sf));
+        F = 0.13;
+        P = 0.004;
+        double power;
+        if (Math.abs(setPoint - robot.shooterSpinner2.get()) < 100 && setPoint !=0) {
+            P = 0.0012;
+        }
 
-            if (Math.abs(getTarget() - getVelocity()) < pSwitch) {
-                s.updateError(getTarget() - getVelocity());
-                robot.shooterSpinner1.set(s.run());
-                robot.shooterSpinner2.set(s.run());
-            } else {
-                b.updateError(getTarget() - getVelocity());
-                robot.shooterSpinner1.set(b.run());
-                robot.shooterSpinner2.set(b.run());
-            }
+        power = (setPoint-robot.shooterSpinner2.getCorrectedVelocity()) * P;
+
+       robot.shooterSpinner1.set(F + power);
+        robot.shooterSpinner2.set(F + power);
 
         robot.clearCache();
 

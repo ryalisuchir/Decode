@@ -96,6 +96,8 @@ public class Robot {
         //Intake Gate Servo:
         gate = hardwareMap.get(ServoImplEx.class, "gate");
 
+        gate.setDirection(Servo.Direction.REVERSE);
+
         if (autoBoolean) {
             Globals.intakeState = Globals.IntakeState.STOPPED;
             Globals.transferState = Globals.TransferState.STOPPED;
