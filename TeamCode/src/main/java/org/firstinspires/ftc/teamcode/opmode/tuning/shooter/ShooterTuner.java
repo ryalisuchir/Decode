@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.opmode.tuning;
+package org.firstinspires.ftc.teamcode.opmode.tuning.shooter;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
@@ -8,7 +8,6 @@ import com.pedropathing.control.PIDFController;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.common.robot.Globals;
 import org.firstinspires.ftc.teamcode.common.robot.Robot;
 
@@ -16,44 +15,34 @@ import org.firstinspires.ftc.teamcode.common.robot.Robot;
 @Config
 public class ShooterTuner extends OpMode {
     Robot robot;
-    public static double hoodPosition = Globals.HOOD_LOWERED;
+    public static double hoodPosition = Globals.HOOD_MAX;
 
-    public static double setPoint = 0;
-
-    private com.pedropathing.control.PIDFController b, s;
-
-    public static double bp = 0.0015, bd = 0.0, bf = 0.0, sp = 0.001, sd = 0, sf = 0.0;
-    public static double pSwitch = 150;
+    public  double kV = 0.00045;
+    public  double kS = 0.02;
+    public  double kP = 0.0012;
+    public static double targetVelocity = 0;
 
     @Override
     public void init() {
         robot = new Robot(hardwareMap, Globals.DEFAULT_START_POSE, Globals.Side.BLUE, true);
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
-        b = new com.pedropathing.control.PIDFController(new PIDFCoefficients(bp, 0, bd, bf));
-        s = new PIDFController(new PIDFCoefficients(sp, 0, sd, sf));
     }
 
-    public double getTarget() {
-        return setPoint;
-    }
-    public double getVelocity() {
-        return robot.shooterSpinner2.getCorrectedVelocity();
-    }
+
 
     @Override
     public void loop() {
-        b.setCoefficients(new PIDFCoefficients(bp, 0, bd, bf));
-        s.setCoefficients(new PIDFCoefficients(sp, 0, sd, sf));
+        double currentVel = robot.shooterSpinner2.getCorrectedVelocity();
 
-        if (Math.abs(getTarget() - getVelocity()) < pSwitch) {
-            s.updateError(getTarget() - getVelocity());
-            robot.shooterSpinner1.set(s.run());
-            robot.shooterSpinner2.set(s.run());
-        } else {
-            b.updateError(getTarget() - getVelocity());
-            robot.shooterSpinner1.set(b.run());
-            robot.shooterSpinner2.set(b.run());
-        }
+        double ff = feedforward(targetVelocity);
+        double fb = feedback(targetVelocity, currentVel);
+
+        double power = ff + fb;
+        power = clamp(power, 0, 1);
+
+        // Apply to both shooter motors
+        robot.shooterSpinner1.set(power);
+        robot.shooterSpinner2.set(power);
 
         robot.clearCache();
 
@@ -69,5 +58,19 @@ public class ShooterTuner extends OpMode {
 
         robot.clearCache();
         robot.follower.update();
+    }
+    private double feedforward(double targetVel) {
+        if (Math.abs(targetVel) < 1e-6) return 0;
+        double sign = Math.signum(targetVel);
+        return kS * sign + kV * targetVel;
+    }
+
+    private double feedback(double targetVel, double currentVel) {
+        double error = targetVel - currentVel;
+        return kP * error;
+    }
+
+    private double clamp(double v, double min, double max) {
+        return Math.max(min, Math.min(max, v));
     }
 }

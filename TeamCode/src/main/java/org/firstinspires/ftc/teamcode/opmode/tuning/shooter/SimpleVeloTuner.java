@@ -1,21 +1,17 @@
-package org.firstinspires.ftc.teamcode.opmode.tuning;
+package org.firstinspires.ftc.teamcode.opmode.tuning.shooter;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
-import com.pedropathing.control.PIDFCoefficients;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.pedropathing.control.PIDFController;
 
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.common.robot.Globals;
 import org.firstinspires.ftc.teamcode.common.robot.Robot;
 
 @TeleOp
 @Config
-public class DarnSimpleTuner extends OpMode {
+public class SimpleVeloTuner extends OpMode {
     Robot robot;
     public static double setPoint = 0;
 

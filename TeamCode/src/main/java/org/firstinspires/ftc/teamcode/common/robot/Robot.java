@@ -30,6 +30,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
+import org.firstinspires.ftc.teamcode.common.commandBase.subsystems.FailsafeSubsystem;
 import org.firstinspires.ftc.teamcode.common.commandBase.subsystems.GateSubsystem;
 import org.firstinspires.ftc.teamcode.common.commandBase.subsystems.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.common.commandBase.subsystems.KickerSubsystem;
@@ -50,6 +51,7 @@ public class Robot {
     public ShooterSubsystem shooterSubsystem;
     public TurretSubsystem turretSubsystem;
     public GateSubsystem gateSubsystem;
+    public FailsafeSubsystem failsafeSubsystem;
 
     private DenoiseFilter denoise1, denoise2, denoise3;
 
@@ -57,6 +59,7 @@ public class Robot {
     public ServoImplEx turret1, turret2;
     public ServoImplEx hood;
     public ServoImplEx gate;
+    public ServoImplEx failsafe;
 
     public Limelight3A ll;
 
@@ -95,11 +98,16 @@ public class Robot {
         hood = hardwareMap.get(ServoImplEx.class, "hood");
         //Intake Gate Servo:
         gate = hardwareMap.get(ServoImplEx.class, "gate");
+        failsafe = hardwareMap.get(ServoImplEx.class, "failsafe");
 
         gate.setDirection(Servo.Direction.REVERSE);
+        Globals.side = side;
+
+        if (!autoBoolean) Globals.match = Globals.Match.TELEOP;
 
         if (autoBoolean) {
             Globals.intakeState = Globals.IntakeState.STOPPED;
+            Globals.match = Globals.Match.AUTO;
             Globals.transferState = Globals.TransferState.STOPPED;
             Globals.shooterState = Globals.ShooterState.STOPPED;
             Globals.kicker1State = Globals.Kicker1State.RESET;
@@ -108,6 +116,7 @@ public class Robot {
             Globals.turretState = Globals.TurretState.RESET;
             Globals.hoodState = Globals.HoodState.RESET;
             Globals.gateState = Globals.GateState.CLOSED;
+            Globals.failsafeState = Globals.FailsafeState.RESET;
             Globals.obeliskOptions = Globals.ObeliskOptions.NOT_FOUND;
         } else {
             if (Globals.intakeState == null) {
@@ -140,6 +149,9 @@ public class Robot {
             if (Globals.gateState == null) {
                 Globals.gateState = Globals.GateState.CLOSED;
             }
+            if (Globals.failsafeState == null) {
+                Globals.failsafeState = Globals.FailsafeState.RESET;
+            }
         }
 
         //Reversing of Motors:
@@ -164,8 +176,6 @@ public class Robot {
         ll.setPollRateHz(100);
         ll.start();
         ll.pipelineSwitch(2);
-
-        Globals.side = side;
 
         if (Globals.side == Globals.Side.RED) {
             goalX = Globals.RED_CASTLE.getX();
@@ -196,13 +206,15 @@ public class Robot {
         shooterSubsystem = new ShooterSubsystem(shooterSpinner1, shooterSpinner2, transfer, hood, follower, goalX, goalY);
         turretSubsystem = new TurretSubsystem(side, turret1, turret2, follower, goalX, goalY);
         gateSubsystem = new GateSubsystem(gate);
+        failsafeSubsystem = new FailsafeSubsystem(failsafe);
 
         CommandScheduler.getInstance().registerSubsystem(
                 intakeSubsystem,
                 kickerSubsystem,
                 shooterSubsystem,
                 turretSubsystem,
-                gateSubsystem
+                gateSubsystem,
+                failsafeSubsystem
         );
 
         allHubs = hardwareMap.getAll(LynxModule.class);
@@ -341,74 +353,10 @@ public class Robot {
         Globals.obeliskOptions = Globals.ObeliskOptions.NOT_FOUND;
     }
 
-    public double getGoalDistance() {
-        LLResult result = ll.getLatestResult();
-
-        double robotYaw = follower.getHeading();
-        ll.updateRobotOrientation(robotYaw);
-
-        if (result == null || !result.isValid()) return 0;
-
-        List<LLResultTypes.FiducialResult> fiducials = result.getFiducialResults();
-        for (LLResultTypes.FiducialResult fiducial : fiducials) {
-            switch (fiducial.getFiducialId()) {
-                case 21:
-                case 22:
-                case 23:
-                    return 0;
-            }
-        }
-
-        Pose3D botpose = result.getBotpose_MT2();
-        if (botpose != null) {
-            Pose currentDetectedPose = PoseConverter.pose2DToPose(new Pose2D(DistanceUnit.METER, botpose.getPosition().x, botpose.getPosition().y, AngleUnit.RADIANS, robotYaw), InvertedFTCCoordinates.INSTANCE);
-            double dx = currentDetectedPose.getX() - goalX;
-            double dy = currentDetectedPose.getY() - goalY;
-
-            return Math.hypot(dx, dy);
-        }
-        return 0;
-    }
-
-    public double getCorrectedGoalDistance() {
-        double llDistance = getGoalDistance();
-        double dxOdo = follower.getPose().getX() - goalX;
-        double dyOdo = follower.getPose().getY() - goalY;
-        double odoDistance = Math.hypot(dxOdo, dyOdo);
-
-        filter.update(odoDistance);
-        return filter.update(llDistance);
-    }
-
     public double getDistanceToGoalPinpoint() {
         double dxOdo = follower.getPose().getX() - goalX;
         double dyOdo = follower.getPose().getY() - goalY;
         return Math.hypot(dxOdo, dyOdo);
-    }
-
-    public Pose getLLPosition() {
-        LLResult result = ll.getLatestResult();
-        double robotYaw = follower.getHeading();
-        ll.updateRobotOrientation(robotYaw);
-
-        if (result == null || !result.isValid()) return new Pose(0,0,Math.toRadians(0));
-
-        List<LLResultTypes.FiducialResult> fiducials = result.getFiducialResults();
-        for (LLResultTypes.FiducialResult fiducial : fiducials) {
-            switch (fiducial.getFiducialId()) {
-                case 21:
-                case 22:
-                case 23:
-                    return null;
-            }
-        }
-
-        Pose3D botpose = result.getBotpose_MT2();
-        if (botpose == null) {
-            return new Pose(0,0,Math.toRadians(0));
-        }
-
-        return PoseConverter.pose2DToPose(new Pose2D(DistanceUnit.INCH, botpose.getPosition().x, botpose.getPosition().y, AngleUnit.RADIANS, robotYaw), InvertedFTCCoordinates.INSTANCE);
     }
 
     private void brake(DcMotorEx... motors) {
@@ -427,10 +375,27 @@ public class Robot {
         endPose = follower.getPose();
     }
 
+    public void initLoop(Robot robot) {
+        for (LynxModule hub : allHubs) {
+            hub.clearBulkCache();
+        }
+        double hue1 = sensor1.getVoltage() / 3.3 * 360;
+        double hue2 = sensor2.getVoltage() / 3.3 * 360;
+        double hue3 = sensor3.getVoltage() / 3.3 * 360;
+        follower.update();
+        robot.kickerSubsystem.syncer();
+//        robot.turretSubsystem.syncer();
+        robot.gateSubsystem.syncer();
+        robot.failsafeSubsystem.syncer();
+        getObeliskFiducial();
+        readColor(hue1, denoise1);
+        readColor2(hue2, denoise2);
+        readColor3(hue3, denoise3);
+        CommandScheduler.getInstance().run();
+    }
+
     public void loop(Robot robot) {
         for (LynxModule hub : allHubs) {
-            if (hub.getDeviceName().equals("Servo Hub") || hub.getDeviceName().equals("pinpoint"))
-                return;
             hub.clearBulkCache();
         }
 
@@ -442,10 +407,12 @@ public class Robot {
         robot.intakeSubsystem.syncer();
         robot.kickerSubsystem.syncer();
         robot.shooterSubsystem.syncer();
-        robot.turretSubsystem.syncer();
+//        robot.turretSubsystem.syncer();
         robot.gateSubsystem.syncer();
+        robot.failsafeSubsystem.syncer();
         readColor(hue1, denoise1);
         readColor2(hue2, denoise2);
         readColor3(hue3, denoise3);
+        CommandScheduler.getInstance().run();
     }
 }

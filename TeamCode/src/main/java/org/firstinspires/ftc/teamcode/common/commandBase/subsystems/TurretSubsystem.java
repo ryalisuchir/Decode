@@ -14,10 +14,18 @@ public class TurretSubsystem extends SubsystemBase {
     private final ServoImplEx turret1, turret2;
     private final BlueTurretLUT blueTurretLUT = new BlueTurretLUT();
     private final RedTurretLUT redTurretLUT = new RedTurretLUT();
-    Robot robot;
     Follower follower;
     Globals.Side side;
     double goalX, goalY;
+
+    double lastSetPosition = -999;
+    private void setPositionOnce(double pos) {
+        if (pos != lastSetPosition) {
+            turret1.setPosition(pos);
+            turret2.setPosition(pos);
+            lastSetPosition = pos;
+        }
+    }
 
     public TurretSubsystem(Globals.Side side, ServoImplEx turret1, ServoImplEx turret2, Follower follower, double goalX, double goalY) {
         this.turret1 = turret1;
@@ -39,22 +47,52 @@ public class TurretSubsystem extends SubsystemBase {
     }
 
     public void syncer() {
-        if (Globals.turretState == Globals.TurretState.FOLLOWING) {
+        switch (Globals.turretState) {
+            case FOLLOWING: {
+                double servoPosition;
+                if (side == Globals.Side.BLUE) {
+                    servoPosition = blueTurretLUT.getServoValue(
+                            getTurretAngleToGoal(
+                                    follower.getPose().getX(),
+                                    follower.getPose().getY(),
+                                    follower.getPose().getHeading()
+                            )
+                    );
+                } else {
+                    servoPosition = redTurretLUT.getServoValue(
+                            getTurretAngleToGoal(
+                                    follower.getPose().getX(),
+                                    follower.getPose().getY(),
+                                    follower.getPose().getHeading()
+                            )
+                    );
+                }
 
-            double servoPosition;
-
-            if (side == Globals.Side.BLUE) {
-                servoPosition = blueTurretLUT.getServoValue(getTurretAngleToGoal(follower.getPose().getX(), follower.getPose().getY(), follower.getPose().getHeading()));
-            } else {
-                servoPosition = redTurretLUT.getServoValue(getTurretAngleToGoal(follower.getPose().getX(), follower.getPose().getY(), follower.getPose().getHeading()));
+                if (Math.abs(turret1.getPosition() - servoPosition) >= 0.03) {
+                    setPositionOnce(servoPosition);
+                }
+                break;
             }
 
-            turret1.setPosition(servoPosition);
-            turret2.setPosition(servoPosition);
-        } else {
-            turret1.setPosition(Globals.TURRET_RESET);
-            turret2.setPosition(Globals.TURRET_RESET);
-        }
+            case BLUE_CLOSE_OBELISK:
+                setPositionOnce(Globals.TURRET_BLUE_CLOSE_OBELISK);
+                break;
 
+            case BLUE_FAR_OBELISK:
+                setPositionOnce(Globals.TURRET_BLUE_FAR_OBELISK);
+                break;
+
+            case RED_CLOSE_OBELISK:
+                setPositionOnce(Globals.TURRET_RED_CLOSE_OBELISK);
+                break;
+
+            case RED_FAR_OBELISK:
+                setPositionOnce(Globals.TURRET_RED_FAR_OBELISK);
+                break;
+
+            default:
+                setPositionOnce(Globals.TURRET_RESET);
+                break;
+        }
     }
 }

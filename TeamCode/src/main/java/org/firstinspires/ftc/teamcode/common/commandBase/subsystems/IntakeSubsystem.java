@@ -1,13 +1,17 @@
 package org.firstinspires.ftc.teamcode.common.commandBase.subsystems;
 
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.ServoImplEx;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 import org.firstinspires.ftc.teamcode.common.robot.Globals;
 
 public class IntakeSubsystem extends SubsystemBase {
 
     public final DcMotorEx intakeMotor;
+    private double lastIntakePower = -999;
+
+    private boolean wasIntaking = false;
+    private boolean reversing = false;
+    private long reverseEndTime = 0;
 
     public IntakeSubsystem(DcMotorEx intakeMotor) {
         this.intakeMotor = intakeMotor;
@@ -25,25 +29,67 @@ public class IntakeSubsystem extends SubsystemBase {
                 Globals.ballColor3 != Globals.BallColor3.NONE;
     }
 
+    private void setIntakePowerOnce(double power) {
+        if (power != lastIntakePower) {
+            intakeMotor.setPower(power);
+            lastIntakePower = power;
+        }
+    }
+
     public void syncer() {
+
+        long now = System.currentTimeMillis();
+
+        if (Globals.intakeState == Globals.IntakeState.INTAKING && threeBallsDetected()) {
+            Globals.intakeState = Globals.IntakeState.STOPPED;
+        }
+
+        if (wasIntaking && Globals.intakeState == Globals.IntakeState.STOPPED && !reversing) {
+            reversing = true;
+            reverseEndTime = now + 1000;
+
+            Globals.gateState = Globals.GateState.CLOSED;
+        }
+
+        if (Globals.intakeState == Globals.IntakeState.INTAKING && reversing) {
+            reversing = false;
+        }
+
+
+        if (reversing) {
+            if (now < reverseEndTime) {
+                intakeMotor.setPower(-0.7);
+            } else {
+                reversing = false;
+                intakeMotor.setPower(0);
+            }
+
+            lastIntakePower = -999;
+            wasIntaking = Globals.intakeState == Globals.IntakeState.INTAKING;
+            return;
+        }
+
         if (Globals.intakeState == Globals.IntakeState.INTAKING) {
-            intakeMotor.setPower(Globals.MAX_INTAKING_POWER);
+            setIntakePowerOnce(Globals.MAX_INTAKING_POWER);
+
             Globals.kicker1State = Globals.Kicker1State.RESET;
             Globals.kicker2State = Globals.Kicker2State.RESET;
             Globals.kicker3State = Globals.Kicker3State.RESET;
             Globals.gateState = Globals.GateState.OPEN;
-
-            if (isBallDetected()) {
-                Globals.shooterState = Globals.ShooterState.SHOOTING;
-                Globals.transferState = Globals.TransferState.TRANSFERRING;
-                Globals.turretState = Globals.TurretState.FOLLOWING;
-            }
-            if (threeBallsDetected()) {
-                Globals.intakeState = Globals.IntakeState.STOPPED;
-                Globals.gateState = Globals.GateState.CLOSED;
-            }
-        } else {
-            intakeMotor.setPower(0);
+            Globals.failsafeState = Globals.FailsafeState.RESET;
         }
+
+        else {
+            setIntakePowerOnce(0);
+            Globals.gateState = Globals.GateState.CLOSED;
+        }
+
+        if (isBallDetected()) {
+            Globals.shooterState = Globals.ShooterState.SHOOTING;
+            Globals.transferState = Globals.TransferState.TRANSFERRING;
+            Globals.turretState = Globals.TurretState.FOLLOWING;
+        }
+
+        wasIntaking = Globals.intakeState == Globals.IntakeState.INTAKING;
     }
 }

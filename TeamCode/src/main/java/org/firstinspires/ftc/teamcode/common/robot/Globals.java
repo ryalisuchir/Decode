@@ -11,6 +11,7 @@ public class Globals {
 
     public static Globals.Side side;
     public static Globals.ObeliskOptions obeliskOptions;
+    public static Globals.Match match;
     public static Globals.BallColor1 ballColor1;
     public static Globals.BallColor2 ballColor2;
     public static Globals.BallColor3 ballColor3;
@@ -24,15 +25,16 @@ public class Globals {
     public static Globals.TurretState turretState;
     public static Globals.HoodState hoodState;
     public static Globals.GateState gateState;
+    public static Globals.FailsafeState failsafeState;
 
     public static Pose DEFAULT_START_POSE = new Pose(8.507204610951009, 9.129682997118156, Math.toRadians(90));
     public static Pose BLUE_CLOSE_START = new Pose(34.149, 134.126, Math.toRadians(270)); //intake faces small triangle
-    public static Pose BLUE_FAR_START = new Pose(41.29106628242074, 9.129682997118156, Math.toRadians(90)); //intake faces big triangle
+    public static Pose BLUE_FAR_START = new Pose(56.43804034582132, 7.6772334293948195, Math.toRadians(90)); //intake faces big triangle
     public static Pose RED_CLOSE_START = new Pose(0, 0, Math.toRadians(0)); //intake faces small triangle
-    public static Pose RED_FAR_START = new Pose(0, 0, Math.toRadians(0)); //intake faces big triangle
+    public static Pose RED_FAR_START = BLUE_FAR_START.mirror();
 
-    public static Vector2d BLUE_CASTLE = new Vector2d(15, 133);
-    public static Vector2d RED_CASTLE = new Vector2d(130, 133);
+    public static Vector2d BLUE_CASTLE = new Vector2d(0, 144);
+    public static Vector2d RED_CASTLE = new Vector2d(144, 144);
 
     public static double KICKER1_RESET = 0.475;
     public static double KICKER1_KICK = 0.585;
@@ -44,31 +46,39 @@ public class Globals {
     public static double GATE_OPEN = 0;
     public static double GATE_CLOSED = 0.61;
 
+    public static double FAILSAFE_RESET = 0.24;
+    public static double FAILSAFE_KICK = 0.8;
+
     public static double TURRET_RESET = 0.33;
-    public static double TURRET_BLUE_OBELISK = 0.43;
-    public static double TURRET_RED_OBELISK = 0.43;
+    public static double TURRET_BLUE_CLOSE_OBELISK = 0.43;
+    public static double TURRET_BLUE_FAR_OBELISK = 0.43;
+    public static double TURRET_RED_CLOSE_OBELISK = 0.43;
+    public static double TURRET_RED_FAR_OBELISK = 0.43;
 
     public static double HOOD_LOWERED = 0.2;
     public static double HOOD_MAX = 0.8;
 
-    public static double MAX_TIME_SPENT_INTAKING = 5.0; //seconds
+    public static double MAX_TIME_SPENT_INTAKING = 7000;
 
     public static double MIN_SHOOTER_POWER = 0.4; //used to prevent current draw issues
 
     public static double MAX_TRANSFER_POWER = 1;
     public static double MAX_INTAKING_POWER = 1;
-    public static double MIN_INTAKING_POWER = 0.2;
 
-    public static double MAX_SHOOTER_VELOCITY = 1900; //degrees, yet to be tuned
-    public static double MIN_SHOOTER_VELOCITY = 500; //degrees, yet to be tuned
-    public static double SHOOTER_VELOCITY_TOLERANCE = 100; //degrees, yet to be tuned
+    public static double SHOOTER_VELOCITY_TOLERANCE = 80; //degrees, yet to be tuned
 
-    public static long KICK_WAIT_TIME = 1000;
+    public static long KICK_WAIT_TIME = 750;
+    public static long KICK_FAILSAFE = 600;
 
     //Pre-Match Configuration:
     public enum Side {
         RED,
         BLUE
+    }
+
+    public enum Match {
+        AUTO,
+        TELEOP
     }
 
     //Match Configuration:
@@ -109,6 +119,11 @@ public class Globals {
         CLOSED
     }
 
+    public enum FailsafeState{
+        RESET,
+        KICK
+    }
+
     public enum TransferState{
         TRANSFERRING,
         STOPPED
@@ -136,7 +151,11 @@ public class Globals {
 
     public enum TurretState {
         FOLLOWING,
-        RESET
+        RESET,
+        BLUE_CLOSE_OBELISK,
+        BLUE_FAR_OBELISK,
+        RED_CLOSE_OBELISK,
+        RED_FAR_OBELISK
     }
 
     public enum HoodState {

@@ -9,7 +9,6 @@ import org.firstinspires.ftc.teamcode.common.robot.Globals;
 import org.firstinspires.ftc.teamcode.common.robot.utility.DenoiseFilter;
 
 @TeleOp
-@Disabled
 public class ColorDetectionTest extends OpMode {
     AnalogInput sensor1, sensor2, sensor3;
     private DenoiseFilter denoise1, denoise2, denoise3;
