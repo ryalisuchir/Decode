@@ -47,52 +47,58 @@ public class TurretSubsystem extends SubsystemBase {
     }
 
     public void syncer() {
-        switch (Globals.turretState) {
-            case FOLLOWING: {
-                double servoPosition;
-                if (side == Globals.Side.BLUE) {
-                    servoPosition = blueTurretLUT.getServoValue(
-                            getTurretAngleToGoal(
-                                    follower.getPose().getX(),
-                                    follower.getPose().getY(),
-                                    follower.getPose().getHeading()
-                            )
-                    );
-                } else {
-                    servoPosition = redTurretLUT.getServoValue(
-                            getTurretAngleToGoal(
-                                    follower.getPose().getX(),
-                                    follower.getPose().getY(),
-                                    follower.getPose().getHeading()
-                            )
-                    );
-                }
-
-                if (Math.abs(turret1.getPosition() - servoPosition) >= 0.03) {
-                    setPositionOnce(servoPosition);
-                }
-                break;
-            }
-
-            case BLUE_CLOSE_OBELISK:
-                setPositionOnce(Globals.TURRET_BLUE_CLOSE_OBELISK);
-                break;
-
-            case BLUE_FAR_OBELISK:
-                setPositionOnce(Globals.TURRET_BLUE_FAR_OBELISK);
-                break;
-
-            case RED_CLOSE_OBELISK:
-                setPositionOnce(Globals.TURRET_RED_CLOSE_OBELISK);
-                break;
-
-            case RED_FAR_OBELISK:
-                setPositionOnce(Globals.TURRET_RED_FAR_OBELISK);
-                break;
-
-            default:
-                setPositionOnce(Globals.TURRET_RESET);
-                break;
-        }
+        turret1.setPosition(Globals.TURRET_RESET);
+        turret2.setPosition(Globals.TURRET_RESET);
+//        switch (Globals.turretState) {
+//            case FOLLOWING: {
+//                double servoPosition;
+//                if (side == Globals.Side.BLUE) {
+//                    servoPosition = blueTurretLUT.getServoValue(
+//                            getTurretAngleToGoal(
+//                                    follower.getPose().getX(),
+//                                    follower.getPose().getY(),
+//                                    follower.getPose().getHeading()
+//                            )
+//                    );
+//                } else {
+//                    servoPosition = redTurretLUT.getServoValue(
+//                            getTurretAngleToGoal(
+//                                    follower.getPose().getX(),
+//                                    follower.getPose().getY(),
+//                                    follower.getPose().getHeading()
+//                            )
+//                    );
+//                }
+//
+//                if (Math.abs(turret1.getPosition() - servoPosition) >= 0.03) {
+//
+//                    if (servoPosition < Globals.MIN_TURRET) servoPosition = Globals.MIN_TURRET;
+//                    if (servoPosition < Globals.MAX_TURRET) servoPosition = Globals.MAX_TURRET;
+//
+//                    setPositionOnce(servoPosition);
+//                }
+//                break;
+//            }
+//
+//            case BLUE_CLOSE_OBELISK:
+//                setPositionOnce(Globals.TURRET_BLUE_CLOSE_OBELISK);
+//                break;
+//
+//            case BLUE_FAR_OBELISK:
+//                setPositionOnce(Globals.TURRET_BLUE_FAR_OBELISK);
+//                break;
+//
+//            case RED_CLOSE_OBELISK:
+//                setPositionOnce(Globals.TURRET_RED_CLOSE_OBELISK);
+//                break;
+//
+//            case RED_FAR_OBELISK:
+//                setPositionOnce(Globals.TURRET_RED_FAR_OBELISK);
+//                break;
+//
+//            default:
+//                setPositionOnce(Globals.TURRET_RESET);
+//                break;
+//        }
     }
 }

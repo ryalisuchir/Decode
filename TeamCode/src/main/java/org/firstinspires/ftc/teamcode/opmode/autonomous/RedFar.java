@@ -21,62 +21,66 @@ import org.firstinspires.ftc.teamcode.common.commandBase.subsystems.ShooterSubsy
 import org.firstinspires.ftc.teamcode.common.robot.Globals;
 import org.firstinspires.ftc.teamcode.common.robot.Robot;
 import org.firstinspires.ftc.teamcode.opmode.autonomous.paths.FarPather;
+import org.firstinspires.ftc.teamcode.opmode.autonomous.paths.RedFarPather;
 
 @Autonomous
 @Config
-public class BlueFar extends OpMode {
+public class RedFar extends OpMode {
     Robot robot;
-    FarPather p;
+    RedFarPather p;
     boolean running;
 
     @Override
     public void init() {
         running = true;
         CommandScheduler.getInstance().reset();
-        robot = new Robot(hardwareMap, Globals.BLUE_FAR_START, Globals.Side.BLUE, true);
-        p = new FarPather(robot);
+        robot = new Robot(hardwareMap, Globals.RED_FAR_START, Globals.Side.RED, true);
+        p = new RedFarPather(robot);
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
     }
 
     public void init_loop() {
         telemetry.addLine("Created all subsystems.");
-        telemetry.addData("Initialized:", "Blue Far");
+        telemetry.addData("Initialized:", "Red Far");
         telemetry.addData("Obelisk Reading:", Globals.obeliskOptions);
         robot.initLoop(robot);
-        Globals.turretState = Globals.TurretState.BLUE_FAR_OBELISK;
+        Globals.turretState = Globals.TurretState.RED_FAR_OBELISK;
         telemetry.update();
     }
 
     public void start() {
         CommandScheduler.getInstance().schedule(
-          new SequentialCommandGroup(
-                  new ParallelCommandGroup(
-                          new InstantCommand(() -> Globals.transferState = Globals.TransferState.TRANSFERRING),
-                          new InstantCommand(() -> Globals.shooterState = Globals.ShooterState.SHOOTING),
-                          new FollowPath(robot, p.next()) //shoot0
-                  ),
-                  new DeferredCommand(() -> new WaitUntilCommand(() -> robot.shooterSubsystem.reached)),
-                  new WaitCommand(400),
-                  new ShootingMaster(),
-                  new ParallelCommandGroup( //go to 1
-                          new StartIntake(),
-                          new SequentialCommandGroup(
-                                  new FollowPath(robot, p.next()), //pretake1
-                                  new FollowPath(robot, p.next(), 0.4) //intake1
-                          )
-                          ),
-                  new FollowPath(robot, p.next()), //shoot1
-                  new WaitCommand(400),
-                  new ShootingMaster(),
-                  new ParallelCommandGroup( //go to 2
-                          new FollowPath(robot, p.next()), //intake2
-                          new StartIntake()
-                  ),
-                  new FollowPath(robot, p.next()), //shoot2
-                  new WaitCommand(400),
-                  new ShootingMaster(),
-                  new FollowPath(robot, p.next()) //park
-          )
+                new SequentialCommandGroup(
+                        new ParallelCommandGroup(
+                                new InstantCommand(() -> Globals.transferState = Globals.TransferState.TRANSFERRING),
+                                new InstantCommand(() -> Globals.shooterState = Globals.ShooterState.SHOOTING),
+                                new FollowPath(robot, p.next()) //shoot0
+                        ),
+                        new DeferredCommand(() -> new WaitUntilCommand(() -> robot.shooterSubsystem.reached)),
+                        new WaitCommand(400),
+                        new ShootingMaster(),
+                        new ParallelCommandGroup( //go to 1
+                                new StartIntake(),
+                                new SequentialCommandGroup(
+                                        new FollowPath(robot, p.next()), //pretake1
+                                        new FollowPath(robot, p.next(), 0.7) //intake1
+                                )
+                        ),
+                        new FollowPath(robot, p.next()), //shoot1
+                        new WaitCommand(400),
+                        new ShootingMaster(),
+                        new ParallelCommandGroup( //go to 2
+                                new SequentialCommandGroup(
+                                        new FollowPath(robot, p.next()), //pretake2
+                                        new FollowPath(robot, p.next(), 0.7) //intake2
+                                ),
+                                new StartIntake()
+                        ),
+                        new FollowPath(robot, p.next()), //shoot2
+                        new WaitCommand(400),
+                        new ShootingMaster(),
+                        new FollowPath(robot, p.next()) //park
+                )
         );
     }
 

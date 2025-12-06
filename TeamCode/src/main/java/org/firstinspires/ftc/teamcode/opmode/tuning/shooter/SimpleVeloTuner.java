@@ -9,7 +9,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.common.robot.Globals;
 import org.firstinspires.ftc.teamcode.common.robot.Robot;
 
-@TeleOp
+//@TeleOp
 @Config
 public class SimpleVeloTuner extends OpMode {
     Robot robot;

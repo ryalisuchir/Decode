@@ -20,7 +20,6 @@ public class ShootingMaster extends SequentialCommandGroup {
         sequence.add(new InstantCommand(() -> Globals.gateState = Globals.GateState.CLOSED));
         sequence.add(new InstantCommand(() -> Globals.transferState = Globals.TransferState.TRANSFERRING));
 
-        // Kick each ball with optional wait
         for (int i = 0; i < firingOrder.size(); i++) {
             int slot = firingOrder.get(i);
             boolean isLast = (i == firingOrder.size() - 1);
@@ -40,8 +39,11 @@ public class ShootingMaster extends SequentialCommandGroup {
         if (skipWait) {
             return new InstantCommand(() -> kick(slot));
         } else {
-            // Kick for KICK_WAIT_TIME then reset
-            return new RunCommand(() -> kick(slot)).withTimeout(Globals.KICK_WAIT_TIME);
+            return new SequentialCommandGroup(
+                    new InstantCommand(() -> kick(slot)),
+                    new WaitCommand(Globals.KICK_WAIT_TIME),
+                    new InstantCommand(() -> reset(slot))
+            );
         }
     }
 
@@ -70,7 +72,6 @@ public class ShootingMaster extends SequentialCommandGroup {
             }
         }
 
-        // Add remaining detected balls
         for (SlotInfo s : slots) {
             if (!s.used && s.color != 'N') {
                 order.add(s.slot);
@@ -114,7 +115,7 @@ public class ShootingMaster extends SequentialCommandGroup {
         }
     }
 
-    private void resetKicker(int slot) {
+    private void reset(int slot) {
         switch (slot) {
             case 1: Globals.kicker1State = Globals.Kicker1State.RESET; break;
             case 2: Globals.kicker2State = Globals.Kicker2State.RESET; break;

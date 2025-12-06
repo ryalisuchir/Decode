@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.common.commandBase.subsystems;
 
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 import org.firstinspires.ftc.teamcode.common.robot.Globals;
@@ -7,14 +8,16 @@ import org.firstinspires.ftc.teamcode.common.robot.Globals;
 public class IntakeSubsystem extends SubsystemBase {
 
     public final DcMotorEx intakeMotor;
+    public final DcMotorEx transferMotor;
     private double lastIntakePower = -999;
 
     private boolean wasIntaking = false;
     private boolean reversing = false;
     private long reverseEndTime = 0;
 
-    public IntakeSubsystem(DcMotorEx intakeMotor) {
+    public IntakeSubsystem(DcMotorEx intakeMotor, DcMotorEx transferMotor) {
         this.intakeMotor = intakeMotor;
+        this.transferMotor = transferMotor;
     }
 
     public boolean isBallDetected() {
@@ -86,8 +89,7 @@ public class IntakeSubsystem extends SubsystemBase {
 
         if (isBallDetected()) {
             Globals.shooterState = Globals.ShooterState.SHOOTING;
-            Globals.transferState = Globals.TransferState.TRANSFERRING;
-            Globals.turretState = Globals.TurretState.FOLLOWING;
+            transferMotor.setPower(1);
         }
 
         wasIntaking = Globals.intakeState == Globals.IntakeState.INTAKING;

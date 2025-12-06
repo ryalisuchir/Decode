@@ -11,12 +11,12 @@ import org.firstinspires.ftc.teamcode.common.robot.Robot;
 
 public class FarPather {
     private final Follower f;
+    public PathChain shoot0;
+    public PathChain pretake1;
     public PathChain intake1;
     public PathChain shoot1;
     public PathChain intake2;
     public PathChain shoot2;
-    public PathChain intake3;
-    public PathChain shoot3;
     public PathChain park;
 
     private int index;
@@ -24,136 +24,125 @@ public class FarPather {
     public FarPather(Robot r) {
         this.f = r.follower;
         if (Globals.side.equals(Globals.Side.BLUE)) {
+            shoot0 = f
+                    .pathBuilder()
+                    .addPath(
+                            new BezierLine(new Pose(54.986, 8.092), new Pose(55, 87))
+                    )
+                    .setLinearHeadingInterpolation(Math.toRadians(90), Math.toRadians(128))
+                    .build();
+
+            pretake1 = f
+                    .pathBuilder()
+                    .addPath(
+                            new BezierLine(new Pose(55.000, 87.000), new Pose(40.876, 94))
+                    )
+                    .setLinearHeadingInterpolation(Math.toRadians(128), Math.toRadians(180))
+                    .build();
+
             intake1 = f
                     .pathBuilder()
                     .addPath(
-                            new BezierCurve(
-                                    new Pose(55.816, 8.507),
-                                    new Pose(65.153, 40.254),
-                                    new Pose(19.919, 42)
-                            )
-                    )
-                    .setLinearHeadingInterpolation(Math.toRadians(90), Math.toRadians(180))
-                    .build();
-
-            shoot1 = f
-                    .pathBuilder()
-                    .addPath(
-                            new BezierLine(new Pose(19.919, 42), new Pose(50, 28))
-                    )
-                    .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(135))
-                    .build();
-
-            intake2 = f
-                    .pathBuilder()
-                    .addPath(
-                            new BezierCurve(
-                                    new Pose(50, 28),
-                                    new Pose(64.323, 67.643),
-                                    new Pose(17, 65)
-                            )
-                    )
-                    .setLinearHeadingInterpolation(Math.toRadians(135), Math.toRadians(180))
-                    .build();
-
-            shoot2 = f
-                    .pathBuilder()
-                    .addPath(
-                            new BezierLine(new Pose(17, 65), new Pose(40, 89.637))
-                    )
-                    .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(225))
-                    .build();
-
-            intake3 = f
-                    .pathBuilder()
-                    .addPath(
-                            new BezierLine(new Pose(40, 89.637), new Pose(18, 95))
-                    )
-                    .setLinearHeadingInterpolation(Math.toRadians(225), Math.toRadians(180))
-                    .build();
-
-            shoot3 = f
-                    .pathBuilder()
-                    .addPath(
-                            new BezierLine(new Pose(18, 95), new Pose(40, 90.052))
+                            new BezierLine(new Pose(40.876, 94), new Pose(14, 86.939))
                     )
                     .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
                     .build();
 
-            park = f
-                    .pathBuilder()
-                    .addPath(
-                            new BezierLine(new Pose(40, 90.052), new Pose(12, 70.133))
-                    )
-                    .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(270))
-                    .build();
-        }
-
-        if (Globals.side == Globals.Side.RED) {
-            intake1 = f
-                    .pathBuilder()
-                    .addPath(
-                            new BezierCurve(
-                                    new Pose(88.392, 8.922),
-                                    new Pose(84.450, 45.856),
-                                    new Pose(130.098, 38.594)
-                            )
-                    )
-                    .setLinearHeadingInterpolation(Math.toRadians(90), Math.toRadians(360))
-                    .build();
-
             shoot1 = f
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(130.098, 38.594), new Pose(85.280, 12.450))
+                            new BezierLine(new Pose(14, 94.617), new Pose(55.401, 87.147))
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(360), Math.toRadians(45))
-                    .setReversed()
+                    .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(128))
                     .build();
 
             intake2 = f
                     .pathBuilder()
                     .addPath(
                             new BezierCurve(
-                                    new Pose(85.280, 12.450),
-                                    new Pose(85.902, 71.378),
-                                    new Pose(129.683, 62.455)
+                                    new Pose(55.401, 87.147),
+                                    new Pose(87.354, 61.418),
+                                    new Pose(7.055, 65.775)
                             )
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(45), Math.toRadians(360))
+                    .setLinearHeadingInterpolation(Math.toRadians(128), Math.toRadians(180))
                     .build();
 
             shoot2 = f
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(129.683, 62.455), new Pose(87.147, 85.902))
+                            new BezierLine(new Pose(7.055, 65.775), new Pose(55, 87))
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(360), Math.toRadians(315))
-                    .build();
-
-            intake3 = f
-                    .pathBuilder()
-                    .addPath(
-                            new BezierLine(new Pose(87.147, 85.902), new Pose(128.646, 86.939))
-                    )
-                    .setLinearHeadingInterpolation(Math.toRadians(315), Math.toRadians(360))
-                    .build();
-
-            shoot3 = f
-                    .pathBuilder()
-                    .addPath(
-                            new BezierLine(new Pose(128.646, 86.939), new Pose(86.939, 86.110))
-                    )
-                    .setLinearHeadingInterpolation(Math.toRadians(360), Math.toRadians(360))
-                    .setReversed()
+                    .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(128))
                     .build();
 
             park = f
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(new Pose(86.939, 86.110), new Pose(123.251, 69.303))
+                            new BezierLine(new Pose(46.893, 89.429), new Pose(6, 68.888))
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(360), Math.toRadians(270))
+                    .setLinearHeadingInterpolation(Math.toRadians(128), Math.toRadians(270))
+                    .build();
+        }
+        if (Globals.side.equals(Globals.Side.RED)) {
+            shoot0 = f
+                    .pathBuilder()
+                    .addPath(
+                            new BezierLine(new Pose(88.807, 8.092), new Pose(81.545, 74.282))
+                    )
+                    .setLinearHeadingInterpolation(Math.toRadians(90), Math.toRadians(42))
+                    .build();
+
+            pretake1 = f
+                    .pathBuilder()
+                    .addPath(
+                            new BezierLine(new Pose(81.545, 74.282), new Pose(94.409, 75.112))
+                    )
+                    .setLinearHeadingInterpolation(Math.toRadians(42), Math.toRadians(360))
+                    .build();
+
+            intake1 = f
+                    .pathBuilder()
+                    .addPath(
+                            new BezierLine(new Pose(94.409, 75.112), new Pose(109, 75.527))
+                    )
+                    .setLinearHeadingInterpolation(Math.toRadians(360), Math.toRadians(360))
+                    .build();
+
+            shoot1 = f
+                    .pathBuilder()
+                    .addPath(
+                            new BezierLine(new Pose(109, 75.527), new Pose(81.752, 74.075))
+                    )
+                    .setLinearHeadingInterpolation(Math.toRadians(360), Math.toRadians(42))
+                    .build();
+
+            intake2 = f
+                    .pathBuilder()
+                    .addPath(
+                            new BezierCurve(
+                                    new Pose(81.752, 74.075),
+                                    new Pose(60.795, 42.536),
+                                    new Pose(110, 44.196)
+                            )
+                    )
+                    .setLinearHeadingInterpolation(Math.toRadians(42), Math.toRadians(360))
+                    .build();
+
+            shoot2 = f
+                    .pathBuilder()
+                    .addPath(
+                            new BezierLine(new Pose(110, 44.196), new Pose(81.752, 74.282))
+                    )
+                    .setLinearHeadingInterpolation(Math.toRadians(360), Math.toRadians(42))
+                    .build();
+
+            park = f
+                    .pathBuilder()
+                    .addPath(
+                            new BezierLine(new Pose(81.752, 74.282), new Pose(135.285, 66.813))
+                    )
+                    .setLinearHeadingInterpolation(Math.toRadians(42), Math.toRadians(270))
                     .build();
         }
         index = 0;
@@ -161,12 +150,12 @@ public class FarPather {
 
     public PathChain next() {
         switch (index++) {
-            case 0: return intake1;
-            case 1: return shoot1;
-            case 2: return intake2;
-            case 3: return shoot2;
-            case 4: return intake3;
-            case 5: return shoot3;
+            case 0: return shoot0;
+            case 1: return pretake1;
+            case 2: return intake1;
+            case 3: return shoot1;
+            case 4: return intake2;
+            case 5: return shoot2;
             case 6: return park;
             default: return null;
         }

@@ -64,6 +64,7 @@ public class ShooterSubsystem extends SubsystemBase {
     public void syncer() {
         reached = shooterIsSpunUp();
         if (Globals.shooterState == Globals.ShooterState.SHOOTING) {
+            setTransferPowerOnce(Globals.MAX_TRANSFER_POWER);
             double dxOdo = follower.getPose().getX() - goalX;
             double dyOdo = follower.getPose().getY() - goalY;
 

@@ -34,14 +34,14 @@ public class Globals {
     public static Pose RED_FAR_START = BLUE_FAR_START.mirror();
 
     public static Vector2d BLUE_CASTLE = new Vector2d(0, 144);
-    public static Vector2d RED_CASTLE = new Vector2d(144, 144);
+    public static Vector2d RED_CASTLE = new Vector2d(137, 137);
 
-    public static double KICKER1_RESET = 0.475;
+    public static double KICKER1_RESET = 0.485;
     public static double KICKER1_KICK = 0.585;
-    public static double KICKER2_RESET = 0.024;
-    public static double KICKER2_KICK = 0.145;
+    public static double KICKER2_RESET = 0.029;
+    public static double KICKER2_KICK = 0.125;
     public static double KICKER3_RESET = 0.45;
-    public static double KICKER3_KICK = 0.345;
+    public static double KICKER3_KICK = 0.33;
 
     public static double GATE_OPEN = 0;
     public static double GATE_CLOSED = 0.61;
@@ -49,16 +49,16 @@ public class Globals {
     public static double FAILSAFE_RESET = 0.24;
     public static double FAILSAFE_KICK = 0.8;
 
-    public static double TURRET_RESET = 0.33;
-    public static double TURRET_BLUE_CLOSE_OBELISK = 0.43;
-    public static double TURRET_BLUE_FAR_OBELISK = 0.43;
-    public static double TURRET_RED_CLOSE_OBELISK = 0.43;
-    public static double TURRET_RED_FAR_OBELISK = 0.43;
+    public static double TURRET_RESET = 0.31;
+
+    public static double MIN_TURRET = 0.31;
+    public static double MAX_TURRET = 0.31;
 
     public static double HOOD_LOWERED = 0.2;
-    public static double HOOD_MAX = 0.8;
+    public static double HOOD_MAX = 0.86;
 
-    public static double MAX_TIME_SPENT_INTAKING = 7000;
+    public static double MAX_TIME_SPENT_INTAKING = 5000;
+
 
     public static double MIN_SHOOTER_POWER = 0.4; //used to prevent current draw issues
 
@@ -67,8 +67,8 @@ public class Globals {
 
     public static double SHOOTER_VELOCITY_TOLERANCE = 80; //degrees, yet to be tuned
 
-    public static long KICK_WAIT_TIME = 750;
-    public static long KICK_FAILSAFE = 600;
+    public static long KICK_WAIT_TIME = 1000;
+    public static long KICK_FAILSAFE = 700;
 
     //Pre-Match Configuration:
     public enum Side {

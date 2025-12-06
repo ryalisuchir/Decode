@@ -11,7 +11,7 @@ import com.pedropathing.control.PIDFController;
 import org.firstinspires.ftc.teamcode.common.robot.Globals;
 import org.firstinspires.ftc.teamcode.common.robot.Robot;
 
-@TeleOp
+//@TeleOp
 @Config
 public class SpinnerTuner extends OpMode {
     Robot robot;

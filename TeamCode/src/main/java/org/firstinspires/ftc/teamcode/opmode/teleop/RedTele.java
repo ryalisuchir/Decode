@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.opmode.testing;
+package org.firstinspires.ftc.teamcode.opmode.teleop;
 
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
@@ -12,7 +12,7 @@ import org.firstinspires.ftc.teamcode.common.robot.Globals;
 import org.firstinspires.ftc.teamcode.common.robot.Robot;
 
 @TeleOp
-public class SubsystemTest extends CommandOpMode {
+public class RedTele extends CommandOpMode {
 
     Robot robot;
 
@@ -24,20 +24,7 @@ public class SubsystemTest extends CommandOpMode {
 
     @Override
     public void initialize() {
-        robot = new Robot(hardwareMap, Globals.BLUE_FAR_START, Globals.Side.BLUE, false);
-
-        Globals.intakeState = Globals.IntakeState.STOPPED;
-        Globals.match = Globals.Match.AUTO;
-        Globals.transferState = Globals.TransferState.STOPPED;
-        Globals.shooterState = Globals.ShooterState.STOPPED;
-        Globals.kicker1State = Globals.Kicker1State.RESET;
-        Globals.kicker2State = Globals.Kicker2State.RESET;
-        Globals.kicker3State = Globals.Kicker3State.RESET;
-        Globals.turretState = Globals.TurretState.RESET;
-        Globals.hoodState = Globals.HoodState.RESET;
-        Globals.gateState = Globals.GateState.CLOSED;
-        Globals.failsafeState = Globals.FailsafeState.RESET;
-        Globals.obeliskOptions = Globals.ObeliskOptions.NOT_FOUND;
+        robot = new Robot(hardwareMap, Globals.RED_FAR_START, Globals.Side.RED, false);
 
         robot.initLoop(robot);
         robot.follower.startTeleopDrive();
@@ -45,7 +32,7 @@ public class SubsystemTest extends CommandOpMode {
 
     @Override
     public void run() {
-    telemetry.addData("Starting pose:", robot.follower.getPose());
+        telemetry.addData("Starting pose:", robot.follower.getPose());
 
         robot.follower.setTeleOpDrive(
                 -0.5 * Math.tan(1.12 * gamepad1.left_stick_y),

@@ -9,7 +9,6 @@ public class ShootGreen extends SequentialCommandGroup {
 
         Integer greenSlot = findFirstGreenSlot();
 
-        // ✅ NO GREEN → EXIT IMMEDIATELY (KEEP SHOOTER IF BALLS EXIST)
         if (greenSlot == null) {
             if (anyBallDetected()) {
                 addCommands(
@@ -23,26 +22,20 @@ public class ShootGreen extends SequentialCommandGroup {
             return;
         }
 
-        // ✅ NORMAL GREEN SINGLE SHOT SEQUENCE
         addCommands(
                 new InstantCommand(() -> Globals.gateState = Globals.GateState.CLOSED),
                 new InstantCommand(() -> Globals.transferState = Globals.TransferState.TRANSFERRING),
 
-                // Kick ONLY the selected green slot
                 new RunCommand(() -> kick(greenSlot)).withTimeout(Globals.KICK_WAIT_TIME),
 
-                // Failsafe pulse
                 new WaitCommand(Globals.KICK_FAILSAFE),
                 new InstantCommand(() -> Globals.failsafeState = Globals.FailsafeState.KICK),
                 new WaitCommand(Globals.KICK_WAIT_TIME),
 
-                // ✅ POST-SHOT DECISION LOGIC
                 new InstantCommand(() -> {
                     if (!anyBallDetected()) {
-                        // ✅ NO BALLS LEFT → FULL RESET
                         resetAllLogic();
                     } else {
-                        // ✅ BALLS STILL PRESENT → KEEP RUNNING
                         Globals.shooterState  = Globals.ShooterState.SHOOTING;
                         Globals.transferState = Globals.TransferState.TRANSFERRING;
                         Globals.turretState   = Globals.TurretState.FOLLOWING;
@@ -51,9 +44,7 @@ public class ShootGreen extends SequentialCommandGroup {
         );
     }
 
-    // ============================================
-    // ✅ DETECT FIRST GREEN SLOT ONLY
-    // ============================================
+
     private Integer findFirstGreenSlot() {
         if (Globals.ballColor1 == Globals.BallColor1.G) return 1;
         if (Globals.ballColor2 == Globals.BallColor2.G) return 2;

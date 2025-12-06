@@ -11,7 +11,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.common.robot.Globals;
 import org.firstinspires.ftc.teamcode.common.robot.Robot;
 
-@TeleOp
+//@TeleOp
 @Config
 public class ShooterTuner extends OpMode {
     Robot robot;
@@ -24,7 +24,7 @@ public class ShooterTuner extends OpMode {
 
     @Override
     public void init() {
-        robot = new Robot(hardwareMap, Globals.DEFAULT_START_POSE, Globals.Side.BLUE, true);
+        robot = new Robot(hardwareMap, Globals.BLUE_FAR_START, Globals.Side.BLUE, true);
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
     }
 
@@ -43,6 +43,7 @@ public class ShooterTuner extends OpMode {
         // Apply to both shooter motors
         robot.shooterSpinner1.set(power);
         robot.shooterSpinner2.set(power);
+        robot.transfer.setPower(1);
 
         robot.clearCache();
 

@@ -161,7 +161,16 @@ public class Robot {
         leftRear.setDirection(DcMotorEx.Direction.REVERSE);
 
         follower = Constants.createFollower(hardwareMap);
-        follower.setStartingPose(initialPose);
+
+        if (autoBoolean) {
+            follower.setStartingPose(initialPose);
+        } else {
+            if (Robot.endPose != null) {
+                follower.setStartingPose(Robot.endPose);
+            } else {
+                follower.setStartingPose(initialPose);
+            }
+        }
 
         shooterSpinner2.setInverted(true);
 
@@ -201,7 +210,7 @@ public class Robot {
         denoise2 = new DenoiseFilter(5);
         denoise3 = new DenoiseFilter(5);
 
-        intakeSubsystem = new IntakeSubsystem(intake);
+        intakeSubsystem = new IntakeSubsystem(intake, transfer);
         kickerSubsystem = new KickerSubsystem(kicker1, kicker2, kicker3);
         shooterSubsystem = new ShooterSubsystem(shooterSpinner1, shooterSpinner2, transfer, hood, follower, goalX, goalY);
         turretSubsystem = new TurretSubsystem(side, turret1, turret2, follower, goalX, goalY);
@@ -384,7 +393,7 @@ public class Robot {
         double hue3 = sensor3.getVoltage() / 3.3 * 360;
         follower.update();
         robot.kickerSubsystem.syncer();
-//        robot.turretSubsystem.syncer();
+        robot.turretSubsystem.syncer();
         robot.gateSubsystem.syncer();
         robot.failsafeSubsystem.syncer();
         getObeliskFiducial();
@@ -407,7 +416,7 @@ public class Robot {
         robot.intakeSubsystem.syncer();
         robot.kickerSubsystem.syncer();
         robot.shooterSubsystem.syncer();
-//        robot.turretSubsystem.syncer();
+        robot.turretSubsystem.syncer();
         robot.gateSubsystem.syncer();
         robot.failsafeSubsystem.syncer();
         readColor(hue1, denoise1);

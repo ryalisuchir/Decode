@@ -10,7 +10,7 @@ import org.firstinspires.ftc.teamcode.common.robot.Globals;
 import org.firstinspires.ftc.teamcode.common.robot.RedTurretLUT;
 import org.firstinspires.ftc.teamcode.common.robot.Robot;
 
-@TeleOp
+//@TeleOp
 public class TurretTester extends OpMode {
     Robot robot;
     private final BlueTurretLUT blueTurretLUT = new BlueTurretLUT();

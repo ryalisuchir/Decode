@@ -12,7 +12,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.common.robot.Globals;
 import org.firstinspires.ftc.teamcode.common.robot.Robot;
 
-@TeleOp
+//@TeleOp
 public class LeoTesting extends LinearOpMode {
 
     // Declare OpMode members.

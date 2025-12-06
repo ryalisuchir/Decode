@@ -22,7 +22,7 @@ import org.firstinspires.ftc.teamcode.common.robot.Globals;
 import org.firstinspires.ftc.teamcode.common.robot.Robot;
 import org.firstinspires.ftc.teamcode.opmode.autonomous.paths.FarPather;
 
-@Autonomous
+//@Autonomous
 @Config
 public class FarBluePath extends OpMode {
     Robot robot;
@@ -49,17 +49,23 @@ public class FarBluePath extends OpMode {
         CommandScheduler.getInstance().schedule(
                 new SequentialCommandGroup(
                         new FollowPath(robot, p.next()),
-                        new WaitCommand(5000),
+                        new InstantCommand(() -> robot.follower.setMaxPower(0.4)),
+                        new FollowPathCommand(robot.follower, p.next()),
+                        new WaitCommand(3000),
                         new FollowPath(robot, p.next()),
-                        new WaitCommand(5000),
+                        new WaitCommand(3000),
+                        new InstantCommand(() -> robot.follower.setMaxPower(1)),
                         new FollowPath(robot, p.next()),
-                        new WaitCommand(5000),
+                        new InstantCommand(() -> robot.follower.setMaxPower(0.4)),
+                        new FollowPath(robot, p.next()),
+                        new WaitCommand(3000),
                   new FollowPath(robot, p.next()),
-                        new WaitCommand(5000),
+                        new WaitCommand(3000),
                   new FollowPath(robot, p.next()),
-                        new WaitCommand(5000),
+                        new WaitCommand(3000),
                   new FollowPath(robot, p.next()),
-                        new WaitCommand(5000),
+                        new WaitCommand(3000),
+                        new InstantCommand(() -> robot.follower.setMaxPower(1)),
                   new FollowPath(robot, p.next())
                 )
         );
