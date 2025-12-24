@@ -1,10 +1,10 @@
 package org.firstinspires.ftc.teamcode.common.commandbase.commands;
 
 import com.seattlesolvers.solverslib.command.Command;
-import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
 
+import org.firstinspires.ftc.teamcode.common.commandbase.commands.utility.KickCommands;
 import org.firstinspires.ftc.teamcode.common.commandbase.subsystems.Kicker;
 import org.firstinspires.ftc.teamcode.common.utility.Globals;
 import org.firstinspires.ftc.teamcode.common.utility.Robot;
@@ -12,9 +12,9 @@ import org.firstinspires.ftc.teamcode.common.utility.Robot;
 import java.util.ArrayList;
 import java.util.List;
 
-public class KickInOrderCommand extends SequentialCommandGroup {
+public class KickOrderACmd extends SequentialCommandGroup {
 
-    public KickInOrderCommand(Robot r) {
+    public KickOrderACmd(Robot r) {
         List<Integer> firingOrder = computeFiringOrder();
 
         if (firingOrder.isEmpty()) {
@@ -31,15 +31,6 @@ public class KickInOrderCommand extends SequentialCommandGroup {
             int slot = firingOrder.get(i);
             sequence.add(kickCommand(r.kicker, slot));
         }
-
-        sequence.add(
-                new ParallelCommandGroup(
-                        KickCommands.resetAll(r.kicker),
-                        r.turret.reset(),
-                        r.shooter.stopShooter(),
-                        r.rotator.stop()
-                )
-        );
 
         addCommands(sequence.toArray(new Command[0]));
     }
