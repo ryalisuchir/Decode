@@ -29,6 +29,8 @@ public class Globals {
     public static Vector2d BLUE_CASTLE = new Vector2d(0, 144);
     public static Vector2d RED_CASTLE = new Vector2d(137, 137);
 
+    public static double ROTATOR_AGGRESSION = 0.15;
+
     public static double KICKER1_RESET = 0.757;
     public static double KICKER1_KICK = 0.92;
     public static double KICKER2_RESET = 0.4;

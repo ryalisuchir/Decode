@@ -16,8 +16,6 @@ public class Rotator {
     private double currentPower = 0.0;
     private double targetPower = 0.0;
 
-    private static final double MAX_DELTA_PER_LOOP = 0.15;
-
 
     private boolean autoTransferTriggered = false;
 
@@ -42,19 +40,14 @@ public class Rotator {
     private void updatePower() {
         double delta = targetPower - currentPower;
 
-        if (Math.abs(delta) > MAX_DELTA_PER_LOOP) {
-            delta = Math.signum(delta) * MAX_DELTA_PER_LOOP;
+        if (Math.abs(delta) > Globals.ROTATOR_AGGRESSION) {
+            delta = Math.signum(delta) * Globals.ROTATOR_AGGRESSION;
         }
 
         currentPower += delta;
 
         i.setPower(currentPower);
         t.setPower(currentPower);
-    }
-
-    public void set(double power) {
-        i.setPower(power);
-        t.setPower(power);
     }
 
     public void spinIn() {

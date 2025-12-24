@@ -3,14 +3,12 @@ package org.firstinspires.ftc.teamcode.common.commandbase.subsystems;
 import com.pedropathing.follower.Follower;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 import com.seattlesolvers.solverslib.command.InstantCommand;
-import com.seattlesolvers.solverslib.command.SubsystemBase;
 
 import org.firstinspires.ftc.teamcode.common.utility.BlueTurretLUT;
 import org.firstinspires.ftc.teamcode.common.utility.Globals;
 import org.firstinspires.ftc.teamcode.common.utility.RedTurretLUT;
 
 public class Turret {
-
     private final ServoImplEx turret1, turret2;
     private final BlueTurretLUT blueTurretLUT = new BlueTurretLUT();
     private final RedTurretLUT redTurretLUT = new RedTurretLUT();
@@ -75,7 +73,7 @@ public class Turret {
         }
     }
 
-    private double getTurretAngleToGoal(double robotX, double robotY, double robotHeadingRadians) {
+    public double getTurretAngleToGoal(double robotX, double robotY, double robotHeadingRadians) {
         double dx = goalX - robotX;
         double dy = goalY - robotY;
         double angleToGoal = Math.atan2(dy, dx);

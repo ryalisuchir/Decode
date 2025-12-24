@@ -63,8 +63,6 @@ public class Kicker extends SubsystemBase {
     }
 
     public void resetAll() {
-        reset(1);
-        reset(2);
-        reset(3);
+        resetMany(1,2,3);
     }
 }
