@@ -13,6 +13,12 @@ public class Rotator {
     private final DcMotorEx t;
     private final ServoImplEx g;
 
+    private double currentPower = 0.0;
+    private double targetPower = 0.0;
+
+    private static final double MAX_DELTA_PER_LOOP = 0.15;
+
+
     private boolean autoTransferTriggered = false;
 
     public Rotator(DcMotorEx i, DcMotorEx t, ServoImplEx g) {
@@ -29,25 +35,42 @@ public class Rotator {
         g.setPosition(Globals.GATE_OPEN);
     }
 
+    private void setTarget(double power) {
+        targetPower = power;
+    }
+
+    private void updatePower() {
+        double delta = targetPower - currentPower;
+
+        if (Math.abs(delta) > MAX_DELTA_PER_LOOP) {
+            delta = Math.signum(delta) * MAX_DELTA_PER_LOOP;
+        }
+
+        currentPower += delta;
+
+        i.setPower(currentPower);
+        t.setPower(currentPower);
+    }
+
     public void set(double power) {
         i.setPower(power);
         t.setPower(power);
     }
 
     public void spinIn() {
-        set(Globals.MAX_INTAKING_POWER);
+        setTarget(Globals.MAX_INTAKING_POWER);
     }
 
     public void spinOut() {
-        set(Globals.MAX_TRANSFER_POWER);
+        setTarget(Globals.MAX_TRANSFER_POWER);
     }
 
     public void spinStop() {
-        set(0);
+        setTarget(0);
     }
 
     public void spinEject() {
-        set(Globals.MAX_TRANSFER_POWER / 2);
+        setTarget(Globals.MAX_TRANSFER_POWER / 2.0);
     }
 
     public ParallelCommandGroup intake() {
@@ -74,11 +97,7 @@ public class Rotator {
                     new InstantCommand(this::closeGate)
             );
         } else {
-            return new ParallelCommandGroup(
-                    new InstantCommand(() -> Globals.rotateState = Globals.RotateState.STOPPED),
-                    new InstantCommand(this::spinOut),
-                    new InstantCommand(this::closeGate)
-            );
+            return transfer();
         }
     }
 
@@ -113,6 +132,8 @@ public class Rotator {
     }
 
     public void periodic() {
+        updatePower();
+
         if ((Globals.rotateState == Globals.RotateState.INTAKING
                 && threeBallsDetected()
                 && !autoTransferTriggered) || (Globals.rotateState == Globals.RotateState.STOPPED && oneBallDetected())) {
