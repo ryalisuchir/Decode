@@ -5,8 +5,8 @@ import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
 import com.seattlesolvers.solverslib.command.UninterruptibleCommand;
-import org.firstinspires.ftc.teamcode.common.commandbase.commands.KickCommands;
-import org.firstinspires.ftc.teamcode.common.commandbase.commands.KickInOrderCommand;
+import org.firstinspires.ftc.teamcode.common.commandbase.commands.utility.KickCommands;
+import org.firstinspires.ftc.teamcode.common.commandbase.commands.KickOrderACmd;
 import org.firstinspires.ftc.teamcode.common.utility.Globals;
 import org.firstinspires.ftc.teamcode.common.utility.Robot;
 
@@ -38,7 +38,7 @@ public class SubsystemTest extends CommandOpMode {
 
         if (gamepad1.rightBumperWasPressed()) {
             schedule(
-                    new UninterruptibleCommand(new KickInOrderCommand(r))
+                    new UninterruptibleCommand(new KickOrderACmd(r))
             );
         }
 
