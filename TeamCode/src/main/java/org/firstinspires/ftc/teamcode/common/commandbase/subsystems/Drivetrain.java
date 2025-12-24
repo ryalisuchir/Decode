@@ -6,8 +6,10 @@ import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.seattlesolvers.solverslib.command.InstantCommand;
+import com.seattlesolvers.solverslib.geometry.Vector2d;
 
 import org.firstinspires.ftc.teamcode.common.utility.Globals;
+import org.firstinspires.ftc.teamcode.common.utility.functions.TurretMath;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 import kotlin.time.Instant;
@@ -21,6 +23,28 @@ public class Drivetrain {
         f = Constants.createFollower(hardwareMap);
         f.setStartingPose(start);
         this.a = a;
+    }
+
+    public double getGoalDistance() {
+        Vector2d goal = (a == Globals.Side.BLUE)
+                ? Globals.BLUE_CASTLE
+                : Globals.RED_CASTLE;
+
+        return TurretMath.getDistanceToGoalPinpoint(f, goal.getX(), goal.getY());
+    }
+
+    public double getTurretAngle() {
+        Vector2d goal = (a == Globals.Side.BLUE)
+                ? Globals.BLUE_CASTLE
+                : Globals.RED_CASTLE;
+
+        return TurretMath.getTurretAngleToGoal(
+                f.getPose().getX(),
+                f.getPose().getY(),
+                f.getPose().getHeading(),
+                goal.getX(),
+                goal.getY()
+        );
     }
 
     public void startDrive() {

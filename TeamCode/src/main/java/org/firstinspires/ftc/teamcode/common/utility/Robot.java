@@ -48,9 +48,7 @@ public class Robot {
     public Shooter shooter;
     public Turret turret;
 
-    public double turretAngle;
     public LLResult llResult;
-    public double shooterDistance;
 
     public static Pose endPose; //End of pose from auto, so we can translate it to tele-op
 
@@ -213,6 +211,12 @@ public class Robot {
         CommandScheduler.getInstance().run();
     }
 
+    public void clearCache() {
+        for (LynxModule hub : allHubs) {
+            hub.clearBulkCache();
+        }
+    }
+
     public void loop(Robot r) {
         for (LynxModule hub : allHubs) {
             hub.clearBulkCache();
@@ -230,16 +234,6 @@ public class Robot {
         r.reader1.readColor(hue1);
         r.reader2.readColor(hue2);
         r.reader3.readColor(hue3);
-
-        shooterDistance = TurretMath.getDistanceToGoalPinpoint(r.dt.getFollower(), r.gX, r.gY);
-
-        turretAngle = TurretMath.getTurretAngleToGoal(
-                r.dt.getPose().getX(),
-                r.dt.getPose().getY(),
-                r.dt.getPose().getHeading(),
-                r.gX,
-                r.gY
-        );
 
         CommandScheduler.getInstance().run();
     }
