@@ -8,10 +8,11 @@ import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
 import com.seattlesolvers.solverslib.command.UninterruptibleCommand;
 import com.seattlesolvers.solverslib.command.button.Trigger;
-import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 
-import org.firstinspires.ftc.teamcode.common.commandbase.commands.KickCommands;
-import org.firstinspires.ftc.teamcode.common.commandbase.commands.KickInOrderCommand;
+import org.firstinspires.ftc.teamcode.common.commandbase.commands.teleopspecific.KickOneGreenTCmd;
+import org.firstinspires.ftc.teamcode.common.commandbase.commands.teleopspecific.KickOnePurpleTCmd;
+import org.firstinspires.ftc.teamcode.common.commandbase.commands.teleopspecific.KickOrderTCmd;
+import org.firstinspires.ftc.teamcode.common.commandbase.commands.utility.KickCommands;
 import org.firstinspires.ftc.teamcode.common.utility.Globals;
 import org.firstinspires.ftc.teamcode.common.utility.Robot;
 
@@ -25,14 +26,14 @@ public class Red extends CommandOpMode {
 
     @Override
     public void initialize() {
-        r = new Robot(hardwareMap, Globals.DEFAULT_START_POSE, Globals.Side.BLUE, true);
+        r = new Robot(hardwareMap, Globals.DEFAULT_START_POSE, Globals.Side.RED, true);
         r.initLoop(r);
         r.dt.startDrive();
         ahnaf = gamepad1;
         swetha = gamepad2;
 
         intakeTrigger = new Trigger(
-                () -> ahnaf.left_trigger > 0.1
+                () -> ahnaf.right_trigger > 0.1 && !r.rotator.threeBallsDetected()
         );
     }
 
@@ -51,7 +52,8 @@ public class Red extends CommandOpMode {
                         new ParallelCommandGroup(
                                 new InstantCommand(() -> Globals.rotateState = Globals.RotateState.INTAKING),
                                 new InstantCommand(() -> r.rotator.spinIn()),
-                                new InstantCommand(() -> r.rotator.openGate())
+                                new InstantCommand(() -> r.rotator.openGate()),
+                                KickCommands.resetAll(r.kicker)
                         )
                 )
                 .whenInactive(
@@ -70,12 +72,8 @@ public class Red extends CommandOpMode {
 
         if (gamepad1.leftBumperWasPressed()) {
             schedule(
-                    new UninterruptibleCommand(new KickInOrderCommand(r))
+                    new UninterruptibleCommand(new KickOrderTCmd(r))
             );
-        }
-
-        if (gamepad2.leftBumperWasPressed()) {
-            schedule(KickCommands.kickAndResetMany(r.kicker, 1, 2, 3));
         }
 
         if (gamepad1.ps || gamepad2.ps) {
@@ -88,6 +86,23 @@ public class Red extends CommandOpMode {
                             })
                     )
             );
+        }
+
+        //Failsafes:
+        if (gamepad2.leftBumperWasPressed()) {
+            schedule(
+                    new UninterruptibleCommand(new KickOneGreenTCmd(r))
+            );
+        }
+
+        if (gamepad2.rightBumperWasPressed()) {
+            schedule(
+                    new UninterruptibleCommand(new KickOnePurpleTCmd(r))
+            );
+        }
+
+        if (gamepad2.triangleWasPressed()) {
+            schedule(KickCommands.kickAndResetMany(r.kicker, 1, 2, 3));
         }
 
         if (r.rotator.threeBallsDetected() && !threeBallRumbleLatched) {
