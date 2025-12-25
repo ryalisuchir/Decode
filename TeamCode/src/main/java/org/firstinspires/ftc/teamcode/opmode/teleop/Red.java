@@ -44,6 +44,8 @@ public class Red extends CommandOpMode {
         telemetry.addData("Color 2: ", Globals.ballColors[1]);
         telemetry.addData("Color 3: ", Globals.ballColors[2]);
         telemetry.addData("Obelisk: ", Globals.obeliskOptions);
+        telemetry.addData("Shooter State: ", Globals.shooterState);
+        telemetry.addData("Shooter Power: ", r.shooter.getShooterPower());
 
         telemetry.update();
 

@@ -127,6 +127,10 @@ public class Rotator {
     public void periodic() {
         updatePower();
 
+        if (oneBallDetected()) {
+            Globals.shooterState = Globals.ShooterState.SHOOTING;
+        }
+
         if ((Globals.rotateState == Globals.RotateState.INTAKING
                 && threeBallsDetected()
                 && !autoTransferTriggered) || (Globals.rotateState == Globals.RotateState.STOPPED && oneBallDetected())) {

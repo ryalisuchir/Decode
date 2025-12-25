@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.pedroPathing;
+package org.firstinspires.ftc.teamcode.opmode.tuning;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
@@ -10,6 +10,8 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.common.utility.Globals;
 import org.firstinspires.ftc.teamcode.common.utility.Robot;
+
+import kotlin.Unit;
 
 @Autonomous
 @Config
@@ -71,6 +73,8 @@ public class MasterChecker extends OpMode {
         telemetry.addData("Pinpoint y:", fpose.getY());
 
         telemetry.update();
-        robot.loop(robot);
+        robot.dt.periodic();
+        robot.clearCache();
+//        robot.loop(robot);
     }
 }

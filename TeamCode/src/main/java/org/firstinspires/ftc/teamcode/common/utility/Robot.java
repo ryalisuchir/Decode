@@ -146,7 +146,8 @@ public class Robot {
             }
         }
 
-        s2.setInverted(true); //Different way of reversing a motor using Solvers Lib
+        s1.setInverted(true); //Different way of reversing a motor using Solvers Lib
+        r.setDirection(Servo.Direction.REVERSE);
 
         t.setDirection(DcMotorSimple.Direction.REVERSE);
         t.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -224,7 +225,7 @@ public class Robot {
 
         dt.periodic();
         rotator.periodic();
-        shooter.periodic();
+        shooter.loop();
         turret.periodic();
 
         double hue1 = r.c1.getVoltage() / 3.3 * 360;

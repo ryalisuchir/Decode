@@ -49,8 +49,8 @@ public class Globals {
     public static double MIN_TURRET = 0.31;
     public static double MAX_TURRET = 0.31;
 
-    public static double HOOD_LOWERED = 0.2;
-    public static double HOOD_MAX = 0.86;
+    public static double HOOD_LOWERED = 0.31;
+    public static double HOOD_MAX = 0.41;
 
     public static double MAX_TIME_SPENT_INTAKING = 5000;
 

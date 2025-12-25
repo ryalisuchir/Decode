@@ -51,7 +51,8 @@ public class Shooter extends SubsystemBase {
 
     public void loop() {
         if (Globals.shooterState != Globals.ShooterState.SHOOTING) {
-            setShooterPowerOnce(Globals.MIN_SHOOTER_POWER);
+            shooterMotor1.set(Globals.MIN_SHOOTER_POWER);
+            shooterMotor2.set(Globals.MIN_SHOOTER_POWER);
             return;
         }
 
