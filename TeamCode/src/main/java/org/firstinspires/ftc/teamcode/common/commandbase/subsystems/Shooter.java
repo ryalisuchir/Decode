@@ -38,19 +38,21 @@ public class Shooter extends SubsystemBase {
     }
 
     public InstantCommand startShooter() {
-        return new InstantCommand(() ->
-                Globals.shooterState = Globals.ShooterState.SHOOTING
-        );
+        return new InstantCommand(() -> {
+            Globals.shooterState = Globals.ShooterState.SHOOTING;
+            Globals.turretState = Globals.TurretState.FOLLOWING;
+        });
     }
 
     public InstantCommand stopShooter() {
-        return new InstantCommand(() ->
-                Globals.shooterState = Globals.ShooterState.STOPPED
-        );
+        return new InstantCommand(() -> {
+            Globals.shooterState = Globals.ShooterState.STOPPED;
+            Globals.turretState = Globals.TurretState.RESET;
+        });
     }
 
     public void loop() {
-        if (Globals.shooterState != Globals.ShooterState.SHOOTING) {
+        if (Globals.shooterState != Globals.ShooterState.SHOOTING && Globals.match != Globals.Match.AUTO) {
             shooterMotor1.set(Globals.MIN_SHOOTER_POWER);
             shooterMotor2.set(Globals.MIN_SHOOTER_POWER);
             return;
@@ -89,6 +91,10 @@ public class Shooter extends SubsystemBase {
 
     public double getShooterVelocity() {
         return shooterMotor2.getCorrectedVelocity();
+    }
+
+    public double getShooterRPM() {
+        return shooterMotor2.getCorrectedVelocity() / 28 * 60;
     }
 
     public double getShooterPower() {

@@ -22,6 +22,7 @@ public class Globals {
 
     public static Pose DEFAULT_START_POSE = new Pose(8.507204610951009, 9.129682997118156, Math.toRadians(90));
     public static Pose BLUE_CLOSE_START = new Pose(34.149, 134.126, Math.toRadians(270)); //intake faces small triangle
+    public static Pose BLUE_CUBE_START = new Pose(31.954, 135.908, Math.toRadians(90));
     public static Pose BLUE_FAR_START = new Pose(56.43804034582132, 7.6772334293948195, Math.toRadians(90)); //intake faces big triangle
     public static Pose RED_CLOSE_START = new Pose(0, 0, Math.toRadians(0)); //intake faces small triangle
     public static Pose RED_FAR_START = BLUE_FAR_START.mirror();

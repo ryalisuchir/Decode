@@ -223,6 +223,7 @@ public class Robot {
             hub.clearBulkCache();
         }
 
+        llResult = l.getLatestResult();
         dt.periodic();
         rotator.periodic();
         shooter.loop();

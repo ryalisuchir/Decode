@@ -129,6 +129,7 @@ public class Rotator {
 
         if (oneBallDetected()) {
             Globals.shooterState = Globals.ShooterState.SHOOTING;
+            Globals.turretState = Globals.TurretState.FOLLOWING;
         }
 
         if ((Globals.rotateState == Globals.RotateState.INTAKING
@@ -138,7 +139,10 @@ public class Rotator {
             CommandScheduler.getInstance().schedule(
                     new ParallelCommandGroup(
                             transfer(),
-                            new InstantCommand(() -> Globals.shooterState = Globals.ShooterState.SHOOTING)
+                            new InstantCommand(() -> {
+                                Globals.shooterState = Globals.ShooterState.SHOOTING;
+                                Globals.turretState = Globals.TurretState.FOLLOWING;
+                            })
                     )
             );
         }

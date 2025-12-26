@@ -67,6 +67,8 @@ public class MasterChecker extends OpMode {
         telemetry.addData("Transfer Motor Velocity:", robot.t.getVelocity(AngleUnit.DEGREES));
         telemetry.addData("Shooter 1 Motor Velocity:", robot.s1.getCorrectedVelocity());
         telemetry.addData("Shooter 2 Motor Velocity:", robot.s2.getCorrectedVelocity());
+        telemetry.addData("Shooter 1 Motor RPM: ", robot.s1.getCorrectedVelocity() / 28 * 60);
+        telemetry.addData("Shooter 2 Motor RPM: ", robot.s2.getCorrectedVelocity() / 28 * 60);
         telemetry.addData("Transfer Velocity: ", robot.t.getVelocity(AngleUnit.DEGREES));
         telemetry.addData("Obelisk:", Globals.obeliskOptions);
         telemetry.addData("Pinpoint x:", fpose.getX());

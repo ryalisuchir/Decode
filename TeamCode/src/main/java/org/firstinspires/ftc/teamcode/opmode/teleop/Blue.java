@@ -44,6 +44,10 @@ public class Blue extends CommandOpMode {
         telemetry.addData("Color 2: ", Globals.ballColors[1]);
         telemetry.addData("Color 3: ", Globals.ballColors[2]);
         telemetry.addData("Obelisk: ", Globals.obeliskOptions);
+        telemetry.addData("Shooter State: ", Globals.shooterState);
+        telemetry.addData("Shooter Power: ", r.shooter.getShooterPower());
+        telemetry.addData("Shooter RPM: ", r.shooter.getShooterRPM());
+        telemetry.addData("Shooter Velocity: ", r.shooter.getShooterVelocity());
 
         telemetry.update();
 
@@ -70,46 +74,46 @@ public class Blue extends CommandOpMode {
                         })
                 );
 
-        if (gamepad1.leftBumperWasPressed()) {
+        if (ahnaf.leftBumperWasPressed()) {
             schedule(
                     new UninterruptibleCommand(new KickOrderTCmd(r))
             );
         }
 
-        if (gamepad1.ps || gamepad2.ps) {
+        if (ahnaf.ps || swetha.ps) {
             schedule(
                     new ParallelCommandGroup(
                             r.dt.corner(),
                             new InstantCommand(() -> {
-                                gamepad1.rumble(1000);
-                                gamepad2.rumble(1000);
+                                ahnaf.rumble(1000);
+                                swetha.rumble(1000);
                             })
                     )
             );
         }
 
         //Failsafes:
-        if (gamepad2.leftBumperWasPressed()) {
+        if (swetha.leftBumperWasPressed()) {
             schedule(
                     new UninterruptibleCommand(new KickOneGreenTCmd(r))
             );
         }
 
-        if (gamepad2.rightBumperWasPressed()) {
+        if (swetha.rightBumperWasPressed()) {
             schedule(
                     new UninterruptibleCommand(new KickOnePurpleTCmd(r))
             );
         }
 
-        if (gamepad2.triangleWasPressed()) {
+        if (swetha.triangleWasPressed()) {
             schedule(KickCommands.kickAndResetMany(r.kicker, 1, 2, 3));
         }
 
         if (r.rotator.threeBallsDetected() && !threeBallRumbleLatched) {
             schedule(
                     new InstantCommand(() -> {
-                        gamepad1.rumble(1000);
-                        gamepad2.rumble(1000);
+                        ahnaf.rumble(1000);
+                        swetha.rumble(1000);
                         threeBallRumbleLatched = true;
                     })
             );

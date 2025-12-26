@@ -1,0 +1,198 @@
+package org.firstinspires.ftc.teamcode.opmode.auto.blue.paths;
+
+import com.pedropathing.follower.Follower;
+import com.pedropathing.geometry.BezierCurve;
+import com.pedropathing.geometry.BezierLine;
+import com.pedropathing.geometry.Pose;
+import com.pedropathing.paths.PathChain;
+
+import org.firstinspires.ftc.teamcode.common.utility.Robot;
+
+public class BCubePaths {
+    private final Follower f;
+
+    public Pose start = new Pose(31.954, 135.908, Math.toRadians(90));
+    public Pose shoot0 = new Pose(53.94812680115274, 88.59942363112393, Math.toRadians(180));
+    public Pose intakeMidHold1 = new Pose(42.53602305475505, 53.32564841498558);
+    public Pose intakeMid = new Pose(3.5273775216138326, 59.135, Math.toRadians(180));
+    public Pose shoot1 = new Pose(55.193, 77.810, Math.toRadians(150));
+    public Pose intakeRamp1Hold1 = new Pose(39.631, 53.741);
+    public Pose intakeRamp1 = new Pose(9.337, 61.833, Math.toRadians(130));
+    public Pose shoot2 = new Pose(55.608, 77.810, Math.toRadians(130));
+    public Pose intakeRamp2Hold1 = new Pose(39.631, 53.741);
+    public Pose intakeRamp2 = new Pose(9.337, 61.833, Math.toRadians(130));
+    public Pose shoot3 = new Pose(55.608, 77.810, Math.toRadians(130));
+    public Pose intakeRamp3Hold1 = new Pose(39.631, 53.741);
+    public Pose intakeRamp3 = new Pose(9.337, 61.833, Math.toRadians(130));
+    public Pose shoot4Hold1 = new Pose(57.476, 67.643);
+    public Pose shoot4 = new Pose(53.948, 85.487, Math.toRadians(180));
+    public Pose intakeRight = new Pose(9.545, 84.242, Math.toRadians(180));
+    public Pose shoot5 = new Pose(53.948, 85.487, Math.toRadians(235));
+    public Pose park = new Pose(18.882, 69.718, Math.toRadians(270));
+
+    private int index;
+
+    public BCubePaths(Robot r) {
+        this.f = r.dt.getFollower();
+        index = 0;
+    }
+
+    public PathChain score0intake0() { //score preloads + get to intake position
+        return f.pathBuilder()
+                .addPath(
+                        new BezierLine(
+                                start,
+                                shoot0
+                        )
+                )
+                .setLinearHeadingInterpolation(start.getHeading(), shoot0.getHeading())
+                .setVelocityConstraint(25)
+                .setHeadingConstraint(Math.toRadians(15))
+                .addPath(
+                        new BezierCurve(
+                                shoot0,
+                                intakeMidHold1,
+                                intakeMid
+                        )
+                )
+                .setLinearHeadingInterpolation(shoot0.getHeading(), intakeMid.getHeading())
+                .build();
+    }
+
+    public PathChain score1() { //score mid spike
+        return f.pathBuilder()
+                .addPath(
+                        new BezierLine(intakeMid, shoot1)
+                )
+                .setLinearHeadingInterpolation(intakeMid.getHeading(), shoot1.getHeading())
+                .build();
+    }
+
+    public PathChain intake1() { //intake from ramp go 1
+        return f.pathBuilder()
+                .addPath(
+                        new BezierCurve(
+                                shoot1,
+                                intakeRamp1Hold1,
+                                intakeRamp1
+                        )
+                )
+                .setLinearHeadingInterpolation(shoot1.getHeading(), intakeRamp1.getHeading())
+                .build();
+    }
+
+    public PathChain score2() { //score the balls from the ramp
+        return f.pathBuilder()
+                .addPath(
+                        new BezierLine(intakeRamp1, shoot2)
+                )
+                .setLinearHeadingInterpolation(intakeRamp1.getHeading(), shoot2.getHeading())
+                .build();
+    }
+
+    public PathChain intake2() { //second go at intaking from the ramp
+        return f.pathBuilder()
+                .addPath(
+                        new BezierCurve(
+                                shoot2,
+                                intakeRamp2Hold1,
+                                intakeRamp2
+                        )
+                )
+                .setLinearHeadingInterpolation(shoot2.getHeading(), intakeRamp2.getHeading())
+                .build();
+    }
+
+    public PathChain score3() {
+        return f.pathBuilder()
+                .addPath(
+                        new BezierLine(intakeRamp2, shoot4)
+                )
+                .setLinearHeadingInterpolation(intakeRamp2.getHeading(), shoot4.getHeading())
+                .build();
+    }
+
+//    public PathChain intake3() { //third go at intaking from the ramp
+//        return f.pathBuilder()
+//                .addPath(
+//                        new BezierCurve(
+//                                shoot3,
+//                                intakeRamp3Hold1,
+//                                intakeRamp3
+//                        )
+//                )
+//                .setLinearHeadingInterpolation(shoot3.getHeading(), intakeRamp3.getHeading())
+//                .build();
+//    }
+//
+//    public PathChain score4() { //score the last ramp balls
+//        return f.pathBuilder()
+//                .addPath(
+//                        new BezierCurve(
+//                                intakeRamp3,
+//                                shoot4Hold1,
+//                                shoot4
+//                        )
+//                )
+//                .setLinearHeadingInterpolation(intakeRamp3.getHeading(), shoot4.getHeading())
+//                .build();
+//    }
+
+    public PathChain intake4() { //intake far spike mark
+        return f.pathBuilder()
+                .addPath(
+                        new BezierLine(
+                                shoot4,
+                                intakeRight
+                        )
+                )
+                .setLinearHeadingInterpolation(shoot4.getHeading(), intakeRight.getHeading())
+                .build();
+    }
+
+    public PathChain score5() { //scores the last spike mark
+        return f.pathBuilder()
+                .addPath(
+                        new BezierLine(
+                                intakeRight,
+                                shoot5
+                        )
+                )
+                .setTangentHeadingInterpolation()
+                .setReversed()
+                .build();
+    }
+
+    public PathChain parkX() { //scores the last spike mark
+        return f.pathBuilder()
+                .addPath(
+                        new BezierLine(
+                                shoot5,
+                                park
+                        )
+                )
+                .setLinearHeadingInterpolation(shoot5.getHeading(), park.getHeading())
+                .build();
+    }
+
+    public PathChain next() {
+        switch (index++) {
+            case 0: return score0intake0();
+            case 1: return score1();
+            case 2: return intake1();
+            case 3: return score2();
+            case 4: return intake2();
+            case 5: return score3();
+//            case 6: return intake3();
+//            case 7: return score4();
+            case 6: return intake4();
+            case 7: return score5();
+            case 8: return parkX();
+            default: return null;
+        }
+    }
+
+    public void reset() {
+        index = 0;
+    }
+}
