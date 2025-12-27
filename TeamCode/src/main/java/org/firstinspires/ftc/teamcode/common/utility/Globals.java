@@ -39,8 +39,9 @@ public class Globals {
     public static double KICKER3_RESET = 0.67;
     public static double KICKER3_KICK = 0.84;
 
-    public static double GATE_OPEN = 0;
-    public static double GATE_CLOSED = 1;
+    public static double GATE_OPEN = 0.82;
+    public static double GATE_FAR_CLOSED = 0.23;
+    public static double GATE_CLOSED = 0.29;
 
     public static double FAILSAFE_RESET = 0.24;
     public static double FAILSAFE_KICK = 0.8;

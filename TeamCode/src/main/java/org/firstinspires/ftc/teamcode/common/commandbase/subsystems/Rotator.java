@@ -6,6 +6,7 @@ import com.seattlesolvers.solverslib.command.CommandScheduler;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
 
+import org.firstinspires.ftc.teamcode.common.commandbase.commands.CloseGateCmd;
 import org.firstinspires.ftc.teamcode.common.utility.Globals;
 
 public class Rotator {
@@ -23,10 +24,6 @@ public class Rotator {
         this.i = i;
         this.t = t;
         this.g = g;
-    }
-
-    public void closeGate() {
-        g.setPosition(Globals.GATE_CLOSED);
     }
 
     public void openGate() {
@@ -78,7 +75,7 @@ public class Rotator {
         return new ParallelCommandGroup(
                 new InstantCommand(() -> Globals.rotateState = Globals.RotateState.TRANSFERRING),
                 new InstantCommand(this::spinOut),
-                new InstantCommand(this::closeGate)
+                new CloseGateCmd(g)
         );
     }
 
@@ -87,7 +84,7 @@ public class Rotator {
             return new ParallelCommandGroup(
                     new InstantCommand(() -> Globals.rotateState = Globals.RotateState.STOPPED),
                     new InstantCommand(this::spinStop),
-                    new InstantCommand(this::closeGate)
+                    new InstantCommand(this::openGate)
             );
         } else {
             return transfer();
@@ -98,7 +95,7 @@ public class Rotator {
         return new ParallelCommandGroup(
                 new InstantCommand(() -> Globals.rotateState = Globals.RotateState.EJECTING),
                 new InstantCommand(this::spinEject),
-                new InstantCommand(this::closeGate)
+                new CloseGateCmd(g)
         );
     }
 
