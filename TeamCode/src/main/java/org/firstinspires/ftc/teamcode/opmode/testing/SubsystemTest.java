@@ -72,6 +72,8 @@ public class SubsystemTest extends CommandOpMode {
             threeBallRumbleLatched = false;
         }
 
+        telemetry.addData("Pinpoint:", r.dt.getPose());
+
         r.dt.drive(gamepad1);
         r.loop(r);
     }

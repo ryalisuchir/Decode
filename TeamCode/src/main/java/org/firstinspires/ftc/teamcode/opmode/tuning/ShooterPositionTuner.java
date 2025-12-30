@@ -45,7 +45,7 @@ public class ShooterPositionTuner extends OpMode {
         r.t.setPower(rotatorPower);
 
         r.clearCache();
-        r.dt.periodic();
+        r.dt.loop();
 
         if (hoodPosition < Globals.HOOD_LOWERED) hoodPosition = Globals.HOOD_LOWERED;
         if (hoodPosition > Globals.HOOD_MAX) hoodPosition = Globals.HOOD_MAX;

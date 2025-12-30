@@ -67,7 +67,7 @@ public class Turret {
         setFixedPosition(servoPosition);
     }
 
-    public void periodic() {
+    public void loop() {
         if (Globals.turretState == Globals.TurretState.FOLLOWING) {
             followGoal();
         }
@@ -78,7 +78,9 @@ public class Turret {
         double dy = goalY - robotY;
         double angleToGoal = Math.atan2(dy, dx);
         double turretAngle = angleToGoal - robotHeadingRadians;
-        return Math.atan2(Math.sin(turretAngle), Math.cos(turretAngle));
+        turretAngle = Math.atan2(Math.sin(turretAngle), Math.cos(turretAngle));
+
+        return turretAngle;
     }
 
     private double clamp(double v, double min, double max) {

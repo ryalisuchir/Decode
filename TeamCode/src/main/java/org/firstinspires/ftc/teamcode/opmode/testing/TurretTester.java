@@ -25,12 +25,12 @@ public class TurretTester extends OpMode {
 
         r.dt.drive(gamepad1);
 
-        double servoPosition = blueTurretLUT.getServoValue(r.dt.getTurretAngle());
+        double servoPosition = blueTurretLUT.getServoValue(r.turret.getTurretAngleToGoal(r.dt.getPose().getX(), r.dt.getPose().getY(), r.dt.getPose().getHeading()));
 
         r.t1.setPosition(servoPosition);
         r.t2.setPosition(servoPosition);
 
         r.clearCache();
-        r.dt.periodic();
+        r.noOuttakeLoop(r);
     }
 }

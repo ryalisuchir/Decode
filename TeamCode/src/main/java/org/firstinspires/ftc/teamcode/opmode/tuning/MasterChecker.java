@@ -73,9 +73,10 @@ public class MasterChecker extends OpMode {
         telemetry.addData("Obelisk:", Globals.obeliskOptions);
         telemetry.addData("Pinpoint x:", fpose.getX());
         telemetry.addData("Pinpoint y:", fpose.getY());
+        telemetry.addData("Pinpoint heading:", Math.toDegrees(fpose.getHeading()));
 
         telemetry.update();
-        robot.dt.periodic();
+        robot.dt.loop();
         robot.clearCache();
 //        robot.loop(robot);
     }

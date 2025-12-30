@@ -27,7 +27,7 @@ public class ShooterPIDTuner extends OpMode {
 
     @Override
     public void loop() {
-        double currentVel = r.s2.getCorrectedVelocity();
+        double currentVel = -r.s2.getCorrectedVelocity();
 
         double ff = feedforward(targetVelocity);
         double fb = feedback(targetVelocity, currentVel);

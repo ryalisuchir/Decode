@@ -146,7 +146,7 @@ public class Robot {
             }
         }
 
-        s1.setInverted(true); //Different way of reversing a motor using Solvers Lib
+        s2.setInverted(true); //Different way of reversing a motor using Solvers Lib
         r.setDirection(Servo.Direction.REVERSE);
 
         t.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -186,7 +186,6 @@ public class Robot {
         rotator = new Rotator(i, t, g);
         shooter = new Shooter(s1, s2, r, dt.getFollower(), gX, gY);
         turret = new Turret(s, t1, t2, dt.getFollower(), gX, gY);
-
     }
 
     public void initLoop(Robot r) {
@@ -194,7 +193,7 @@ public class Robot {
             hub.clearBulkCache();
         }
 
-        dt.periodic();
+        dt.loop();
 
         double hue1 = r.c1.getVoltage() / 3.3 * 360;
         double hue2 = r.c2.getVoltage() / 3.3 * 360;
@@ -224,10 +223,10 @@ public class Robot {
         }
 
         llResult = l.getLatestResult();
-        dt.periodic();
+        dt.loop();
         rotator.periodic();
         shooter.loop();
-        turret.periodic();
+        turret.loop();
 
         double hue1 = r.c1.getVoltage() / 3.3 * 360;
         double hue2 = r.c2.getVoltage() / 3.3 * 360;
@@ -239,6 +238,26 @@ public class Robot {
 
         CommandScheduler.getInstance().run();
     }
+
+    public void noOuttakeLoop(Robot r) {
+        for (LynxModule hub : allHubs) {
+            hub.clearBulkCache();
+        }
+
+        dt.loop();
+        rotator.periodic();
+
+        double hue1 = r.c1.getVoltage() / 3.3 * 360;
+        double hue2 = r.c2.getVoltage() / 3.3 * 360;
+        double hue3 = r.c3.getVoltage() / 3.3 * 360;
+
+        r.reader1.readColor(hue1);
+        r.reader2.readColor(hue2);
+        r.reader3.readColor(hue3);
+
+        CommandScheduler.getInstance().run();
+    }
+
 
     public void stop() {
         endPose = dt.getPose();

@@ -33,20 +33,6 @@ public class Drivetrain {
         return TurretMath.getDistanceToGoalPinpoint(f, goal.getX(), goal.getY());
     }
 
-    public double getTurretAngle() {
-        Vector2d goal = (a == Globals.Side.BLUE)
-                ? Globals.BLUE_CASTLE
-                : Globals.RED_CASTLE;
-
-        return TurretMath.getTurretAngleToGoal(
-                f.getPose().getX(),
-                f.getPose().getY(),
-                f.getPose().getHeading(),
-                goal.getX(),
-                goal.getY()
-        );
-    }
-
     public void startDrive() {
         f.startTeleopDrive();
     }
@@ -61,7 +47,7 @@ public class Drivetrain {
 
     public InstantCommand reset() { return new InstantCommand(this::resetDrive); }
 
-    public void periodic() {
+    public void loop() {
         f.update();
     }
 

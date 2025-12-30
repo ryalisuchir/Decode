@@ -20,7 +20,7 @@ public class Globals {
     public static Globals.GateState gateState;
     public static Globals.FailsafeState failsafeState;
 
-    public static Pose DEFAULT_START_POSE = new Pose(8.507204610951009, 9.129682997118156, Math.toRadians(90));
+    public static Pose DEFAULT_START_POSE = new Pose(0, 0, Math.toRadians(90));
     public static Pose BLUE_CLOSE_START = new Pose(34.149, 134.126, Math.toRadians(270)); //intake faces small triangle
     public static Pose BLUE_CUBE_START = new Pose(31.954, 135.908, Math.toRadians(90));
     public static Pose BLUE_FAR_START = new Pose(56.43804034582132, 7.6772334293948195, Math.toRadians(90)); //intake faces big triangle
@@ -28,13 +28,13 @@ public class Globals {
     public static Pose RED_FAR_START = BLUE_FAR_START.mirror();
 
     public static Vector2d BLUE_CASTLE = new Vector2d(0, 144);
-    public static Vector2d RED_CASTLE = new Vector2d(137, 137);
+    public static Vector2d RED_CASTLE = new Vector2d(144, 144);
 
     public static double ROTATOR_AGGRESSION = 0.15;
 
     public static double KICKER1_RESET = 0.757;
     public static double KICKER1_KICK = 0.92;
-    public static double KICKER2_RESET = 0.4;
+    public static double KICKER2_RESET = 0.385;
     public static double KICKER2_KICK = 0.24;
     public static double KICKER3_RESET = 0.67;
     public static double KICKER3_KICK = 0.84;
@@ -46,13 +46,13 @@ public class Globals {
     public static double FAILSAFE_RESET = 0.24;
     public static double FAILSAFE_KICK = 0.8;
 
-    public static double TURRET_RESET = 0.31;
+    public static double TURRET_RESET = 0.45;
 
-    public static double MIN_TURRET = 0.31;
-    public static double MAX_TURRET = 0.31;
+    public static double MIN_TURRET = 0;
+    public static double MAX_TURRET = 1;
 
-    public static double HOOD_LOWERED = 0.31;
-    public static double HOOD_MAX = 0.41;
+    public static double HOOD_LOWERED = 0.77;
+    public static double HOOD_MAX = 0.98;
 
     public static double MAX_TIME_SPENT_INTAKING = 5000;
 
