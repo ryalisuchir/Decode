@@ -20,7 +20,7 @@ public class Globals {
     public static Globals.GateState gateState;
     public static Globals.FailsafeState failsafeState;
 
-    public static Pose DEFAULT_START_POSE = new Pose(0, 0, Math.toRadians(90));
+    public static Pose DEFAULT_START_POSE = new Pose(16/2, 17.5/2, Math.toRadians(90));
     public static Pose BLUE_CLOSE_START = new Pose(34.149, 134.126, Math.toRadians(270)); //intake faces small triangle
     public static Pose BLUE_CUBE_START = new Pose(31.954, 135.908, Math.toRadians(90));
     public static Pose BLUE_FAR_START = new Pose(56.43804034582132, 7.6772334293948195, Math.toRadians(90)); //intake faces big triangle
@@ -39,9 +39,9 @@ public class Globals {
     public static double KICKER3_RESET = 0.67;
     public static double KICKER3_KICK = 0.84;
 
-    public static double GATE_OPEN = 0.82;
-    public static double GATE_FAR_CLOSED = 0.23;
-    public static double GATE_CLOSED = 0.29;
+    public static double GATE_OPEN = 0.67;
+    public static double GATE_FAR_CLOSED = 0.1;
+    public static double GATE_CLOSED = 0.23;
 
     public static double FAILSAFE_RESET = 0.24;
     public static double FAILSAFE_KICK = 0.8;
@@ -64,8 +64,7 @@ public class Globals {
 
     public static double SHOOTER_VELOCITY_TOLERANCE = 80; //degrees, yet to be tuned
 
-    public static long KICK_WAIT_TIME = 1000;
-    public static long KICK_FAILSAFE = 700;
+    public static long KICK_WAIT_TIME = 250;
 
     //Pre-Match Configuration:
     public enum Side {

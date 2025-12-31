@@ -7,12 +7,20 @@ public class ShooterLUT {
     private final InterpolatedLUT1D shooterLUT = new InterpolatedLUT1D();
 
     public ShooterLUT() {
-        shooterLUT.addPoint(170, new ShooterParams(0.86, 1850));
-        shooterLUT.addPoint(147, new ShooterParams(0.8, 1780));
-        shooterLUT.addPoint(116, new ShooterParams(0.8, 1500));
-        shooterLUT.addPoint(91, new ShooterParams(0.8, 1350));
-        shooterLUT.addPoint(70, new ShooterParams(0.8, 1200));
-        shooterLUT.addPoint(41, new ShooterParams(0.2, 1100));
+        shooterLUT.addPoint(48, new ShooterParams(0.77, 1180));
+        shooterLUT.addPoint(51, new ShooterParams(0.77, 1200));
+        shooterLUT.addPoint(57, new ShooterParams(0.77, 1240));
+        shooterLUT.addPoint(63, new ShooterParams(0.77, 1280));
+        shooterLUT.addPoint(74, new ShooterParams(0.79, 1200));
+        shooterLUT.addPoint(78, new ShooterParams(0.79, 1250));
+        shooterLUT.addPoint(91, new ShooterParams(0.77, 1450));
+        shooterLUT.addPoint(110, new ShooterParams(0.85, 1400));
+        shooterLUT.addPoint(117, new ShooterParams(0.85, 1400));
+        shooterLUT.addPoint(106, new ShooterParams(0.88, 1500));
+        shooterLUT.addPoint(104, new ShooterParams(0.89, 1400));
+        shooterLUT.addPoint(148, new ShooterParams(0.94, 1900));
+        shooterLUT.addPoint(158, new ShooterParams(0.92, 2100));
+
     }
 
     public ShooterParams getShooterValue(double distance) {

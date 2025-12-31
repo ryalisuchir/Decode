@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.opmode.auto.blue;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
 import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
@@ -15,6 +16,7 @@ import org.firstinspires.ftc.teamcode.common.utility.Robot;
 import org.firstinspires.ftc.teamcode.common.utility.functions.ObeliskVision;
 import org.firstinspires.ftc.teamcode.opmode.auto.blue.paths.BCubePaths;
 
+@Autonomous
 public class BCubeAuto extends OpMode {
     Robot r;
     BCubePaths p;
@@ -40,39 +42,49 @@ public class BCubeAuto extends OpMode {
         CommandScheduler.getInstance().schedule(
                 new SequentialCommandGroup(
                         new ParallelCommandGroup(
-                                new FollowPathCmd(r, p.next()),
+                                new FollowPathCmd(r, p.next(), 0.6),
                                 new SequentialCommandGroup(
                                         new WaitCommand(1000),
                                         new KickOrderACmd(r),
                                         new ResetShooterCmd(r, true, 4)
                                 )
                         ), // at this point we should have shot 3 and intaken 3
-                        new FollowPathCmd(r, p.next()), //gate sequence 1
+                        new FollowPathCmd(r, p.next(), 0.6), //gate sequence 1
+                        new WaitCommand(300),
                         new KickOrderACmd(r),
+                        new WaitCommand(300),
                         new ParallelCommandGroup(
                                 new FollowPathCmd(r, p.next()),
                                 new ResetShooterCmd(r, true, 5)
                         ),
-                        new FollowPathCmd(r, p.next()), //gate sequence 2
+                        new FollowPathCmd(r, p.next(), 0.6), //gate sequence 2
+                        new WaitCommand(300),
                         new KickOrderACmd(r),
+                        new WaitCommand(300),
                         new ParallelCommandGroup(
                                 new FollowPathCmd(r, p.next()),
                                 new ResetShooterCmd(r, true, 5)
                         ),
-                        new FollowPathCmd(r, p.next()), //kick gate sequence 2 (straightens up)
+                        new FollowPathCmd(r, p.next(), 0.6), //kick gate sequence 2 (straightens up)
+                        new WaitCommand(300),
                         new KickOrderACmd(r),
+                        new WaitCommand(300),
                         new ParallelCommandGroup(
                                 new FollowPathCmd(r, p.next()), //intake far spike
                                 new ResetShooterCmd(r, true, 5)
                         ),
                         new FollowPathCmd(r, p.next()),
+                        new WaitCommand(300),
                         new KickOrderACmd(r),
+                        new WaitCommand(300),
                         new ParallelCommandGroup(
                                 new FollowPathCmd(r, p.next()),
                                 new ResetShooterCmd(r, true, 2) //intake from the gate
                         ),
                         new FollowPathCmd(r, p.next()),
+                        new WaitCommand(300),
                         new KickOrderACmd(r),
+                        new WaitCommand(300),
                         new ParallelCommandGroup(
                                 new FollowPathCmd(r, p.next()), //park
                                 new ResetShooterCmd(r, false, 0)

@@ -72,7 +72,7 @@ public class Shooter extends SubsystemBase {
 
         targetVelocity = params.shooterVel;
 
-        double currentVel = shooterMotor2.getCorrectedVelocity();
+        double currentVel = -shooterMotor2.getCorrectedVelocity();
 
         double power = clamp(
                 feedforward(targetVelocity) +

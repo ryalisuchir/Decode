@@ -26,7 +26,7 @@ public class Blue extends CommandOpMode {
 
     @Override
     public void initialize() {
-        r = new Robot(hardwareMap, Globals.DEFAULT_START_POSE, Globals.Side.BLUE, true);
+        r = new Robot(hardwareMap, Globals.DEFAULT_START_POSE, Globals.Side.BLUE, false);
         r.initLoop(r);
         r.dt.startDrive();
         ahnaf = gamepad1;
@@ -73,6 +73,9 @@ public class Blue extends CommandOpMode {
                             }
                         })
                 );
+
+        telemetry.addData("Distance, ", r.dt.getGoalDistance());
+        telemetry.addData("Hood, ", r.r.getPosition());
 
         if (ahnaf.leftBumperWasPressed()) {
             schedule(

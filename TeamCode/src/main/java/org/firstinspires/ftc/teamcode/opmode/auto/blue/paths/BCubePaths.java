@@ -6,29 +6,30 @@ import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 
+import org.firstinspires.ftc.teamcode.common.utility.Globals;
 import org.firstinspires.ftc.teamcode.common.utility.Robot;
 
 public class BCubePaths {
     private final Follower f;
 
     public Pose start = new Pose(31.954, 135.908, Math.toRadians(90));
-    public Pose shoot0 = new Pose(53.94812680115274, 88.59942363112393, Math.toRadians(180));
-    public Pose intakeMidHold1 = new Pose(42.53602305475505, 53.32564841498558);
-    public Pose intakeMid = new Pose(3.5273775216138326, 59.135, Math.toRadians(180));
-    public Pose shoot1 = new Pose(55.193, 77.810, Math.toRadians(150));
-    public Pose intakeRamp1Hold1 = new Pose(39.631, 53.741);
-    public Pose intakeRamp1 = new Pose(9.337, 61.833, Math.toRadians(130));
-    public Pose shoot2 = new Pose(55.608, 77.810, Math.toRadians(130));
-    public Pose intakeRamp2Hold1 = new Pose(39.631, 53.741);
-    public Pose intakeRamp2 = new Pose(9.337, 61.833, Math.toRadians(130));
+    public Pose shoot0 = new Pose(62, 73, Math.toRadians(180));
+    public Pose intakeMidHold1 = new Pose(55, 56);
+    public Pose intakeMid = new Pose(24, 50, Math.toRadians(180));
+    public Pose shoot1 = new Pose(63, 74, Math.toRadians(139));
+    public Pose intakeRamp1Hold1 = new Pose(43, 49);
+    public Pose intakeRamp1 = new Pose(10, 56, Math.toRadians(149));
+    public Pose shoot2 = new Pose(62, 75, Math.toRadians(139));
+    public Pose intakeRamp2Hold1 = new Pose(43, 49);
+    public Pose intakeRamp2 = new Pose(10, 56, Math.toRadians(149));
     public Pose shoot3 = new Pose(55.608, 77.810, Math.toRadians(130));
     public Pose intakeRamp3Hold1 = new Pose(39.631, 53.741);
     public Pose intakeRamp3 = new Pose(9.337, 61.833, Math.toRadians(130));
     public Pose shoot4Hold1 = new Pose(57.476, 67.643);
-    public Pose shoot4 = new Pose(53.948, 85.487, Math.toRadians(180));
-    public Pose intakeRight = new Pose(9.545, 84.242, Math.toRadians(180));
-    public Pose shoot5 = new Pose(53.948, 85.487, Math.toRadians(235));
-    public Pose park = new Pose(18.882, 69.718, Math.toRadians(270));
+    public Pose shoot4 = new Pose(59, 76, Math.toRadians(180));
+    public Pose intakeRight = new Pose(25, 77, Math.toRadians(180));
+    public Pose shoot5 = new Pose(48, 78, Math.toRadians(235));
+    public Pose park = new Pose(42, 78, Math.toRadians(270));
 
     private int index;
 
@@ -77,6 +78,7 @@ public class BCubePaths {
                                 intakeRamp1
                         )
                 )
+                .setBrakingStart(2)
                 .setLinearHeadingInterpolation(shoot1.getHeading(), intakeRamp1.getHeading())
                 .build();
     }

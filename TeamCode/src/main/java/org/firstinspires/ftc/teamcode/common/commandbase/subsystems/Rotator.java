@@ -35,16 +35,8 @@ public class Rotator {
     }
 
     private void updatePower() {
-        double delta = targetPower - currentPower;
-
-        if (Math.abs(delta) > Globals.ROTATOR_AGGRESSION) {
-            delta = Math.signum(delta) * Globals.ROTATOR_AGGRESSION;
-        }
-
-        currentPower += delta;
-
-        i.setPower(currentPower);
-        t.setPower(currentPower);
+        i.setPower(targetPower);
+        t.setPower(targetPower);
     }
 
     public void spinIn() {
