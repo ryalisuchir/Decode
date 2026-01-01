@@ -1,11 +1,15 @@
 package org.firstinspires.ftc.teamcode.opmode.auto.blue.paths;
 
+import android.util.Log;
+
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
+import com.seattlesolvers.solverslib.command.CommandScheduler;
 
+import org.firstinspires.ftc.teamcode.common.commandbase.commands.KickOrderACmd;
 import org.firstinspires.ftc.teamcode.common.utility.Globals;
 import org.firstinspires.ftc.teamcode.common.utility.Robot;
 
@@ -47,6 +51,7 @@ public class BCubePaths {
                         )
                 )
                 .setLinearHeadingInterpolation(start.getHeading(), shoot0.getHeading())
+                .addParametricCallback(0, () -> f.setMaxPower(0.4))
                 .setVelocityConstraint(25)
                 .setHeadingConstraint(Math.toRadians(15))
                 .addPath(
@@ -56,6 +61,7 @@ public class BCubePaths {
                                 intakeMid
                         )
                 )
+                .addParametricCallback(0, () -> f.setMaxPower(1))
                 .setLinearHeadingInterpolation(shoot0.getHeading(), intakeMid.getHeading())
                 .build();
     }
@@ -78,7 +84,7 @@ public class BCubePaths {
                                 intakeRamp1
                         )
                 )
-                .setBrakingStart(2)
+                .setBrakingStrength(0.5)
                 .setLinearHeadingInterpolation(shoot1.getHeading(), intakeRamp1.getHeading())
                 .build();
     }

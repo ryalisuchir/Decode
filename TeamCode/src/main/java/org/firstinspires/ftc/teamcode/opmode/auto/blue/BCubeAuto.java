@@ -42,14 +42,14 @@ public class BCubeAuto extends OpMode {
         CommandScheduler.getInstance().schedule(
                 new SequentialCommandGroup(
                         new ParallelCommandGroup(
-                                new FollowPathCmd(r, p.next(), 0.6),
+                                new FollowPathCmd(r, p.next()),
                                 new SequentialCommandGroup(
                                         new WaitCommand(1000),
                                         new KickOrderACmd(r),
                                         new ResetShooterCmd(r, true, 4)
                                 )
                         ), // at this point we should have shot 3 and intaken 3
-                        new FollowPathCmd(r, p.next(), 0.6), //gate sequence 1
+                        new FollowPathCmd(r, p.next()), //gate sequence 1
                         new WaitCommand(300),
                         new KickOrderACmd(r),
                         new WaitCommand(300),
@@ -57,7 +57,7 @@ public class BCubeAuto extends OpMode {
                                 new FollowPathCmd(r, p.next()),
                                 new ResetShooterCmd(r, true, 5)
                         ),
-                        new FollowPathCmd(r, p.next(), 0.6), //gate sequence 2
+                        new FollowPathCmd(r, p.next()), //gate sequence 2
                         new WaitCommand(300),
                         new KickOrderACmd(r),
                         new WaitCommand(300),
@@ -65,7 +65,7 @@ public class BCubeAuto extends OpMode {
                                 new FollowPathCmd(r, p.next()),
                                 new ResetShooterCmd(r, true, 5)
                         ),
-                        new FollowPathCmd(r, p.next(), 0.6), //kick gate sequence 2 (straightens up)
+                        new FollowPathCmd(r, p.next()), //kick gate sequence 2 (straightens up)
                         new WaitCommand(300),
                         new KickOrderACmd(r),
                         new WaitCommand(300),

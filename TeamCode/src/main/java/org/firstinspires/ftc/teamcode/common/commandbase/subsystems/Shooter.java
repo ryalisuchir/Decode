@@ -4,6 +4,7 @@ import com.pedropathing.follower.Follower;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
+import com.seattlesolvers.solverslib.geometry.Vector2d;
 import com.seattlesolvers.solverslib.hardware.motors.Motor;
 import org.firstinspires.ftc.teamcode.common.utility.Globals;
 import org.firstinspires.ftc.teamcode.common.utility.ShooterLUT;
@@ -23,6 +24,7 @@ public class Shooter extends SubsystemBase {
     private final Motor shooterMotor1, shooterMotor2;
     private final ServoImplEx hood;
     private final Follower follower;
+    private Vector2d customPosition = null;
 
     private final double gX, gY;
 
@@ -44,6 +46,14 @@ public class Shooter extends SubsystemBase {
         });
     }
 
+    public void setCustomDistance(double x, double y) {
+        this.customPosition = new Vector2d(x, y);
+    }
+
+    public void clearCustomDistance() {
+        this.customPosition = null;
+    }
+
     public InstantCommand stopShooter() {
         return new InstantCommand(() -> {
             Globals.shooterState = Globals.ShooterState.STOPPED;
@@ -58,11 +68,17 @@ public class Shooter extends SubsystemBase {
             return;
         }
 
-        double dx = follower.getPose().getX() - gX;
-        double dy = follower.getPose().getY() - gY;
-        double distance = Math.hypot(dx, dy);
+        double x;
+        double y;
+        if (customPosition != null) {
+            x = customPosition.getX();
+            y = customPosition.getY();
+        } else {
+            x = follower.getPose().getX() - gX;
+            y = follower.getPose().getY() - gY;
+        }
 
-        ShooterParams params = shooterLUT.getShooterValue(distance);
+        ShooterParams params = shooterLUT.getShooterValue(x, y);
 
         double hoodPos = clamp(params.hoodPos,
                 Globals.HOOD_LOWERED,

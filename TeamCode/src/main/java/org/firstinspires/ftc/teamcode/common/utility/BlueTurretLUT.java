@@ -31,7 +31,7 @@ public class BlueTurretLUT {
     }
 
     public double getServoValue(double robotAngle) {
-        return turretServoLUT.get(robotAngle);
-//        return robotAngle * 0.1753 - 0.3777;
+//        return turretServoLUT.get(robotAngle);
+        return robotAngle * 0.1755 + 0.4364;
     }
 }
