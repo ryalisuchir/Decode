@@ -36,6 +36,7 @@ public class ShooterPositionTuner extends OpMode {
         intakeTrigger = new Trigger(
                 () -> gamepad1.right_trigger > 0.1 && !r.rotator.threeBallsDetected()
         );
+        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         r.dt.startDrive();
     }
 
@@ -103,6 +104,8 @@ public class ShooterPositionTuner extends OpMode {
         r.dt.drive(gamepad1);
 
         telemetry.addData("Distance: ", r.dt.getGoalDistance());
+        telemetry.addData("X: ", r.dt.getPose().getX());
+        telemetry.addData("Y: ", r.dt.getPose().getY());
         telemetry.addData("Current Velocity: ", r.s2.getCorrectedVelocity());
         telemetry.addData("Hood Value: ", r.r.getPosition());
         telemetry.update();

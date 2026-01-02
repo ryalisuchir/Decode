@@ -22,7 +22,7 @@ public class Globals {
 
     public static Pose DEFAULT_START_POSE = new Pose(16/2, 17.5/2, Math.toRadians(90));
     public static Pose BLUE_CLOSE_START = new Pose(34.149, 134.126, Math.toRadians(270)); //intake faces small triangle
-    public static Pose BLUE_CUBE_START = new Pose(31.954, 135.908, Math.toRadians(90));
+    public static Pose BLUE_CUBE_START = new Pose(31.954, 135.908, Math.toRadians(-90));
     public static Pose BLUE_FAR_START = new Pose(56.43804034582132, 7.6772334293948195, Math.toRadians(90)); //intake faces big triangle
     public static Pose RED_CLOSE_START = new Pose(0, 0, Math.toRadians(0)); //intake faces small triangle
     public static Pose RED_FAR_START = BLUE_FAR_START.mirror();
@@ -30,7 +30,7 @@ public class Globals {
     public static Vector2d BLUE_CASTLE = new Vector2d(0, 144);
     public static Vector2d RED_CASTLE = new Vector2d(144, 144);
 
-    public static double ROTATOR_AGGRESSION = 0.15;
+    public static double POWER_RAMP_PER_SEC = 2.0;
 
     public static double KICKER1_RESET = 0.757;
     public static double KICKER1_KICK = 0.92;
@@ -39,23 +39,19 @@ public class Globals {
     public static double KICKER3_RESET = 0.67;
     public static double KICKER3_KICK = 0.84;
 
-    public static double GATE_OPEN = 0.67;
-    public static double GATE_FAR_CLOSED = 0.1;
-    public static double GATE_CLOSED = 0.23;
-
-    public static double FAILSAFE_RESET = 0.24;
-    public static double FAILSAFE_KICK = 0.8;
+    public static double GATE_OPEN = 0.91;
+    public static double GATE_FAR_CLOSED = 0.21;
+    public static double GATE_CLOSED = 0.3;
 
     public static double TURRET_RESET = 0.45;
+    public static double TURRET_BLUE_CLOSE_READ = 0;
+    public static double TURRET_RED_CLOSE_READ = 0;
 
     public static double MIN_TURRET = 0;
     public static double MAX_TURRET = 1;
 
     public static double HOOD_LOWERED = 0.77;
     public static double HOOD_MAX = 0.98;
-
-    public static double MAX_TIME_SPENT_INTAKING = 5000;
-
 
     public static double MIN_SHOOTER_POWER = 0.4; //used to prevent current draw issues
 

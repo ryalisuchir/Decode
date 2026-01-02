@@ -11,17 +11,18 @@ import org.firstinspires.ftc.teamcode.common.utility.Robot;
 public class B12BackPaths {
     private final Follower f;
 
-    public Pose start = new Pose(54.98559077809798, 7.6772334293948195, Math.toRadians(90));
-    public Pose shoot0 = new Pose(53.74063400576369, 9.95965417867435, Math.toRadians(90));
-    public Pose intakeCloseHold1 = new Pose(52.0806916426513, 37.76368876080692);
-    public Pose intakeClose = new Pose(7.469740634005764, 34.65129682997118, Math.toRadians(180));
-    public Pose shoot1 = new Pose(53.118155619596536, 9.544668587896261, Math.toRadians(180));
-    public Pose intakeMidHold1 = new Pose(54.778097982708935, 68.47262247838617);
-    public Pose intakeMid = new Pose(9.752161383285301, 59.757925072046106, Math.toRadians(180));
-    public Pose shoot2 = new Pose(52.91066282420749, 15.561959654178676, Math.toRadians(180));
-    public Pose intakeHp = new Pose(6.432276657060519, 7.054755043227662, Math.toRadians(180));
-    public Pose shoot3 = new Pose(55.19308357348703, 8.507204610951014, Math.toRadians(180));
-    public Pose park = new Pose(34.85878962536023, 7.884726224783856);
+    public Pose start = new Pose(56, 7.6772334293948195, Math.toRadians(90));
+    public Pose shoot0 = new Pose(57, 17, Math.toRadians(109));
+    public Pose intakeCloseHold1 = new Pose(62, 27);
+    public Pose intakeClose = new Pose(24, 24, Math.toRadians(180));
+    public Pose shoot1 = new Pose(59, 10, Math.toRadians(133));
+    public Pose intakeMidHold1 = new Pose(62, 51);
+    public Pose intakeMid = new Pose(25, 48, Math.toRadians(180));
+    public Pose shoot2 = new Pose(67, 3.89, Math.toRadians(180));
+    public Pose intakeHp1 = new Pose(30.45, 11, Math.toRadians(-145));
+    public Pose intakeHp2 = new Pose(31, 10, Math.toRadians(-109));
+    public Pose shoot3 = new Pose(67, 3.89, Math.toRadians(180));
+    public Pose park = new Pose(59, 36, Math.toRadians(270));
 
     private int index;
 
@@ -81,22 +82,30 @@ public class B12BackPaths {
 
     public PathChain intakeHpX() {
         return f.pathBuilder()
-                .addPath(new BezierLine(shoot2, intakeHp))
-                .setLinearHeadingInterpolation(shoot2.getHeading(), intakeHp.getHeading())
+                .addPath(new BezierLine(shoot2, intakeHp1))
+                .setLinearHeadingInterpolation(shoot2.getHeading(), intakeHp1.getHeading())
+                .addParametricCallback(0.7, () -> f.setMaxPower(0.3))
+                .addPath(new BezierLine(intakeHp1, intakeHp2))
+                .setLinearHeadingInterpolation(intakeHp1.getHeading(), intakeHp2.getHeading())
                 .build();
     }
 
     public PathChain score3() {
         return f.pathBuilder()
-                .addPath(new BezierLine(intakeHp, shoot3))
-                .setLinearHeadingInterpolation(intakeHp.getHeading(), shoot3.getHeading())
+                .addPath(new BezierLine(intakeHp2, shoot3))
+                .addParametricCallback(0, () -> f.setMaxPower(1))
+                .setLinearHeadingInterpolation(intakeHp2.getHeading(), shoot3.getHeading())
                 .build();
     }
 
     public PathChain parkX() {
         return f.pathBuilder()
-                .addPath(new BezierLine(shoot3, park))
-                .setTangentHeadingInterpolation()
+                .addPath(
+                        new BezierLine(
+                                shoot3,
+                                park
+                        )
+                ).setLinearHeadingInterpolation(shoot3.getHeading(), park.getHeading())
                 .build();
     }
 

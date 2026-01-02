@@ -1,4 +1,4 @@
 package org.firstinspires.ftc.teamcode.opmode.auto.blue;
 
-public class BCloseSlow9 {
+public class BClose12 {
 }

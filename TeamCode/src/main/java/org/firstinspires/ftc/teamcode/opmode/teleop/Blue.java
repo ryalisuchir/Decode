@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.opmode.teleop;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
@@ -23,6 +25,9 @@ public class Blue extends CommandOpMode {
     private boolean threeBallRumbleLatched = false;
     Gamepad ahnaf, swetha;
     Trigger intakeTrigger;
+    private long lastLoopTimeNs = 0;
+    private double loopTimeMs = 0;
+    private double loopHz = 0;
 
     @Override
     public void initialize() {
@@ -31,7 +36,7 @@ public class Blue extends CommandOpMode {
         r.dt.startDrive();
         ahnaf = gamepad1;
         swetha = gamepad2;
-
+        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         intakeTrigger = new Trigger(
                 () -> ahnaf.right_trigger > 0.1 && !r.rotator.threeBallsDetected()
         );
@@ -40,6 +45,15 @@ public class Blue extends CommandOpMode {
 
     @Override
     public void run() {
+        long now = System.nanoTime();
+
+        if (lastLoopTimeNs != 0) {
+            loopTimeMs = (now - lastLoopTimeNs) / 1_000_000.0;
+            loopHz = 1000.0 / loopTimeMs;
+        }
+
+        lastLoopTimeNs = now;
+
         telemetry.addData("Color 1: ", Globals.ballColors[0]);
         telemetry.addData("Color 2: ", Globals.ballColors[1]);
         telemetry.addData("Color 3: ", Globals.ballColors[2]);
@@ -48,6 +62,8 @@ public class Blue extends CommandOpMode {
         telemetry.addData("Shooter Power: ", r.shooter.getShooterPower());
         telemetry.addData("Shooter RPM: ", r.shooter.getShooterRPM());
         telemetry.addData("Shooter Velocity: ", r.shooter.getShooterVelocity());
+        telemetry.addData("Loop Time (ms)", "%.2f", loopTimeMs);
+        telemetry.addData("Loop Rate (Hz)", "%.1f", loopHz);
 
         telemetry.update();
 
@@ -73,9 +89,6 @@ public class Blue extends CommandOpMode {
                             }
                         })
                 );
-
-        telemetry.addData("Distance, ", r.dt.getGoalDistance());
-        telemetry.addData("Hood, ", r.r.getPosition());
 
         if (ahnaf.leftBumperWasPressed()) {
             schedule(

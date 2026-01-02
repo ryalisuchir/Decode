@@ -17,6 +17,7 @@ public class Shooter extends SubsystemBase {
     public static double kV = 0.00045;
     public static double kS = 0.02;
     public static double kP = 0.0013;
+    public boolean reached = false;
 
     private double targetVelocity = 0;
     private double lastShooterPower = -999;
@@ -62,6 +63,9 @@ public class Shooter extends SubsystemBase {
     }
 
     public void loop() {
+        if (shooterIsSpunUp()) {
+            reached = true; } else { reached = false; }
+
         if (Globals.shooterState != Globals.ShooterState.SHOOTING && Globals.match != Globals.Match.AUTO) {
             shooterMotor1.set(Globals.MIN_SHOOTER_POWER);
             shooterMotor2.set(Globals.MIN_SHOOTER_POWER);
@@ -118,7 +122,7 @@ public class Shooter extends SubsystemBase {
     }
 
     private void setShooterPowerOnce(double power) {
-        if (power != lastShooterPower) {
+        if (Math.abs(power - lastShooterPower) > 0.02) {
             shooterMotor1.set(power);
             shooterMotor2.set(power);
             lastShooterPower = power;

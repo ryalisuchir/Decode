@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.opmode.tuning;
+package org.firstinspires.ftc.teamcode.opmode.testing;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
@@ -10,8 +10,6 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.common.utility.Globals;
 import org.firstinspires.ftc.teamcode.common.utility.Robot;
-
-import kotlin.Unit;
 
 @Autonomous
 @Config
@@ -57,8 +55,9 @@ public class MasterChecker extends OpMode {
         robot.rl.setPower(dtSpeed3);
         robot.rr.setPower(dtSpeed4);
 
-        robot.t.setPower(rollerSpeed);
+//        robot.t.setPower(rollerSpeed);
         robot.i.setPower(rollerSpeed);
+
         robot.s1.set(shooterSpeed);
         robot.s2.set(shooterSpeed);
 

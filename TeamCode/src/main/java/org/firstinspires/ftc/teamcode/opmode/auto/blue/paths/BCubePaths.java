@@ -16,7 +16,7 @@ import org.firstinspires.ftc.teamcode.common.utility.Robot;
 public class BCubePaths {
     private final Follower f;
 
-    public Pose start = new Pose(31.954, 135.908, Math.toRadians(90));
+    public Pose start = new Pose(31.954, 135.908, Math.toRadians(-90));
     public Pose shoot0 = new Pose(62, 73, Math.toRadians(180));
     public Pose intakeMidHold1 = new Pose(55, 56);
     public Pose intakeMid = new Pose(24, 50, Math.toRadians(180));
@@ -26,9 +26,9 @@ public class BCubePaths {
     public Pose shoot2 = new Pose(62, 75, Math.toRadians(139));
     public Pose intakeRamp2Hold1 = new Pose(43, 49);
     public Pose intakeRamp2 = new Pose(10, 56, Math.toRadians(149));
-    public Pose shoot3 = new Pose(55.608, 77.810, Math.toRadians(130));
-    public Pose intakeRamp3Hold1 = new Pose(39.631, 53.741);
-    public Pose intakeRamp3 = new Pose(9.337, 61.833, Math.toRadians(130));
+    public Pose shoot3 = new Pose(62, 75, Math.toRadians(139));
+    public Pose intakeRamp3Hold1 = new Pose(43, 49);
+    public Pose intakeRamp3 = new Pose(10, 56, Math.toRadians(149));
     public Pose shoot4Hold1 = new Pose(57.476, 67.643);
     public Pose shoot4 = new Pose(59, 76, Math.toRadians(180));
     public Pose intakeRight = new Pose(25, 77, Math.toRadians(180));
@@ -84,7 +84,7 @@ public class BCubePaths {
                                 intakeRamp1
                         )
                 )
-                .setBrakingStrength(0.5)
+                .addParametricCallback(0.6, () -> f.setMaxPower(0.4))
                 .setLinearHeadingInterpolation(shoot1.getHeading(), intakeRamp1.getHeading())
                 .build();
     }
@@ -94,6 +94,7 @@ public class BCubePaths {
                 .addPath(
                         new BezierLine(intakeRamp1, shoot2)
                 )
+                .addParametricCallback(0, () -> f.setMaxPower(1))
                 .setLinearHeadingInterpolation(intakeRamp1.getHeading(), shoot2.getHeading())
                 .build();
     }
@@ -107,6 +108,7 @@ public class BCubePaths {
                                 intakeRamp2
                         )
                 )
+                .addParametricCallback(0.6, () -> f.setMaxPower(0.4))
                 .setLinearHeadingInterpolation(shoot2.getHeading(), intakeRamp2.getHeading())
                 .build();
     }
@@ -114,37 +116,40 @@ public class BCubePaths {
     public PathChain score3() {
         return f.pathBuilder()
                 .addPath(
-                        new BezierLine(intakeRamp2, shoot4)
+                        new BezierLine(intakeRamp2, shoot3)
                 )
-                .setLinearHeadingInterpolation(intakeRamp2.getHeading(), shoot4.getHeading())
+                .addParametricCallback(0, () -> f.setMaxPower(1))
+                .setLinearHeadingInterpolation(intakeRamp2.getHeading(), shoot3.getHeading())
                 .build();
     }
 
-//    public PathChain intake3() { //third go at intaking from the ramp
-//        return f.pathBuilder()
-//                .addPath(
-//                        new BezierCurve(
-//                                shoot3,
-//                                intakeRamp3Hold1,
-//                                intakeRamp3
-//                        )
-//                )
-//                .setLinearHeadingInterpolation(shoot3.getHeading(), intakeRamp3.getHeading())
-//                .build();
-//    }
-//
-//    public PathChain score4() { //score the last ramp balls
-//        return f.pathBuilder()
-//                .addPath(
-//                        new BezierCurve(
-//                                intakeRamp3,
-//                                shoot4Hold1,
-//                                shoot4
-//                        )
-//                )
-//                .setLinearHeadingInterpolation(intakeRamp3.getHeading(), shoot4.getHeading())
-//                .build();
-//    }
+    public PathChain intake3() { //third go at intaking from the ramp
+        return f.pathBuilder()
+                .addPath(
+                        new BezierCurve(
+                                shoot3,
+                                intakeRamp3Hold1,
+                                intakeRamp3
+                        )
+                )
+                .addParametricCallback(0.6, () -> f.setMaxPower(0.4))
+                .setLinearHeadingInterpolation(shoot3.getHeading(), intakeRamp3.getHeading())
+                .build();
+    }
+
+    public PathChain score4() { //score the last ramp balls
+        return f.pathBuilder()
+                .addPath(
+                        new BezierCurve(
+                                intakeRamp3,
+                                shoot4Hold1,
+                                shoot4
+                        )
+                )
+                .addParametricCallback(0, () -> f.setMaxPower(1))
+                .setLinearHeadingInterpolation(intakeRamp3.getHeading(), shoot4.getHeading())
+                .build();
+    }
 
     public PathChain intake4() { //intake far spike mark
         return f.pathBuilder()
@@ -191,11 +196,11 @@ public class BCubePaths {
             case 3: return score2();
             case 4: return intake2();
             case 5: return score3();
-//            case 6: return intake3();
-//            case 7: return score4();
-            case 6: return intake4();
-            case 7: return score5();
-            case 8: return parkX();
+            case 6: return intake3();
+            case 7: return score4();
+            case 8: return intake4();
+            case 9: return score5();
+            case 10: return parkX();
             default: return null;
         }
     }

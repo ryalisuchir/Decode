@@ -13,7 +13,7 @@ public class CloseGateCmd extends SequentialCommandGroup {
         super(
                 new SequentialCommandGroup(
                         new InstantCommand(() -> g.setPosition(Globals.GATE_FAR_CLOSED)),
-                        new WaitCommand(200),
+                        new WaitCommand(100),
                         new InstantCommand(() -> g.setPosition(Globals.GATE_CLOSED))
                 )
         );

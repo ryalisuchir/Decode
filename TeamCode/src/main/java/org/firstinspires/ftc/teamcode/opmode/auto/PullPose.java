@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.opmode.auto.blue;
+package org.firstinspires.ftc.teamcode.opmode.auto;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
@@ -15,7 +15,7 @@ public class PullPose extends OpMode {
     @Override
     public void init() {
         CommandScheduler.getInstance().reset();
-        r = new Robot(hardwareMap, Globals.BLUE_CUBE_START, Globals.Side.BLUE, true);
+        r = new Robot(hardwareMap, Globals.BLUE_FAR_START, Globals.Side.BLUE, true);
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
     }
 

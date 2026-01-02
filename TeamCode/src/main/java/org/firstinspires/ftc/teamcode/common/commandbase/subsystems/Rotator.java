@@ -14,8 +14,9 @@ public class Rotator {
     private final DcMotorEx t;
     private final ServoImplEx g;
 
-    private double currentPower = 0.0;
     private double targetPower = 0.0;
+    private double currentPower = 0.0;
+    private long lastUpdateTimeNs = 0;
 
 
     private boolean autoTransferTriggered = false;
@@ -32,11 +33,6 @@ public class Rotator {
 
     private void setTarget(double power) {
         targetPower = power;
-    }
-
-    private void updatePower() {
-        i.setPower(targetPower);
-        t.setPower(targetPower);
     }
 
     public void spinIn() {
@@ -83,13 +79,6 @@ public class Rotator {
         }
     }
 
-    public ParallelCommandGroup eject() {
-        return new ParallelCommandGroup(
-                new InstantCommand(() -> Globals.rotateState = Globals.RotateState.EJECTING),
-                new InstantCommand(this::spinEject),
-                new CloseGateCmd(g)
-        );
-    }
 
     public boolean threeBallsDetected() {
         return Globals.ballColors[0] != Globals.BallColor.NONE &&
@@ -114,7 +103,32 @@ public class Rotator {
     }
 
     public void periodic() {
-        updatePower();
+
+        long now = System.nanoTime();
+
+        if (lastUpdateTimeNs == 0) {
+            lastUpdateTimeNs = now;
+        }
+
+        double dt = (now - lastUpdateTimeNs) * 1e-9;
+        lastUpdateTimeNs = now;
+
+        double delta = targetPower - currentPower;
+
+        if (Math.abs(delta) <= 0.05) {
+            currentPower = targetPower;
+        } else {
+            double maxDelta = Globals.POWER_RAMP_PER_SEC * dt;
+
+            if (Math.abs(delta) > maxDelta) {
+                currentPower += Math.signum(delta) * maxDelta;
+            } else {
+                currentPower = targetPower;
+            }
+        }
+
+        i.setPower(currentPower);
+        t.setPower(currentPower);
 
         if (oneBallDetected()) {
             Globals.shooterState = Globals.ShooterState.SHOOTING;

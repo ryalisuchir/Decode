@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.common.utility.functions;
 
 import org.firstinspires.ftc.teamcode.common.utility.functions.ShooterParams;
+import org.firstinspires.ftc.teamcode.common.utility.functions.MonotoneCubic;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,41 +24,46 @@ public class InterpolatedLUT2D {
         points.add(new Point(x, y, params));
     }
 
-    /**
-     * Bilinear-like interpolation: find the four nearest neighbors in x and y and interpolate.
-     * For simplicity, this uses the closest points and does weighted average.
-     */
     public ShooterParams get(double x, double y) {
         if (points.isEmpty()) return new ShooterParams(0, 0);
 
-        Point p1 = null, p2 = null, p3 = null, p4 = null;
-        double minDist = Double.MAX_VALUE;
+        // Step 1: collect all unique y-values
+        List<Double> ys = new ArrayList<>();
+        for (Point p : points) if (!ys.contains(p.y)) ys.add(p.y);
+        ys.sort(Double::compare);
 
-        // Find four closest points (for simplicity, brute-force; could optimize later)
-        points.sort((a, b) -> {
-            double da = Math.hypot(a.x - x, a.y - y);
-            double db = Math.hypot(b.x - x, b.y - y);
-            return Double.compare(da, db);
-        });
+        double[] hoodValues = new double[ys.size()];
+        double[] velValues = new double[ys.size()];
 
-        // Use the 4 nearest points
-        p1 = points.get(0);
-        p2 = points.size() > 1 ? points.get(1) : p1;
-        p3 = points.size() > 2 ? points.get(2) : p1;
-        p4 = points.size() > 3 ? points.get(3) : p1;
+        // Step 2: For each y-row, interpolate along x
+        for (int i = 0; i < ys.size(); i++) {
+            double yi = ys.get(i);
+            List<Double> xs = new ArrayList<>();
+            List<Double> hoods = new ArrayList<>();
+            List<Double> vels = new ArrayList<>();
 
-        // Weighted average by inverse distance
-        double totalWeight = 0;
-        double hood = 0, vel = 0;
+            for (Point p : points) if (p.y == yi) {
+                xs.add(p.x);
+                hoods.add(p.params.hoodPos);
+                vels.add(p.params.shooterVel);
+            }
 
-        for (Point p : new Point[]{p1, p2, p3, p4}) {
-            double dist = Math.hypot(p.x - x, p.y - y);
-            double weight = 1.0 / (dist + 1e-6); // prevent divide by zero
-            totalWeight += weight;
-            hood += p.params.hoodPos * weight;
-            vel += p.params.shooterVel * weight;
+            if (xs.isEmpty()) continue;
+
+            // Convert to arrays
+            double[] xArr = xs.stream().mapToDouble(d -> d).toArray();
+            double[] hoodArr = hoods.stream().mapToDouble(d -> d).toArray();
+            double[] velArr = vels.stream().mapToDouble(d -> d).toArray();
+
+            hoodValues[i] = MonotoneCubic.interpolate(xArr, hoodArr, x);
+            velValues[i] = MonotoneCubic.interpolate(xArr, velArr, x);
         }
 
-        return new ShooterParams(hood / totalWeight, vel / totalWeight);
+        // Step 3: interpolate along y
+        double[] yArr = ys.stream().mapToDouble(d -> d).toArray();
+        double hood = MonotoneCubic.interpolate(yArr, hoodValues, y);
+        double vel = MonotoneCubic.interpolate(yArr, velValues, y);
+
+        return new ShooterParams(hood, vel);
     }
 }

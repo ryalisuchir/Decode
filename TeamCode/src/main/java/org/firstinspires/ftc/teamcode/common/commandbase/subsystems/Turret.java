@@ -37,7 +37,7 @@ public class Turret {
 
 
     private void setPositionOnce(double pos) {
-        if (pos != lastSetPosition) {
+        if (Math.abs(pos - lastSetPosition) > 0.005) {
             turret1.setPosition(pos);
             turret2.setPosition(pos);
             lastSetPosition = pos;
@@ -46,6 +46,14 @@ public class Turret {
 
     public InstantCommand reset() {
         return new InstantCommand(() ->setPositionOnce(Globals.TURRET_RESET));
+    }
+
+    public InstantCommand blueObeliskRead() {
+        return new InstantCommand(() -> setPositionOnce(Globals.TURRET_BLUE_CLOSE_READ));
+    }
+
+    public InstantCommand redObeliskRead() {
+        return new InstantCommand(() -> setPositionOnce(Globals.TURRET_RED_CLOSE_READ));
     }
 
     public void setFixedPosition(double pos) {

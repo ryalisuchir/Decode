@@ -5,30 +5,29 @@ import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
-import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
-import com.seattlesolvers.solverslib.command.WaitCommand;
+import com.seattlesolvers.solverslib.command.WaitUntilCommand;
+
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.FollowPathCmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.KickOrderACmd;
-import org.firstinspires.ftc.teamcode.common.commandbase.commands.ResetShooterAndReadCmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.ResetShooterCmd;
 import org.firstinspires.ftc.teamcode.common.utility.Globals;
 import org.firstinspires.ftc.teamcode.common.utility.Robot;
 import org.firstinspires.ftc.teamcode.common.utility.functions.ObeliskVision;
+import org.firstinspires.ftc.teamcode.opmode.auto.blue.paths.B12BackPaths;
 import org.firstinspires.ftc.teamcode.opmode.auto.blue.paths.BCubePaths;
 
 @Autonomous
-public class BCubeAuto extends OpMode {
+public class BFar12 extends OpMode {
     Robot r;
-    BCubePaths p;
-    boolean read = false;
+    B12BackPaths p;
 
     @Override
     public void init() {
         CommandScheduler.getInstance().reset();
         r = new Robot(hardwareMap, Globals.BLUE_CUBE_START, Globals.Side.BLUE, true);
-        p = new BCubePaths(r);
+        p = new B12BackPaths(r);
         r.shooter.setCustomDistance(p.shoot0.getX(), p.shoot0.getY());
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
     }
@@ -48,50 +47,30 @@ public class BCubeAuto extends OpMode {
                         new ParallelCommandGroup(
                                 new FollowPathCmd(r, p.next()),
                                 new SequentialCommandGroup(
-                                        new WaitCommand(1000),
-                                        new KickOrderACmd(r),
-                                        new ResetShooterAndReadCmd(r, true, 4, Globals.Side.BLUE)
+                                        new WaitUntilCommand(() -> r.shooter.reached),
+                                        new KickOrderACmd(r)
                                 )
-                        ), // at this point we should have shot 3 and intaken 3
-                        new FollowPathCmd(r, p.next()), //gate sequence 1
-                        new WaitCommand(300),
-                        new InstantCommand(() -> read = true),
+                        ),
+                        new ParallelCommandGroup( //resets shooter from preloads and follows to intake close spike
+                                new ResetShooterCmd(r, true, 5),
+                                new FollowPathCmd(r, p.next())
+                        ),
+                        new FollowPathCmd(r, p.next()), //gets ready to shoot close spike
                         new KickOrderACmd(r),
-                        new WaitCommand(300),
-                        new ParallelCommandGroup(
+                        new ParallelCommandGroup( //resets shooter from close spike and follows to intake middle spike
+                                new FollowPathCmd(r, p.next()),
+                                new ResetShooterCmd(r, true, 6)
+                        ),
+                        new FollowPathCmd(r, p.next()), //gets ready to shoot middle spike
+                        new KickOrderACmd(r), //kicks middle spike
+                        new ParallelCommandGroup( //follows to hp pickup
                                 new FollowPathCmd(r, p.next()),
                                 new ResetShooterCmd(r, true, 5)
                         ),
-                        new FollowPathCmd(r, p.next()), //gate sequence 2
-                        new WaitCommand(300),
+                        new FollowPathCmd(r, p.next()), //gets ready to shoot hp balls
                         new KickOrderACmd(r),
-                        new WaitCommand(300),
-                        new ParallelCommandGroup(
+                        new ParallelCommandGroup( //park and reset
                                 new FollowPathCmd(r, p.next()),
-                                new ResetShooterCmd(r, true, 5)
-                        ),
-                        new FollowPathCmd(r, p.next()), //kick gate sequence 2 (straightens up)
-                        new WaitCommand(300),
-                        new KickOrderACmd(r),
-                        new WaitCommand(300),
-                        new ParallelCommandGroup(
-                                new FollowPathCmd(r, p.next()), //intake far spike
-                                new ResetShooterCmd(r, true, 5)
-                        ),
-                        new FollowPathCmd(r, p.next()),
-                        new WaitCommand(300),
-                        new KickOrderACmd(r),
-                        new WaitCommand(300),
-                        new ParallelCommandGroup(
-                                new FollowPathCmd(r, p.next()),
-                                new ResetShooterCmd(r, true, 2) //intake from the gate
-                        ),
-                        new FollowPathCmd(r, p.next()),
-                        new WaitCommand(300),
-                        new KickOrderACmd(r),
-                        new WaitCommand(300),
-                        new ParallelCommandGroup(
-                                new FollowPathCmd(r, p.next()), //park
                                 new ResetShooterCmd(r, false, 0)
                         )
                 )
@@ -101,8 +80,7 @@ public class BCubeAuto extends OpMode {
     @Override
     public void loop() {
         r.loop(r);
-        if (!read) { ObeliskVision.getObeliskFiducial(r.llResult); }
-        telemetry.addData("Obelisk Reading:", Globals.obeliskOptions);
+        ObeliskVision.getObeliskFiducial(r.llResult);
     }
 
     @Override
