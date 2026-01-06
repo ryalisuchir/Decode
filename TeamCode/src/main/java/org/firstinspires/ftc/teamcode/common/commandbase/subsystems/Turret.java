@@ -7,8 +7,6 @@ import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 
-import org.firstinspires.ftc.teamcode.common.utility.functions.vision.TurretVision;
-import org.firstinspires.ftc.teamcode.common.utility.functions.vision.Vision;
 import org.firstinspires.ftc.teamcode.common.utility.turret.CloseBlueTurretLUT;
 import org.firstinspires.ftc.teamcode.common.utility.turret.CloseRedTurretLUT;
 import org.firstinspires.ftc.teamcode.common.utility.turret.FarBlueTurretLUT;
