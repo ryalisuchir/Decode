@@ -26,6 +26,8 @@ public class TurretTester extends OpMode {
         r.noOuttakeLoop(r);
         telemetry.addData("tx: ", Vision.getTx());
         telemetry.addData("Correct fid: ", Vision.hasCorrectFiducial());
+        telemetry.addData("Robot Turret Pos:", r.turret.getTurretAngleToGoal(r.dt.getPose().getX(), r.dt.getPose().getY(), r.dt.getPose().getHeading()));
+        telemetry.addData("Servo Pos: ", r.t1.getPosition());
         telemetry.addData("Pose: ", r.dt.getPose().getHeading());
         telemetry.update();
     }
