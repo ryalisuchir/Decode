@@ -25,8 +25,8 @@ public class KickOrderACmd extends SequentialCommandGroup {
 
         List<Command> sequence = new ArrayList<>();
 
-        sequence.add(r.rotator.transfer());
         sequence.add(new InstantCommand(() -> Globals.robotState = Globals.RobotState.KICKING));
+        sequence.add(new InstantCommand(() -> r.spinner.transferStart()));
         sequence.add(r.shooter.startShooter());
 
         for (int i = 0; i < firingOrder.size(); i++) {
@@ -40,7 +40,7 @@ public class KickOrderACmd extends SequentialCommandGroup {
     private Command kickCommand(Kicker kicker, int slot) {
             return new SequentialCommandGroup(
                     KickCommands.kickOnce(kicker, slot),
-                    new WaitCommand(Globals.KICK_AUTO)
+                    new WaitCommand(Globals.KICK_WAIT_AUTO)
             );
     }
 

@@ -21,7 +21,7 @@ import org.firstinspires.ftc.teamcode.common.utility.Robot;
 public class ShooterPositionTuner extends CommandOpMode {
 
     Robot r;
-    private boolean threeBallRumbleLatched = false;
+    private final boolean threeBallRumbleLatched = false;
     Gamepad ahnaf;
     Trigger intakeTrigger;
     private long lastLoopTimeNs = 0;
@@ -42,31 +42,14 @@ public class ShooterPositionTuner extends CommandOpMode {
         ahnaf = gamepad1;
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         intakeTrigger = new Trigger(
-                () -> ahnaf.right_trigger > 0.1 && !r.rotator.threeBallsDetected()
+                () -> ahnaf.right_trigger > 0.1 && !r.spinner.threeBallsDetected()
         );
         intakeTrigger
                 .whileActiveContinuous(
-                        new ParallelCommandGroup(
-                                new InstantCommand(() -> Globals.rotateState = Globals.RotateState.INTAKING),
-                                new InstantCommand(() -> r.rotator.spinIn()),
-                                new InstantCommand(() -> r.rotator.openGate()),
-                                KickCommands.resetAll(r.kicker)
-                        )
+                        r.spinner.toggleIn()
                 )
                 .whenInactive(
-                        new InstantCommand(() -> {
-                            if (r.rotator.threeBallsDetected()) {
-                                CommandScheduler.getInstance().schedule(
-                                        new ParallelCommandGroup(
-                                                r.rotator.transfer()
-                                        )
-                                );
-                            } else {
-                                CommandScheduler.getInstance().schedule(
-                                        r.rotator.stop()
-                                );
-                            }
-                        })
+                        r.spinner.toggleIn()
                 );
     }
 

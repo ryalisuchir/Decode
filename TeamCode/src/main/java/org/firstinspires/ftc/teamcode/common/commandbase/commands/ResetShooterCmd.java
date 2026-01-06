@@ -12,10 +12,10 @@ public class ResetShooterCmd extends ParallelCommandGroup {
             super(
                     new ParallelCommandGroup(
                             KickCommands.resetAll(r.kicker),
-                            new InstantCommand(() -> Globals.robotState = Globals.RobotState.KICKING),
+                            new InstantCommand(() -> Globals.robotState = Globals.RobotState.NOT_KICKING),
                             r.turret.reset(),
                             r.shooter.stopShooter(),
-                            i ? new IntakeCmd(r, x) : r.rotator.stop()
+                            i ? new IntakeCmd(r, x) : new InstantCommand(() -> r.spinner.transferStop())
                     )
             );
         }

@@ -21,7 +21,7 @@ public class KickCommands {
     public static Command kickAndReset(Kicker kicker, int slot) {
         return new SequentialCommandGroup(
                 new InstantCommand(() -> kicker.kick(slot), kicker),
-                new WaitCommand(Globals.KICK_WAIT_TIME),
+                new WaitCommand(Globals.KICK_WAIT_AUTO),
                 new InstantCommand(() -> kicker.reset(slot), kicker)
         );
     }

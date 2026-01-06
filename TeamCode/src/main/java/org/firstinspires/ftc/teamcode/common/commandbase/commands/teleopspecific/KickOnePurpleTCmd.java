@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.common.commandbase.commands.teleopspecific;
 
+import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
@@ -20,12 +21,12 @@ public class KickOnePurpleTCmd extends SequentialCommandGroup {
         boolean lastBall = isLastBall(purpleSlot);
 
         addCommands(
-                r.rotator.transfer(),
+                new InstantCommand(() -> r.spinner.transferStart()),
                 r.shooter.startShooter(),
 
                 new SequentialCommandGroup(
                         KickCommands.kickOnce(r.kicker, purpleSlot),
-                        new WaitCommand(Globals.KICK_WAIT_TIME)
+                        new WaitCommand(Globals.KICK_WAIT_TELE)
                 )
         );
 
@@ -35,7 +36,7 @@ public class KickOnePurpleTCmd extends SequentialCommandGroup {
                             KickCommands.resetAll(r.kicker),
                             r.turret.reset(),
                             r.shooter.stopShooter(),
-                            r.rotator.stop()
+                            r.spinner.toggleIn()
                     )
             );
         }

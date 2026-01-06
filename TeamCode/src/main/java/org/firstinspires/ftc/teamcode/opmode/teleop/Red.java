@@ -5,7 +5,6 @@ import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
-import com.seattlesolvers.solverslib.command.CommandScheduler;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
 import com.seattlesolvers.solverslib.command.UninterruptibleCommand;
@@ -31,41 +30,23 @@ public class Red extends CommandOpMode {
 
     @Override
     public void initialize() {
-        r = new Robot(hardwareMap, Globals.DEFAULT_START_POSE, Globals.Side.RED, false);
+        r = new Robot(hardwareMap, Globals.DEFAULT_START_POSE, Globals.Side.RED, true);
         r.initLoop(r);
         r.dt.startDrive();
         ahnaf = gamepad1;
         swetha = gamepad2;
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         intakeTrigger = new Trigger(
-                () -> ahnaf.right_trigger > 0.1 && !r.rotator.threeBallsDetected()
+                () -> ahnaf.right_trigger > 0.1 && !r.spinner.threeBallsDetected()
         );
         intakeTrigger
                 .whileActiveContinuous(
-                        new ParallelCommandGroup(
-                                new InstantCommand(() -> Globals.rotateState = Globals.RotateState.INTAKING),
-                                new InstantCommand(() -> r.rotator.spinIn()),
-                                new InstantCommand(() -> r.rotator.openGate()),
-                                KickCommands.resetAll(r.kicker)
-                        )
+                        r.spinner.toggleIn()
                 )
                 .whenInactive(
-                        new InstantCommand(() -> {
-                            if (r.rotator.threeBallsDetected()) {
-                                CommandScheduler.getInstance().schedule(
-                                        new ParallelCommandGroup(
-                                                r.rotator.transfer()
-                                        )
-                                );
-                            } else {
-                                CommandScheduler.getInstance().schedule(
-                                        r.rotator.stop()
-                                );
-                            }
-                        })
+                        r.spinner.toggleIn()
                 );
     }
-
 
     @Override
     public void run() {
@@ -90,6 +71,7 @@ public class Red extends CommandOpMode {
         telemetry.addData("Loop Rate (Hz)", "%.1f", loopHz);
         telemetry.addData("Pose: ", r.dt.getPose());
         telemetry.addData("Side: ", Globals.side);
+        telemetry.addData("DT Side: ", r.dt.a);
 
         telemetry.update();
 
@@ -97,14 +79,6 @@ public class Red extends CommandOpMode {
             schedule(
                     new UninterruptibleCommand(new KickOrderTCmd(r))
             );
-        }
-
-        if (swetha.circleWasPressed()) {
-            r.turret.xChange(1);
-        }
-
-        if (swetha.squareWasPressed()) {
-            r.turret.yChange(1);
         }
 
         if (ahnaf.ps || swetha.ps) {
@@ -118,6 +92,17 @@ public class Red extends CommandOpMode {
                     )
             );
         }
+
+        if (swetha.circleWasPressed()) {
+            r.turret.xChange(1);
+        }
+
+        if (swetha.squareWasPressed()) {
+            r.turret.yChange(1);
+        }
+
+        telemetry.addData("x of goal:", r.turret.goalX);
+        telemetry.addData("y of goal:", r.turret.goalY);
 
         //Failsafes:
         if (swetha.leftBumperWasPressed()) {
@@ -158,7 +143,7 @@ public class Red extends CommandOpMode {
             );
         }
 
-        if (r.rotator.threeBallsDetected() && !threeBallRumbleLatched) {
+        if (r.spinner.threeBallsDetected() && !threeBallRumbleLatched) {
             schedule(
                     new InstantCommand(() -> {
                         ahnaf.rumble(1000);
@@ -168,7 +153,7 @@ public class Red extends CommandOpMode {
             );
         }
 
-        if (!r.rotator.threeBallsDetected()) {
+        if (!r.spinner.threeBallsDetected()) {
             threeBallRumbleLatched = false;
         }
 

@@ -32,34 +32,16 @@ public class TurretTuner extends CommandOpMode {
         t = new TurretCalibrator();
 
         intakeTrigger = new Trigger(
-                () -> gamepad1.right_trigger > 0.1 && !r.rotator.threeBallsDetected()
+                () -> gamepad1.right_trigger > 0.1 && !r.spinner.threeBallsDetected()
         );
         intakeTrigger
                 .whileActiveContinuous(
-                        new ParallelCommandGroup(
-                                new InstantCommand(() -> Globals.rotateState = Globals.RotateState.INTAKING),
-                                new InstantCommand(() -> r.rotator.spinIn()),
-                                new InstantCommand(() -> r.rotator.openGate()),
-                                KickCommands.resetAll(r.kicker)
-                        )
+                        r.spinner.toggleIn()
                 )
                 .whenInactive(
-                        new InstantCommand(() -> {
-                            if (r.rotator.threeBallsDetected()) {
-                                CommandScheduler.getInstance().schedule(
-                                        r.rotator.transfer()
-                                );
-                            } else {
-                                CommandScheduler.getInstance().schedule(
-                                        r.rotator.stop()
-                                );
-                            }
-                        })
+                        r.spinner.toggleIn()
                 );
-
-
     }
-
 
     @Override
     public void run() {

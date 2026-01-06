@@ -16,8 +16,8 @@ import com.seattlesolvers.solverslib.hardware.motors.Motor;
 
 import org.firstinspires.ftc.teamcode.common.commandbase.subsystems.Drivetrain;
 import org.firstinspires.ftc.teamcode.common.commandbase.subsystems.Kicker;
-import org.firstinspires.ftc.teamcode.common.commandbase.subsystems.Rotator;
 import org.firstinspires.ftc.teamcode.common.commandbase.subsystems.Shooter;
+import org.firstinspires.ftc.teamcode.common.commandbase.subsystems.Spinner;
 import org.firstinspires.ftc.teamcode.common.commandbase.subsystems.Turret;
 import org.firstinspires.ftc.teamcode.common.utility.functions.ColorReader;
 import org.firstinspires.ftc.teamcode.common.utility.functions.DenoiseFilter;
@@ -39,7 +39,7 @@ public class Robot {
 
     public Drivetrain dt;
     public Kicker kicker;
-    public Rotator rotator;
+    public Spinner spinner;
     public Shooter shooter;
     public Turret turret;
 
@@ -59,7 +59,8 @@ public class Robot {
         if (!a) Globals.match = Globals.Match.TELEOP; //Sets the match to teleop so we don't have to reset global enums
 
         if (a) { //If we say that we're running auto, all the global enums will reset
-            Globals.rotateState = Globals.RotateState.STOPPED;
+            Globals.intakeState = Globals.IntakeState.STOPPED;
+            Globals.transferState = Globals.TransferState.STOPPED;
             Globals.robotState = Globals.RobotState.NOT_KICKING;
             Globals.match = Globals.Match.AUTO;
             Globals.shooterState = Globals.ShooterState.STOPPED;
@@ -72,8 +73,11 @@ public class Robot {
             Globals.failsafeState = Globals.FailsafeState.RESET;
             Globals.obeliskOptions = Globals.ObeliskOptions.PPG;
         } else {
-            if (Globals.rotateState == null) {
-                Globals.rotateState = Globals.RotateState.STOPPED;
+            if (Globals.intakeState == null) {
+                Globals.intakeState = Globals.IntakeState.STOPPED;
+            }
+            if (Globals.transferState == null) {
+                Globals.transferState = Globals.TransferState.STOPPED;
             }
             if (Globals.robotState == null) {
                 Globals.robotState = Globals.RobotState.NOT_KICKING;
@@ -183,8 +187,8 @@ public class Robot {
         }
 
         kicker = new Kicker(k1, k2, k3);
-        rotator = new Rotator(i, t, g);
-        shooter = new Shooter(s1, s2, r, dt.getFollower(), gX, gY, rotator);
+        spinner = new Spinner(i, t, g);
+        shooter = new Shooter(s1, s2, r, dt.getFollower(), gX, gY, spinner);
         turret = new Turret(s, t1, t2, dt.getFollower(), gX, gY);
     }
 
@@ -199,7 +203,7 @@ public class Robot {
     public void loop(Robot r) {
         clearCache();
         dt.loop();
-        rotator.periodic();
+        spinner.periodic();
         shooter.loop();
         turret.loop();
         readColors(r);
@@ -210,7 +214,7 @@ public class Robot {
     public void noOuttakeLoop(Robot r) {
         clearCache();
         dt.loop();
-        rotator.periodic();
+        spinner.periodic();
         readColors(r);
         updateVision();
         CommandScheduler.getInstance().run();

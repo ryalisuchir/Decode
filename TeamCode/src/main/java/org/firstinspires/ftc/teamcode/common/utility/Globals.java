@@ -12,7 +12,8 @@ public class Globals {
     public static Globals.Match match;
     public static BallColor[] ballColors = new BallColor[3];
 
-    public static Globals.RotateState rotateState;
+    public static Globals.IntakeState intakeState;
+    public static Globals.TransferState transferState;
     public static Globals.ShooterState shooterState;
     public static Globals.Kicker1State kicker1State;
     public static Globals.Kicker2State kicker2State;
@@ -52,12 +53,13 @@ public class Globals {
     public static double KICKER3_KICK = 0.84;
 
     public static double GATE_OPEN = 0.95;
-    public static double GATE_FAR_CLOSED = 0;
     public static double GATE_CLOSED = 0.27;
 
     public static double TURRET_RESET = 0.42;
     public static double TURRET_BLUE_CLOSE_READ = 0.15;
     public static double TURRET_RED_CLOSE_READ = 0.78;
+    public static double TURRET_BLUE_FAR_READ = 0.42;
+    public static double TURRET_RED_FAR_READ = 0.42;
 
     public static double MIN_TURRET = 0;
     public static double MAX_TURRET = 1;
@@ -65,16 +67,16 @@ public class Globals {
     public static double HOOD_LOWERED = 0.77;
     public static double HOOD_MAX = 0.98;
 
-    public static double MIN_SHOOTER_POWER = 0.4; //used to prevent current draw issues
+    public static double MIN_SHOOTER_POWER = 0.4;
 
     public static double MAX_TRANSFER_POWER = -1;
+    public static double TRANSFER_INTAKING = 1;
     public static double MAX_INTAKING_POWER = 1;
 
-    public static double SHOOTER_VELOCITY_TOLERANCE = 100; //degrees, yet to be tuned
+    public static double SHOOTER_VELOCITY_TOLERANCE = 100;
 
-    public static long KICK_WAIT_TIME = 250;
-
-    public static long KICK_AUTO = 250;
+    public static long KICK_WAIT_TELE = 200;
+    public static long KICK_WAIT_AUTO = 200;
 
     //Pre-Match Configuration:
     public enum Side {
@@ -108,10 +110,14 @@ public class Globals {
     }
 
     //Robot Configurations:
-    public enum RotateState{
+    public enum IntakeState{
         INTAKING,
-        TRANSFERRING,
         EJECTING,
+        STOPPED
+    }
+    public enum TransferState{
+        TRANSFERRING,
+        INTAKING,
         STOPPED
     }
 
@@ -152,7 +158,8 @@ public class Globals {
         BLUE_CLOSE_OBELISK,
         BLUE_FAR_OBELISK,
         RED_CLOSE_OBELISK,
-        RED_FAR_OBELISK
+        RED_FAR_OBELISK,
+        SET_POSITION
     }
 
     public enum HoodState {

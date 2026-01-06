@@ -21,7 +21,7 @@ public class Shooter extends SubsystemBase {
 
     private double targetVelocity = 0;
     private double lastShooterPower = -999;
-    Rotator r;
+    Spinner r;
 
     private final Motor shooterMotor1, shooterMotor2;
     private final ServoImplEx hood;
@@ -32,7 +32,7 @@ public class Shooter extends SubsystemBase {
 
     public Shooter(Motor shooterMotor1, Motor shooterMotor2,
                    ServoImplEx hood, Follower follower,
-                   double gX, double gY, Rotator r) {
+                   double gX, double gY, Spinner r) {
         this.shooterMotor1 = shooterMotor1;
         this.shooterMotor2 = shooterMotor2;
         this.hood = hood;

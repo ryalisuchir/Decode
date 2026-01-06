@@ -9,8 +9,8 @@ import org.firstinspires.ftc.teamcode.common.utility.Robot;
 public class IntakeCmd extends CommandBase {
 
     private long startTime;
-    private Robot r;
-    private double timer;
+    private final Robot r;
+    private final double timer;
 
     public IntakeCmd(Robot r, double timer) {
         this.r = r;
@@ -20,17 +20,17 @@ public class IntakeCmd extends CommandBase {
     @Override
     public void initialize() {
         startTime = System.currentTimeMillis();
-        CommandScheduler.getInstance().schedule(r.rotator.toggleIn());
+        CommandScheduler.getInstance().schedule(r.spinner.toggleIn());
     }
 
     @Override
     public boolean isFinished() {
-        if (r.rotator.threeBallsDetected()) return true;
+        if (r.spinner.threeBallsDetected()) return true;
         return System.currentTimeMillis() - startTime >= timer;
     }
 
     @Override
     public void end(boolean interrupted) {
-        CommandScheduler.getInstance().schedule(r.rotator.toggleIn());
+        CommandScheduler.getInstance().schedule(r.spinner.toggleIn());
     }
 }
