@@ -42,14 +42,7 @@ public class Globals {
     public static final double TURRET_OFFSET_Y = 2.9559;  // left from center
     public static final double BARREL_LENGTH = 6.0; // inches (measure this)
 
-    public static  double VISION_K = 0.01424; // radians per deg TX
-    public static  double MAX_VISION_CORRECTION_RAD = Math.toRadians(360);
-    public static  double VISION_DEADBAND_DEG = 0.001;
-
-    public static double slope = 0.1832;
-    public static double intercept = 0.4215;
-
-    public static double k = -0.00055; //-0.00026 before, but that's what the theoretical calculation provided
+    public static double k = 1.0;
 
     public static double KICKER1_RESET = 0.757;
     public static double KICKER1_KICK = 0.92;
