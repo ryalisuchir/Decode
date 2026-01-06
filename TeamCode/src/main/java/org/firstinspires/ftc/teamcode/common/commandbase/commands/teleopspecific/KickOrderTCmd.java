@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.common.commandbase.commands.teleopspecific;
 
 import com.seattlesolvers.solverslib.command.Command;
+import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
@@ -26,6 +27,7 @@ public class KickOrderTCmd extends SequentialCommandGroup {
         List<Command> sequence = new ArrayList<>();
 
         sequence.add(r.rotator.transfer());
+        sequence.add(new InstantCommand(() -> Globals.robotState = Globals.RobotState.KICKING));
         sequence.add(r.shooter.startShooter());
 
         for (int i = 0; i < firingOrder.size(); i++) {

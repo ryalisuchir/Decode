@@ -55,8 +55,58 @@ public class Robot {
     public double gX, gY;
 
     public Robot(HardwareMap h, Pose p, Globals.Side s, boolean a) {
+        Globals.side = s; //Sets blue/red depending on what side we're on. Especially important for turret movement.
+        if (!a) Globals.match = Globals.Match.TELEOP; //Sets the match to teleop so we don't have to reset global enums
 
-        // ---------------- HARDWARE ----------------
+        if (a) { //If we say that we're running auto, all the global enums will reset
+            Globals.rotateState = Globals.RotateState.STOPPED;
+            Globals.robotState = Globals.RobotState.NOT_KICKING;
+            Globals.match = Globals.Match.AUTO;
+            Globals.shooterState = Globals.ShooterState.STOPPED;
+            Globals.kicker1State = Globals.Kicker1State.RESET;
+            Globals.kicker2State = Globals.Kicker2State.RESET;
+            Globals.kicker3State = Globals.Kicker3State.RESET;
+            Globals.turretState = Globals.TurretState.RESET;
+            Globals.hoodState = Globals.HoodState.RESET;
+            Globals.gateState = Globals.GateState.CLOSED;
+            Globals.failsafeState = Globals.FailsafeState.RESET;
+            Globals.obeliskOptions = Globals.ObeliskOptions.PPG;
+        } else {
+            if (Globals.rotateState == null) {
+                Globals.rotateState = Globals.RotateState.STOPPED;
+            }
+            if (Globals.robotState == null) {
+                Globals.robotState = Globals.RobotState.NOT_KICKING;
+            }
+            if (Globals.shooterState == null) {
+                Globals.shooterState = Globals.ShooterState.STOPPED;
+            }
+            if (Globals.kicker1State == null) {
+                Globals.kicker1State = Globals.Kicker1State.RESET;
+            }
+            if (Globals.kicker2State == null) {
+                Globals.kicker2State = Globals.Kicker2State.RESET;
+            }
+            if (Globals.kicker3State == null) {
+                Globals.kicker3State = Globals.Kicker3State.RESET;
+            }
+            if (Globals.turretState == null) {
+                Globals.turretState = Globals.TurretState.RESET;
+            }
+            if (Globals.hoodState == null) {
+                Globals.hoodState = Globals.HoodState.RESET;
+            }
+            if (Globals.obeliskOptions == null) {
+                Globals.obeliskOptions = Globals.ObeliskOptions.PPG;
+            }
+            if (Globals.gateState == null) {
+                Globals.gateState = Globals.GateState.CLOSED;
+            }
+            if (Globals.failsafeState == null) {
+                Globals.failsafeState = Globals.FailsafeState.RESET;
+            }
+        }
+
         i = h.get(DcMotorEx.class, "intake");
         t = h.get(DcMotorEx.class, "transfer");
 
@@ -85,7 +135,6 @@ public class Robot {
 
         Arrays.fill(Globals.ballColors, Globals.BallColor.NONE);
 
-        // ---------------- DRIVETRAIN ----------------
         rr.setDirection(DcMotorEx.Direction.FORWARD);
         fr.setDirection(DcMotorEx.Direction.FORWARD);
         fl.setDirection(DcMotorEx.Direction.REVERSE);
@@ -105,15 +154,13 @@ public class Robot {
         t.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         i.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-        // ---------------- LIMELIGHT ----------------
         l = h.get(Limelight3A.class, "limelight");
         l.setPollRateHz(100);
         l.start();
         l.pipelineSwitch(2);
 
-        Vision.init(l); // ✅ SINGLE INIT POINT
+        Vision.init(l);
 
-        // ---------------- GOAL POS ----------------
         if (s == Globals.Side.RED) {
             gX = Globals.RED_CASTLE.getX();
             gY = Globals.RED_CASTLE.getY();
@@ -122,7 +169,6 @@ public class Robot {
             gY = Globals.BLUE_CASTLE.getY();
         }
 
-        // ---------------- SENSORS ----------------
         c1 = h.analogInput.get("analog1");
         c2 = h.analogInput.get("analog2");
         c3 = h.analogInput.get("analog3");
@@ -131,20 +177,16 @@ public class Robot {
         reader2 = new ColorReader(1, new DenoiseFilter(5));
         reader3 = new ColorReader(2, new DenoiseFilter(5));
 
-        // ---------------- HUBS ----------------
         allHubs = h.getAll(LynxModule.class);
         for (LynxModule hub : allHubs) {
             hub.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
         }
 
-        // ---------------- SUBSYSTEMS ----------------
         kicker = new Kicker(k1, k2, k3);
         rotator = new Rotator(i, t, g);
         shooter = new Shooter(s1, s2, r, dt.getFollower(), gX, gY, rotator);
         turret = new Turret(s, t1, t2, dt.getFollower(), gX, gY);
     }
-
-    // ---------------- LOOPS ----------------
 
     public void initLoop(Robot r) {
         clearCache();

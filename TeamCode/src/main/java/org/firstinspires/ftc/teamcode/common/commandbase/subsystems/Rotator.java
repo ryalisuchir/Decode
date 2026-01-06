@@ -63,7 +63,7 @@ public class Rotator {
 
     public ParallelCommandGroup transfer() {
         long wait;
-        if (Globals.match == Globals.Match.AUTO) { wait = 0; } else { wait = 1000; }
+        if (Globals.match == Globals.Match.AUTO) { wait = 0; } else { wait = 50; }
 
         return new ParallelCommandGroup(
                 new InstantCommand(() -> Globals.rotateState = Globals.RotateState.TRANSFERRING),

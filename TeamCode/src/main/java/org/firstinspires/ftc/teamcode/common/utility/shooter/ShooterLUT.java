@@ -49,6 +49,8 @@ public class ShooterLUT {
 
         double correctedHood = baseHood + k * dhdV * velError;
 
-            return new ShooterParams(correctedHood, baseVel);
+        if (Globals.robotState == Globals.RobotState.NOT_KICKING) correctedHood = baseHood;
+
+        return new ShooterParams(correctedHood, baseVel);
     }
 }

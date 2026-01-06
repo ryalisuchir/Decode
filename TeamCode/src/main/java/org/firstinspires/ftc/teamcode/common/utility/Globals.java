@@ -18,6 +18,7 @@ public class Globals {
     public static Globals.Kicker2State kicker2State;
     public static Globals.Kicker3State kicker3State;
     public static Globals.TurretState turretState;
+    public static Globals.RobotState robotState;
     public static Globals.HoodState hoodState;
     public static Globals.GateState gateState;
     public static Globals.FailsafeState failsafeState;
@@ -86,6 +87,11 @@ public class Globals {
     public enum Side {
         RED,
         BLUE
+    }
+
+    public enum RobotState {
+        KICKING,
+        NOT_KICKING
     }
 
     public enum Match {
