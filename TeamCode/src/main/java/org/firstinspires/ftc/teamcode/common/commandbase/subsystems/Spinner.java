@@ -93,8 +93,15 @@ public class Spinner {
     }
 
     private ParallelCommandGroup stop() {
+        long wait;
+        if (Globals.match == Globals.Match.AUTO) {
+            wait = Globals.GATE_WAIT_AUTO;
+        } else {
+            wait = Globals.GATE_WAIT_TELE;
+        }
+
         if (!oneBallDetected()) {
-            return new ParallelCommandGroup(new SequentialCommandGroup(new InstantCommand(() -> setIntakeTarget(-0.6)), new WaitCommand(600), new InstantCommand(() -> {
+            return new ParallelCommandGroup(new SequentialCommandGroup(new InstantCommand(() -> setIntakeTarget(-0.6)), new WaitCommand(wait), new InstantCommand(() -> {
                 setIntakeTarget(0);
                 Globals.intakeState = Globals.IntakeState.STOPPED;
                 g.setPosition(Globals.GATE_OPEN);

@@ -77,6 +77,8 @@ public class Globals {
 
     public static long KICK_WAIT_TELE = 200;
     public static long KICK_WAIT_AUTO = 200;
+    public static long GATE_WAIT_AUTO = 100;
+    public static long GATE_WAIT_TELE = 600;
 
     //Pre-Match Configuration:
     public enum Side {
