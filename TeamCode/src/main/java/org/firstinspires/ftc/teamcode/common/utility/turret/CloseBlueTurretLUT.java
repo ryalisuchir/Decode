@@ -1,11 +1,12 @@
-package org.firstinspires.ftc.teamcode.common.utility;
+package org.firstinspires.ftc.teamcode.common.utility.turret;
 
+import org.firstinspires.ftc.teamcode.common.utility.Globals;
 import org.firstinspires.ftc.teamcode.common.utility.functions.InterpolatedLUT;
 
-public class BlueTurretLUT {
+public class CloseBlueTurretLUT {
     private final InterpolatedLUT turretServoLUT = new InterpolatedLUT();
 
-    public BlueTurretLUT() {
+    public CloseBlueTurretLUT() {
         turretServoLUT.addPoint(-2.42123, 0); //radians, servo position
         turretServoLUT.addPoint(-2.14509, 0.05); //radians, servo position
         turretServoLUT.addPoint(-1.85760, 0.1); //radians, servo position
@@ -31,7 +32,6 @@ public class BlueTurretLUT {
     }
 
     public double getServoValue(double robotAngle) {
-//        return turretServoLUT.get(robotAngle);
-        return robotAngle * 0.1755 + 0.4364;
+        return robotAngle * 0.18 + 0.42;
     }
 }

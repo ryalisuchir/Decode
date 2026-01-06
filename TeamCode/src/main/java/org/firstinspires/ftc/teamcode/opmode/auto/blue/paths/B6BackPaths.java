@@ -8,22 +8,19 @@ import com.pedropathing.paths.PathChain;
 
 import org.firstinspires.ftc.teamcode.common.utility.Robot;
 
-public class B9BackPaths {
+public class B6BackPaths {
     private final Follower f;
 
     public Pose start = new Pose(55, 8, Math.toRadians(90));
     public Pose shoot0 = new Pose(57, 12, Math.toRadians(109));
-    public Pose intakeCloseHold1 = new Pose(62, 27);
-    public Pose intakeClose = new Pose(22, 24, Math.toRadians(180));
-    public Pose shoot1 = new Pose(59, 10, Math.toRadians(133));
     public Pose intakeHp1 = new Pose(30.45, 18, Math.toRadians(-145));
-    public Pose intakeHp2 = new Pose(31, 10, Math.toRadians(-109));
+    public Pose intakeHp2 = new Pose(23, 10, Math.toRadians(-109));
     public Pose shoot3 = new Pose(67, 3.89, Math.toRadians(180));
     public Pose park = new Pose(59, 36, Math.toRadians(270));
 
     private int index;
 
-    public B9BackPaths(Robot r) {
+    public B6BackPaths(Robot r) {
         this.f = r.dt.getFollower();
         index = 0;
     }
@@ -35,32 +32,10 @@ public class B9BackPaths {
                 .build();
     }
 
-    public PathChain intakeClose() {
-        return f.pathBuilder()
-                .addPath(
-                        new BezierCurve(
-                                shoot0,
-                                intakeCloseHold1,
-                                intakeClose
-                        )
-                )
-                .addParametricCallback(0.8, () -> f.setMaxPower(0.4))
-                .setLinearHeadingInterpolation(shoot0.getHeading(), intakeClose.getHeading())
-                .build();
-    }
-
-    public PathChain score1() {
-        return f.pathBuilder()
-                .addPath(new BezierLine(intakeClose, shoot1))
-                .setLinearHeadingInterpolation(intakeClose.getHeading(), shoot1.getHeading())
-                .build();
-    }
-
-
     public PathChain intakeHpX() {
         return f.pathBuilder()
-                .addPath(new BezierLine(shoot1, intakeHp1))
-                .setLinearHeadingInterpolation(shoot1.getHeading(), intakeHp1.getHeading())
+                .addPath(new BezierLine(shoot0, intakeHp1))
+                .setLinearHeadingInterpolation(shoot0.getHeading(), intakeHp1.getHeading())
                 .addParametricCallback(0.7, () -> f.setMaxPower(0.3))
                 .addPath(new BezierLine(intakeHp1, intakeHp2))
                 .setLinearHeadingInterpolation(intakeHp1.getHeading(), intakeHp2.getHeading())
@@ -89,11 +64,9 @@ public class B9BackPaths {
     public PathChain next() {
         switch (index++) {
             case 0: return score0();
-            case 1: return intakeClose();
-            case 2: return score1();
-            case 3: return intakeHpX();
-            case 4: return score3();
-            case 5: return parkX();
+            case 1: return intakeHpX();
+            case 2: return score3();
+            case 3: return parkX();
             default: return null;
         }
     }

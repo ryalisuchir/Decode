@@ -16,7 +16,7 @@ import kotlin.time.Instant;
 
 public class Drivetrain {
     private final Follower f;
-    private final Globals.Side a;
+    public final Globals.Side a;
     private boolean hold = false, field = true;
 
     public Drivetrain(HardwareMap hardwareMap, Globals.Side a, Pose start) {
@@ -75,10 +75,13 @@ public class Drivetrain {
     }
 
     public void cornerReset() {
-        if (a.equals(Globals.Side.BLUE))
-            f.setPose(Globals.DEFAULT_START_POSE);
-        else
-            f.setPose(Globals.DEFAULT_START_POSE.mirror());
+        if (a.equals(Globals.Side.BLUE)) {
+            f.setPose(Globals.BLUE_CUBE_START);
+        }
+
+        if (a.equals(Globals.Side.RED)) {
+            f.setPose(Globals.RED_CUBE_START);
+        }
     }
 
     public InstantCommand toggleCentric() {

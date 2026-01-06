@@ -5,11 +5,14 @@ import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
+import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
+import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.command.WaitUntilCommand;
 
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.FollowPathCmd;
+import org.firstinspires.ftc.teamcode.common.commandbase.commands.InitCmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.KickOrderACmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.ResetShooterCmd;
 import org.firstinspires.ftc.teamcode.common.utility.Globals;
@@ -27,9 +30,10 @@ public class BFar9 extends OpMode {
     @Override
     public void init() {
         CommandScheduler.getInstance().reset();
-        r = new Robot(hardwareMap, Globals.BLUE_CUBE_START, Globals.Side.BLUE, true);
+        r = new Robot(hardwareMap, Globals.BLUE_FAR_START, Globals.Side.BLUE, true);
         p = new B9BackPaths(r);
         r.shooter.setCustomDistance(p.shoot0.getX(), p.shoot0.getY());
+        CommandScheduler.getInstance().schedule(new InitCmd(r));
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
     }
 
@@ -39,6 +43,7 @@ public class BFar9 extends OpMode {
         telemetry.addData("Obelisk Reading:", Globals.obeliskOptions);
         r.initLoop(r);
         Globals.turretState = Globals.TurretState.RESET;
+        CommandScheduler.getInstance().run();
         telemetry.update();
     }
 
@@ -48,21 +53,28 @@ public class BFar9 extends OpMode {
                         new ParallelCommandGroup(
                                 new FollowPathCmd(r, p.next()),
                                 new SequentialCommandGroup(
+                                        new WaitCommand(900),
+                                        new InstantCommand(() -> telemetry.addLine("0")),
                                         new WaitUntilCommand(() -> r.shooter.reached),
+                                        new InstantCommand(() -> telemetry.addLine("1")),
                                         new KickOrderACmd(r)
                                 )
                         ),
+                        new InstantCommand(() -> telemetry.addLine("Go")),
                         new ParallelCommandGroup( //resets shooter from preloads and follows to intake close spike
-                                new ResetShooterCmd(r, true, 5),
+                                new ResetShooterCmd(r, true, 3.5),
                                 new FollowPathCmd(r, p.next())
                         ),
                         new FollowPathCmd(r, p.next()), //gets ready to shoot close spike
+                        new WaitCommand(500),
                         new KickOrderACmd(r),
+                        new WaitCommand(500),
                         new ParallelCommandGroup( //follows to hp pickup
                                 new FollowPathCmd(r, p.next()),
                                 new ResetShooterCmd(r, true, 5)
                         ),
                         new FollowPathCmd(r, p.next()), //gets ready to shoot hp balls
+                        new WaitCommand(500),
                         new KickOrderACmd(r),
                         new ParallelCommandGroup( //park and reset
                                 new FollowPathCmd(r, p.next()),
@@ -75,7 +87,6 @@ public class BFar9 extends OpMode {
     @Override
     public void loop() {
         r.loop(r);
-        ObeliskVision.getObeliskFiducial(r.llResult);
     }
 
     @Override

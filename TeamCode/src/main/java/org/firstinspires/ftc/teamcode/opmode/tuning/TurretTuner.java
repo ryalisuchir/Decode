@@ -26,7 +26,7 @@ public class TurretTuner extends CommandOpMode {
 
     @Override
     public void initialize() {
-        r = new Robot(hardwareMap, Globals.DEFAULT_START_POSE, Globals.Side.BLUE, true);
+        r = new Robot(hardwareMap, Globals.OTHER_DEFAULT_START_POSE, Globals.Side.RED, true);
         r.initLoop(r);
         r.dt.startDrive();
         t = new TurretCalibrator();
@@ -34,25 +34,6 @@ public class TurretTuner extends CommandOpMode {
         intakeTrigger = new Trigger(
                 () -> gamepad1.right_trigger > 0.1 && !r.rotator.threeBallsDetected()
         );
-    }
-
-
-    @Override
-    public void run() {
-        telemetry.update();
-        r.r.setPosition(hoodAngle);
-        r.s1.set(shooterPower);
-        r.s2.set(shooterPower);
-
-        t.update(
-                r.turret,
-                gamepad1,
-                telemetry,
-                r.dt.getPose().getX(),
-                r.dt.getPose().getY(),
-                r.dt.getPose().getHeading()
-        );
-
         intakeTrigger
                 .whileActiveContinuous(
                         new ParallelCommandGroup(
@@ -75,6 +56,26 @@ public class TurretTuner extends CommandOpMode {
                             }
                         })
                 );
+
+
+    }
+
+
+    @Override
+    public void run() {
+        telemetry.update();
+        r.r.setPosition(hoodAngle);
+        r.s1.set(shooterPower);
+        r.s2.set(shooterPower);
+
+        t.update(
+                r.turret,
+                gamepad1,
+                telemetry,
+                r.dt.getPose().getX(),
+                r.dt.getPose().getY(),
+                r.dt.getPose().getHeading()
+        );
 
         if (gamepad1.dpadLeftWasPressed()) {
             schedule(

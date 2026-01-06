@@ -40,6 +40,30 @@ public class Red extends CommandOpMode {
         intakeTrigger = new Trigger(
                 () -> ahnaf.right_trigger > 0.1 && !r.rotator.threeBallsDetected()
         );
+        intakeTrigger
+                .whileActiveContinuous(
+                        new ParallelCommandGroup(
+                                new InstantCommand(() -> Globals.rotateState = Globals.RotateState.INTAKING),
+                                new InstantCommand(() -> r.rotator.spinIn()),
+                                new InstantCommand(() -> r.rotator.openGate()),
+                                KickCommands.resetAll(r.kicker)
+                        )
+                )
+                .whenInactive(
+                        new InstantCommand(() -> {
+                            if (r.rotator.threeBallsDetected()) {
+                                CommandScheduler.getInstance().schedule(
+                                        new ParallelCommandGroup(
+                                                r.rotator.transfer()
+                                        )
+                                );
+                            } else {
+                                CommandScheduler.getInstance().schedule(
+                                        r.rotator.stop()
+                                );
+                            }
+                        })
+                );
     }
 
 
@@ -64,36 +88,23 @@ public class Red extends CommandOpMode {
         telemetry.addData("Shooter Velocity: ", r.shooter.getShooterVelocity());
         telemetry.addData("Loop Time (ms)", "%.2f", loopTimeMs);
         telemetry.addData("Loop Rate (Hz)", "%.1f", loopHz);
+        telemetry.addData("Pose: ", r.dt.getPose());
+        telemetry.addData("Side: ", Globals.side);
 
         telemetry.update();
-
-        intakeTrigger
-                .whileActiveContinuous(
-                        new ParallelCommandGroup(
-                                new InstantCommand(() -> Globals.rotateState = Globals.RotateState.INTAKING),
-                                new InstantCommand(() -> r.rotator.spinIn()),
-                                new InstantCommand(() -> r.rotator.openGate()),
-                                KickCommands.resetAll(r.kicker)
-                        )
-                )
-                .whenInactive(
-                        new InstantCommand(() -> {
-                            if (r.rotator.threeBallsDetected()) {
-                                CommandScheduler.getInstance().schedule(
-                                        r.rotator.transfer()
-                                );
-                            } else {
-                                CommandScheduler.getInstance().schedule(
-                                        r.rotator.stop()
-                                );
-                            }
-                        })
-                );
 
         if (ahnaf.leftBumperWasPressed()) {
             schedule(
                     new UninterruptibleCommand(new KickOrderTCmd(r))
             );
+        }
+
+        if (swetha.circleWasPressed()) {
+            r.turret.xChange(1);
+        }
+
+        if (swetha.squareWasPressed()) {
+            r.turret.yChange(1);
         }
 
         if (ahnaf.ps || swetha.ps) {
@@ -123,6 +134,28 @@ public class Red extends CommandOpMode {
 
         if (swetha.triangleWasPressed()) {
             schedule(KickCommands.kickAndResetMany(r.kicker, 1, 2, 3));
+        }
+
+        if (swetha.crossWasPressed()) {
+            Globals.turretState = Globals.TurretState.FOLLOWING;
+        }
+
+        if (swetha.dpadLeftWasPressed()) {
+            schedule(
+                    new UninterruptibleCommand(KickCommands.kickAndReset(r.kicker, 1))
+            );
+        }
+
+        if (swetha.dpadRightWasPressed()) {
+            schedule(
+                    new UninterruptibleCommand(KickCommands.kickAndReset(r.kicker, 2))
+            );
+        }
+
+        if (swetha.dpadDownWasPressed()) {
+            schedule(
+                    new UninterruptibleCommand(KickCommands.kickAndReset(r.kicker, 3))
+            );
         }
 
         if (r.rotator.threeBallsDetected() && !threeBallRumbleLatched) {

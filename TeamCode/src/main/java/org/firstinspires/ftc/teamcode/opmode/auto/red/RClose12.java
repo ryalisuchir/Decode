@@ -1,47 +1,49 @@
-package org.firstinspires.ftc.teamcode.opmode.auto.blue;
+package org.firstinspires.ftc.teamcode.opmode.auto.red;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
-import com.seattlesolvers.solverslib.command.WaitUntilCommand;
-
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.FollowPathCmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.InitCmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.KickOrderACmd;
+import org.firstinspires.ftc.teamcode.common.commandbase.commands.ResetShooterAndReadCmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.ResetShooterCmd;
 import org.firstinspires.ftc.teamcode.common.utility.Globals;
 import org.firstinspires.ftc.teamcode.common.utility.Robot;
 import org.firstinspires.ftc.teamcode.common.utility.functions.ObeliskVision;
-import org.firstinspires.ftc.teamcode.opmode.auto.blue.paths.B12BackPaths;
+import org.firstinspires.ftc.teamcode.opmode.auto.blue.paths.B12ClosePaths;
 import org.firstinspires.ftc.teamcode.opmode.auto.blue.paths.BCubePaths;
+import org.firstinspires.ftc.teamcode.opmode.auto.red.paths.R12ClosePaths;
 
 @Autonomous
-public class BFar12 extends OpMode {
+public class RClose12 extends OpMode {
     Robot r;
-    B12BackPaths p;
+    R12ClosePaths p;
+    boolean read = false;
 
     @Override
     public void init() {
         CommandScheduler.getInstance().reset();
-        r = new Robot(hardwareMap, Globals.BLUE_FAR_START, Globals.Side.BLUE, true);
-        p = new B12BackPaths(r);
+        r = new Robot(hardwareMap, Globals.RED_CUBE_START, Globals.Side.RED, true);
+        p = new R12ClosePaths(r);
         r.shooter.setCustomDistance(p.shoot0.getX(), p.shoot0.getY());
         CommandScheduler.getInstance().schedule(new InitCmd(r));
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
+        Globals.turretState = Globals.TurretState.RED_CLOSE_OBELISK;
     }
 
     public void init_loop() {
         telemetry.addLine("Created all subsystems.");
-        telemetry.addData("Initialized:", "Cube Auto (Blue)");
+        telemetry.addData("Initialized:", "Cube Auto (Red)");
         telemetry.addData("Obelisk Reading:", Globals.obeliskOptions);
         r.initLoop(r);
-        Globals.turretState = Globals.TurretState.RESET;
         CommandScheduler.getInstance().run();
         telemetry.update();
     }
@@ -52,36 +54,33 @@ public class BFar12 extends OpMode {
                         new ParallelCommandGroup(
                                 new FollowPathCmd(r, p.next()),
                                 new SequentialCommandGroup(
-                                        new WaitCommand(900),
-                                        new InstantCommand(() -> telemetry.addLine("0")),
-                                        new WaitUntilCommand(() -> r.shooter.reached),
-                                        new InstantCommand(() -> telemetry.addLine("1")),
-                                        new KickOrderACmd(r)
+                                        new WaitCommand(850),
+                                        new KickOrderACmd(r),
+                                        new ResetShooterAndReadCmd(r, true, 4.2, Globals.Side.RED)
                                 )
-                        ),
-                        new InstantCommand(() -> telemetry.addLine("Go")),
-                        new ParallelCommandGroup( //resets shooter from preloads and follows to intake close spike
-                                new ResetShooterCmd(r, true, 3.5),
-                                new FollowPathCmd(r, p.next())
-                        ),
-                        new FollowPathCmd(r, p.next()), //gets ready to shoot close spike
-                        new WaitCommand(500),
+                        ), // at this point we should have shot 3 and intaken 3
+                        new InstantCommand(() -> Globals.turretState = Globals.TurretState.FOLLOWING),
+                        new FollowPathCmd(r, p.next()),
+                        new WaitCommand(850),
                         new KickOrderACmd(r),
-                        new ParallelCommandGroup( //resets shooter from close spike and follows to intake middle spike
+                        new WaitCommand(850),
+                        new ParallelCommandGroup(
                                 new FollowPathCmd(r, p.next()),
-                                new ResetShooterCmd(r, true, 4)
+                                new ResetShooterCmd(r, true, 3)
                         ),
-                        new FollowPathCmd(r, p.next()), //gets ready to shoot middle spike
-                        new WaitCommand(500),
-                        new KickOrderACmd(r), //kicks middle spike
-                        new ParallelCommandGroup( //follows to hp pickup
-                                new FollowPathCmd(r, p.next()),
-                                new ResetShooterCmd(r, true, 5)
-                        ),
-                        new FollowPathCmd(r, p.next()), //gets ready to shoot hp balls
-                        new WaitCommand(500),
+                        new FollowPathCmd(r, p.next()),
+                        new WaitCommand(850),
                         new KickOrderACmd(r),
-                        new ParallelCommandGroup( //park and reset
+                        new WaitCommand(850),
+                        new ParallelCommandGroup(
+                                new FollowPathCmd(r, p.next()),
+                                new ResetShooterCmd(r, true, 4.1)
+                        ),
+                        new FollowPathCmd(r, p.next()), //kick gate sequence 2 (straightens up)
+                        new WaitCommand(850),
+                        new KickOrderACmd(r),
+                        new WaitCommand(850),
+                        new ParallelCommandGroup(
                                 new FollowPathCmd(r, p.next()),
                                 new ResetShooterCmd(r, false, 0)
                         )
@@ -92,6 +91,7 @@ public class BFar12 extends OpMode {
     @Override
     public void loop() {
         r.loop(r);
+        telemetry.addData("Obelisk Reading:", Globals.obeliskOptions);
     }
 
     @Override

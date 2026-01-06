@@ -4,12 +4,14 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.FollowPathCmd;
+import org.firstinspires.ftc.teamcode.common.commandbase.commands.InitCmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.KickOrderACmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.ResetShooterAndReadCmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.ResetShooterCmd;
@@ -30,6 +32,7 @@ public class BCubeAuto extends OpMode {
         r = new Robot(hardwareMap, Globals.BLUE_CUBE_START, Globals.Side.BLUE, true);
         p = new BCubePaths(r);
         r.shooter.setCustomDistance(p.shoot0.getX(), p.shoot0.getY());
+        CommandScheduler.getInstance().schedule(new InitCmd(r));
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
     }
 
@@ -38,6 +41,7 @@ public class BCubeAuto extends OpMode {
         telemetry.addData("Initialized:", "Cube Auto (Blue)");
         telemetry.addData("Obelisk Reading:", Globals.obeliskOptions);
         r.initLoop(r);
+        CommandScheduler.getInstance().run();
         Globals.turretState = Globals.TurretState.RESET;
         telemetry.update();
     }
@@ -48,14 +52,13 @@ public class BCubeAuto extends OpMode {
                         new ParallelCommandGroup(
                                 new FollowPathCmd(r, p.next()),
                                 new SequentialCommandGroup(
-                                        new WaitCommand(1000),
+                                        new WaitCommand(850),
                                         new KickOrderACmd(r),
-                                        new ResetShooterAndReadCmd(r, true, 4, Globals.Side.BLUE)
+                                        new ResetShooterAndReadCmd(r, true, 3.5, Globals.Side.BLUE)
                                 )
                         ), // at this point we should have shot 3 and intaken 3
                         new FollowPathCmd(r, p.next()), //gate sequence 1
-                        new WaitCommand(300),
-                        new InstantCommand(() -> read = true),
+                        new WaitCommand(500),
                         new KickOrderACmd(r),
                         new WaitCommand(300),
                         new ParallelCommandGroup(
@@ -76,7 +79,7 @@ public class BCubeAuto extends OpMode {
                         new WaitCommand(300),
                         new ParallelCommandGroup(
                                 new FollowPathCmd(r, p.next()), //intake far spike
-                                new ResetShooterCmd(r, true, 5)
+                                new ResetShooterCmd(r, true, 3.5)
                         ),
                         new FollowPathCmd(r, p.next()),
                         new WaitCommand(300),
@@ -84,7 +87,7 @@ public class BCubeAuto extends OpMode {
                         new WaitCommand(300),
                         new ParallelCommandGroup(
                                 new FollowPathCmd(r, p.next()),
-                                new ResetShooterCmd(r, true, 2) //intake from the gate
+                                new ResetShooterCmd(r, true, 2)
                         ),
                         new FollowPathCmd(r, p.next()),
                         new WaitCommand(300),
@@ -101,7 +104,6 @@ public class BCubeAuto extends OpMode {
     @Override
     public void loop() {
         r.loop(r);
-        if (!read) { ObeliskVision.getObeliskFiducial(r.llResult); }
         telemetry.addData("Obelisk Reading:", Globals.obeliskOptions);
     }
 

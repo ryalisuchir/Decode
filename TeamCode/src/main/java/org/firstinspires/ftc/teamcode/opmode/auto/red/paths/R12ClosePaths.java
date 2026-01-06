@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.opmode.auto.blue.paths;
+package org.firstinspires.ftc.teamcode.opmode.auto.red.paths;
 
 import android.util.Log;
 
@@ -13,26 +13,25 @@ import org.firstinspires.ftc.teamcode.common.commandbase.commands.KickOrderACmd;
 import org.firstinspires.ftc.teamcode.common.utility.Globals;
 import org.firstinspires.ftc.teamcode.common.utility.Robot;
 
-public class B12ClosePaths {
+public class R12ClosePaths {
     private final Follower f;
 
-    public Pose start = new Pose(55, 137, Math.toRadians(-90));
-    public Pose shoot0 = new Pose(67, 68, Math.toRadians(180));
-    public Pose intakeMidHold1 = new Pose(60, 45);
-    public Pose intakeMid = new Pose(23, 46, Math.toRadians(180));
-    public Pose shoot1Hold = new Pose(42.500, 50);
-    public Pose shoot1 = new Pose(61, 72, Math.toRadians(180));
-    public Pose intakeRight = new Pose(33, 72, Math.toRadians(180));
-    public Pose shoot2 = new Pose(63, 75, Math.toRadians(180));
-    public Pose intakeCloseHold = new Pose(76, 20);
-    public Pose intakeClose = new Pose(24, 23, Math.toRadians(180));
-    public Pose shoot3Hold1 = new Pose(42.500, 55.228);
-    public Pose shoot3 = new Pose(67, 73, Math.toRadians(180));
-    public Pose park = new Pose(50, 79, Math.toRadians(-90));
+    public Pose start = new Pose(134, 138, Math.toRadians(-90));
+    public Pose shoot0 = new Pose(102, 102, Math.toRadians(0));
+    public Pose intakeMidHold1 = new Pose(100, 65);
+    public Pose intakeMid = new Pose(147, 69, Math.toRadians(0));
+    public Pose shoot1Hold = new Pose(116, 73);
+    public Pose shoot1 = new Pose(102, 102, Math.toRadians(0));
+    public Pose intakeRight = new Pose(139, 95, Math.toRadians(0));
+    public Pose shoot2 = new Pose(102, 102, Math.toRadians(0));
+    public Pose intakeCloseHold = new Pose(100, 42);
+    public Pose intakeClose = new Pose(140, 45, Math.toRadians(0));
+    public Pose shoot3 = new Pose(102, 102, Math.toRadians(0));
+    public Pose park = new Pose(138, 79, Math.toRadians(-90));
 
     private int index;
 
-    public B12ClosePaths(Robot r) {
+    public R12ClosePaths(Robot r) {
         this.f = r.dt.getFollower();
         index = 0;
     }
@@ -56,8 +55,7 @@ public class B12ClosePaths {
                                 intakeMid
                         )
                 )
-                .addParametricCallback(0.6, () -> f.setMaxPower(0.5))
-                .addParametricCallback(0.8, () -> f.setMaxPower(0.3))
+                .addParametricCallback(0.5, () -> f.setMaxPower(0.3))
                 .setLinearHeadingInterpolation(shoot0.getHeading(), intakeMid.getHeading())
                 .build();
     }
@@ -103,8 +101,7 @@ public class B12ClosePaths {
                                 intakeClose
                         )
                 )
-                .addParametricCallback(0.7, () -> f.setMaxPower(0.4))
-                .addParametricCallback(0.85, () -> f.setMaxPower(0.3))
+                .addParametricCallback(0.7, () -> f.setMaxPower(0.45))
                 .setLinearHeadingInterpolation(shoot2.getHeading(), intakeClose.getHeading())
                 .build();
     }
@@ -112,7 +109,7 @@ public class B12ClosePaths {
     public PathChain score3() {
         return f.pathBuilder()
                 .addPath(
-                        new BezierCurve(intakeClose, shoot3Hold1, shoot3)
+                        new BezierLine(intakeClose, shoot3)
                 )
                 .addParametricCallback(0, () -> f.setMaxPower(1))
                 .setLinearHeadingInterpolation(intakeClose.getHeading(), shoot3.getHeading())

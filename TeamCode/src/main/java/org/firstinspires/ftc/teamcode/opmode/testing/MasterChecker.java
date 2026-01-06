@@ -55,7 +55,7 @@ public class MasterChecker extends OpMode {
         robot.rl.setPower(dtSpeed3);
         robot.rr.setPower(dtSpeed4);
 
-//        robot.t.setPower(rollerSpeed);
+        robot.t.setPower(rollerSpeed);
         robot.i.setPower(rollerSpeed);
 
         robot.s1.set(shooterSpeed);

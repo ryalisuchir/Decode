@@ -5,6 +5,8 @@ import com.qualcomm.robotcore.hardware.ServoImplEx;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
+import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
+import com.seattlesolvers.solverslib.command.WaitCommand;
 
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.CloseGateCmd;
 import org.firstinspires.ftc.teamcode.common.utility.Globals;
@@ -60,15 +62,21 @@ public class Rotator {
     }
 
     public ParallelCommandGroup transfer() {
+        long wait;
+        if (Globals.match == Globals.Match.AUTO) { wait = 0; } else { wait = 1000; }
+
         return new ParallelCommandGroup(
                 new InstantCommand(() -> Globals.rotateState = Globals.RotateState.TRANSFERRING),
                 new InstantCommand(this::spinOut),
-                new CloseGateCmd(g)
+                new SequentialCommandGroup(
+                 new WaitCommand(wait),
+                        new InstantCommand(() -> g.setPosition(Globals.GATE_CLOSED))
+                )
         );
     }
 
     public ParallelCommandGroup stop() {
-        if (!oneBallDetected()) {
+        if (!threeBallsDetected()) {
             return new ParallelCommandGroup(
                     new InstantCommand(() -> Globals.rotateState = Globals.RotateState.STOPPED),
                     new InstantCommand(this::spinStop),
@@ -130,9 +138,11 @@ public class Rotator {
         i.setPower(currentPower);
         t.setPower(currentPower);
 
-        if (oneBallDetected()) {
+        if (oneBallDetected() && (Globals.turretState != Globals.TurretState.BLUE_CLOSE_OBELISK && Globals.turretState != Globals.TurretState.RED_CLOSE_OBELISK)) {
             Globals.shooterState = Globals.ShooterState.SHOOTING;
-            Globals.turretState = Globals.TurretState.FOLLOWING;
+            if (Globals.match == Globals.Match.AUTO) {
+                Globals.turretState = Globals.TurretState.FOLLOWING;
+            }
         }
 
         if ((Globals.rotateState == Globals.RotateState.INTAKING
@@ -144,7 +154,7 @@ public class Rotator {
                             transfer(),
                             new InstantCommand(() -> {
                                 Globals.shooterState = Globals.ShooterState.SHOOTING;
-                                Globals.turretState = Globals.TurretState.FOLLOWING;
+                                if (Globals.match == Globals.Match.AUTO) {Globals.turretState = Globals.TurretState.FOLLOWING;}
                             })
                     )
             );

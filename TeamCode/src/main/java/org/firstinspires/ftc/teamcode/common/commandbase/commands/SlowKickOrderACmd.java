@@ -12,9 +12,9 @@ import org.firstinspires.ftc.teamcode.common.utility.Robot;
 import java.util.ArrayList;
 import java.util.List;
 
-public class KickOrderACmd extends SequentialCommandGroup {
+public class SlowKickOrderACmd extends SequentialCommandGroup {
 
-    public KickOrderACmd(Robot r) {
+    public SlowKickOrderACmd(Robot r) {
         List<Integer> firingOrder = computeFiringOrder();
 
         if (firingOrder.isEmpty()) {
@@ -36,10 +36,10 @@ public class KickOrderACmd extends SequentialCommandGroup {
     }
 
     private Command kickCommand(Kicker kicker, int slot) {
-            return new SequentialCommandGroup(
-                    KickCommands.kickOnce(kicker, slot),
-                    new WaitCommand(Globals.KICK_AUTO)
-            );
+        return new SequentialCommandGroup(
+                KickCommands.kickOnce(kicker, slot),
+                new WaitCommand(500)
+        );
     }
 
     private List<Integer> computeFiringOrder() {

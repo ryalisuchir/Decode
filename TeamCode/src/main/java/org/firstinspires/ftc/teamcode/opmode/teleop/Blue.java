@@ -31,7 +31,7 @@ public class Blue extends CommandOpMode {
 
     @Override
     public void initialize() {
-        r = new Robot(hardwareMap, Globals.DEFAULT_START_POSE, Globals.Side.BLUE, false);
+        r = new Robot(hardwareMap, Globals.OTHER_DEFAULT_START_POSE, Globals.Side.BLUE, true);
         r.initLoop(r);
         r.dt.startDrive();
         ahnaf = gamepad1;
@@ -40,6 +40,30 @@ public class Blue extends CommandOpMode {
         intakeTrigger = new Trigger(
                 () -> ahnaf.right_trigger > 0.1 && !r.rotator.threeBallsDetected()
         );
+        intakeTrigger
+                .whileActiveContinuous(
+                        new ParallelCommandGroup(
+                                new InstantCommand(() -> Globals.rotateState = Globals.RotateState.INTAKING),
+                                new InstantCommand(() -> r.rotator.spinIn()),
+                                new InstantCommand(() -> r.rotator.openGate()),
+                                KickCommands.resetAll(r.kicker)
+                        )
+                )
+                .whenInactive(
+                        new InstantCommand(() -> {
+                            if (r.rotator.threeBallsDetected()) {
+                                CommandScheduler.getInstance().schedule(
+                                        new ParallelCommandGroup(
+                                                r.rotator.transfer()
+                                        )
+                                );
+                            } else {
+                                CommandScheduler.getInstance().schedule(
+                                        r.rotator.stop()
+                                );
+                            }
+                        })
+                );
     }
 
 
@@ -64,31 +88,11 @@ public class Blue extends CommandOpMode {
         telemetry.addData("Shooter Velocity: ", r.shooter.getShooterVelocity());
         telemetry.addData("Loop Time (ms)", "%.2f", loopTimeMs);
         telemetry.addData("Loop Rate (Hz)", "%.1f", loopHz);
+        telemetry.addData("Pose: ", r.dt.getPose());
+        telemetry.addData("Side: ", Globals.side);
+        telemetry.addData("DT Side: ", r.dt.a);
 
         telemetry.update();
-
-        intakeTrigger
-                .whileActiveContinuous(
-                        new ParallelCommandGroup(
-                                new InstantCommand(() -> Globals.rotateState = Globals.RotateState.INTAKING),
-                                new InstantCommand(() -> r.rotator.spinIn()),
-                                new InstantCommand(() -> r.rotator.openGate()),
-                                KickCommands.resetAll(r.kicker)
-                        )
-                )
-                .whenInactive(
-                        new InstantCommand(() -> {
-                            if (r.rotator.threeBallsDetected()) {
-                                CommandScheduler.getInstance().schedule(
-                                        r.rotator.transfer()
-                                );
-                            } else {
-                                CommandScheduler.getInstance().schedule(
-                                        r.rotator.stop()
-                                );
-                            }
-                        })
-                );
 
         if (ahnaf.leftBumperWasPressed()) {
             schedule(
@@ -108,6 +112,17 @@ public class Blue extends CommandOpMode {
             );
         }
 
+        if (swetha.circleWasPressed()) {
+            r.turret.xChange(1);
+        }
+
+        if (swetha.squareWasPressed()) {
+            r.turret.yChange(1);
+        }
+
+        telemetry.addData("x of goal:", r.turret.goalX);
+        telemetry.addData("y of goal:", r.turret.goalY);
+
         //Failsafes:
         if (swetha.leftBumperWasPressed()) {
             schedule(
@@ -123,6 +138,28 @@ public class Blue extends CommandOpMode {
 
         if (swetha.triangleWasPressed()) {
             schedule(KickCommands.kickAndResetMany(r.kicker, 1, 2, 3));
+        }
+
+        if (swetha.crossWasPressed()) {
+            Globals.turretState = Globals.TurretState.FOLLOWING;
+        }
+
+        if (swetha.dpadLeftWasPressed()) {
+            schedule(
+                    new UninterruptibleCommand(KickCommands.kickAndReset(r.kicker, 1))
+            );
+        }
+
+        if (swetha.dpadRightWasPressed()) {
+            schedule(
+                    new UninterruptibleCommand(KickCommands.kickAndReset(r.kicker, 2))
+            );
+        }
+
+        if (swetha.dpadDownWasPressed()) {
+            schedule(
+                    new UninterruptibleCommand(KickCommands.kickAndReset(r.kicker, 3))
+            );
         }
 
         if (r.rotator.threeBallsDetected() && !threeBallRumbleLatched) {

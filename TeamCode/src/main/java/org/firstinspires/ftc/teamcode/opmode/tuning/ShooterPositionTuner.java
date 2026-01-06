@@ -1,12 +1,11 @@
 package org.firstinspires.ftc.teamcode.opmode.tuning;
 
-import android.util.Log;
-
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.Gamepad;
+import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
@@ -19,30 +18,32 @@ import org.firstinspires.ftc.teamcode.common.utility.Robot;
 
 @TeleOp
 @Config
-public class ShooterPositionTuner extends OpMode {
-    Robot r;
-    public static double hoodPosition = Globals.HOOD_MAX;
-    Trigger intakeTrigger;
+public class ShooterPositionTuner extends CommandOpMode {
 
+    Robot r;
+    private boolean threeBallRumbleLatched = false;
+    Gamepad ahnaf;
+    Trigger intakeTrigger;
+    private long lastLoopTimeNs = 0;
+    private double loopTimeMs = 0;
+    private double loopHz = 0;
+
+    public static double hoodPosition = Globals.HOOD_MAX;
     public double kV = 0.00045;
     public double kS = 0.02;
     public double kP = 0.0012;
     public static double targetVelocity = 0;
 
     @Override
-    public void init() {
-        r = new Robot(hardwareMap, Globals.DEFAULT_START_POSE, Globals.Side.BLUE, true);
+    public void initialize() {
+        r = new Robot(hardwareMap, Globals.OTHER_DEFAULT_START_POSE, Globals.Side.RED, true);
+        r.initLoop(r);
+        r.dt.startDrive();
+        ahnaf = gamepad1;
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         intakeTrigger = new Trigger(
-                () -> gamepad1.right_trigger > 0.1 && !r.rotator.threeBallsDetected()
+                () -> ahnaf.right_trigger > 0.1 && !r.rotator.threeBallsDetected()
         );
-        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
-        r.dt.startDrive();
-    }
-
-
-    @Override
-    public void loop() {
         intakeTrigger
                 .whileActiveContinuous(
                         new ParallelCommandGroup(
@@ -56,7 +57,9 @@ public class ShooterPositionTuner extends OpMode {
                         new InstantCommand(() -> {
                             if (r.rotator.threeBallsDetected()) {
                                 CommandScheduler.getInstance().schedule(
-                                        r.rotator.transfer()
+                                        new ParallelCommandGroup(
+                                                r.rotator.transfer()
+                                        )
                                 );
                             } else {
                                 CommandScheduler.getInstance().schedule(
@@ -65,19 +68,42 @@ public class ShooterPositionTuner extends OpMode {
                             }
                         })
                 );
+    }
+
+
+    @Override
+    public void run() {
+        long now = System.nanoTime();
+
+        if (lastLoopTimeNs != 0) {
+            loopTimeMs = (now - lastLoopTimeNs) / 1_000_000.0;
+            loopHz = 1000.0 / loopTimeMs;
+        }
+
+        lastLoopTimeNs = now;
+
+        telemetry.addData("Obelisk: ", Globals.obeliskOptions);
+        telemetry.addData("Shooter Velocity: ", r.shooter.getShooterVelocity());
+        telemetry.addData("Hood: ", r.r.getPosition());
+        telemetry.addData("X: ", r.dt.getPose().getX());
+        telemetry.addData("Y: ", r.dt.getPose().getY());
+        telemetry.addData("Loop Time (ms)", "%.2f", loopTimeMs);
+        telemetry.addData("Loop Rate (Hz)", "%.1f", loopHz);
+
+        telemetry.update();
 
         if (gamepad1.dpadLeftWasPressed()) {
-            CommandScheduler.getInstance().schedule(
+            schedule(
                     new UninterruptibleCommand(KickCommands.kickAndReset(r.kicker, 1))
             );
         }
         if (gamepad1.dpadRightWasPressed()) {
-            CommandScheduler.getInstance().schedule(
+            schedule(
                     new UninterruptibleCommand(KickCommands.kickAndReset(r.kicker, 2))
             );
         }
         if (gamepad1.dpadDownWasPressed()) {
-            CommandScheduler.getInstance().schedule(
+            schedule(
                     new UninterruptibleCommand(KickCommands.kickAndReset(r.kicker, 3))
             );
         }
@@ -110,7 +136,6 @@ public class ShooterPositionTuner extends OpMode {
         telemetry.addData("Hood Value: ", r.r.getPosition());
         telemetry.update();
     }
-
     private double feedforward(double targetVel) {
         if (Math.abs(targetVel) < 1e-6) return 0;
         double sign = Math.signum(targetVel);

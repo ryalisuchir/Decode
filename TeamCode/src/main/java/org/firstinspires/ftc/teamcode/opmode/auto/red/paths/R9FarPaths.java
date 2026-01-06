@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.opmode.auto.blue.paths;
+package org.firstinspires.ftc.teamcode.opmode.auto.red.paths;
 
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierCurve;
@@ -8,22 +8,22 @@ import com.pedropathing.paths.PathChain;
 
 import org.firstinspires.ftc.teamcode.common.utility.Robot;
 
-public class B9BackPaths {
+public class R9FarPaths {
     private final Follower f;
 
-    public Pose start = new Pose(55, 8, Math.toRadians(90));
-    public Pose shoot0 = new Pose(57, 12, Math.toRadians(109));
-    public Pose intakeCloseHold1 = new Pose(62, 27);
-    public Pose intakeClose = new Pose(22, 24, Math.toRadians(180));
-    public Pose shoot1 = new Pose(59, 10, Math.toRadians(133));
-    public Pose intakeHp1 = new Pose(30.45, 18, Math.toRadians(-145));
-    public Pose intakeHp2 = new Pose(31, 10, Math.toRadians(-109));
-    public Pose shoot3 = new Pose(67, 3.89, Math.toRadians(180));
-    public Pose park = new Pose(59, 36, Math.toRadians(270));
+    public Pose start = new Pose(85, 9, Math.toRadians(90));
+    public Pose shoot0 = new Pose(82, 18, Math.toRadians(78));
+    public Pose intakeCloseHold1 = new Pose(70, 46);
+    public Pose intakeClose = new Pose(140, 49, Math.toRadians(0));
+    public Pose shoot1 = new Pose(82, 18, Math.toRadians(78));
+    public Pose intakeHp1 = new Pose(150, 28, Math.toRadians(-69));
+    public Pose intakeHp2 = new Pose(155, 20, Math.toRadians(-55));
+    public Pose shoot3 = new Pose(90, 27, Math.toRadians(0));
+    public Pose park = new Pose(103, 35, Math.toRadians(90));
 
     private int index;
 
-    public B9BackPaths(Robot r) {
+    public R9FarPaths(Robot r) {
         this.f = r.dt.getFollower();
         index = 0;
     }

@@ -11,15 +11,15 @@ import org.firstinspires.ftc.teamcode.common.utility.Robot;
 public class B12BackPaths {
     private final Follower f;
 
-    public Pose start = new Pose(56, 7.6772334293948195, Math.toRadians(90));
-    public Pose shoot0 = new Pose(57, 17, Math.toRadians(109));
+    public Pose start = new Pose(55, 8, Math.toRadians(90));
+    public Pose shoot0 = new Pose(57, 12, Math.toRadians(109));
     public Pose intakeCloseHold1 = new Pose(62, 27);
-    public Pose intakeClose = new Pose(24, 24, Math.toRadians(180));
+    public Pose intakeClose = new Pose(22, 24, Math.toRadians(180));
     public Pose shoot1 = new Pose(59, 10, Math.toRadians(133));
     public Pose intakeMidHold1 = new Pose(62, 51);
-    public Pose intakeMid = new Pose(25, 48, Math.toRadians(180));
+    public Pose intakeMid = new Pose(22, 48, Math.toRadians(180));
     public Pose shoot2 = new Pose(67, 3.89, Math.toRadians(180));
-    public Pose intakeHp1 = new Pose(30.45, 11, Math.toRadians(-145));
+    public Pose intakeHp1 = new Pose(30.45, 18, Math.toRadians(-145));
     public Pose intakeHp2 = new Pose(31, 10, Math.toRadians(-109));
     public Pose shoot3 = new Pose(67, 3.89, Math.toRadians(180));
     public Pose park = new Pose(59, 36, Math.toRadians(270));
@@ -47,6 +47,7 @@ public class B12BackPaths {
                                 intakeClose
                         )
                 )
+                .addParametricCallback(0.8, () -> f.setMaxPower(0.4))
                 .setLinearHeadingInterpolation(shoot0.getHeading(), intakeClose.getHeading())
                 .build();
     }
@@ -67,6 +68,7 @@ public class B12BackPaths {
                                 intakeMid
                         )
                 )
+                .addParametricCallback(0.8, () -> f.setMaxPower(0.4))
                 .setLinearHeadingInterpolation(shoot1.getHeading(), intakeMid.getHeading())
                 .build();
     }

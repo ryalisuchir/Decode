@@ -12,8 +12,8 @@ public class CloseGateCmd extends SequentialCommandGroup {
     public CloseGateCmd(ServoImplEx g) {
         super(
                 new SequentialCommandGroup(
-                        new InstantCommand(() -> g.setPosition(Globals.GATE_FAR_CLOSED)),
-                        new WaitCommand(100),
+//                        new InstantCommand(() -> g.setPosition(Globals.GATE_FAR_CLOSED)),
+//                        new WaitCommand(100),
                         new InstantCommand(() -> g.setPosition(Globals.GATE_CLOSED))
                 )
         );

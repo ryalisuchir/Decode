@@ -3,34 +3,30 @@ package org.firstinspires.ftc.teamcode.opmode.testing;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.common.utility.BlueTurretLUT;
 import org.firstinspires.ftc.teamcode.common.utility.Globals;
-import org.firstinspires.ftc.teamcode.common.utility.RedTurretLUT;
 import org.firstinspires.ftc.teamcode.common.utility.Robot;
+import org.firstinspires.ftc.teamcode.common.utility.functions.vision.Vision;
 
 @TeleOp
 public class TurretTester extends OpMode {
     Robot r;
-    private final BlueTurretLUT blueTurretLUT = new BlueTurretLUT();
-    private final RedTurretLUT redTurretLUT = new RedTurretLUT();
 
     @Override
     public void init() {
-        r = new Robot(hardwareMap, Globals.DEFAULT_START_POSE, Globals.Side.BLUE, true);
+        r = new Robot(hardwareMap, Globals.OTHER_DEFAULT_START_POSE, Globals.Side.RED, true);
         r.dt.startDrive();
     }
 
     @Override
     public void loop() {
-
         r.dt.drive(gamepad1);
-
-        double servoPosition = blueTurretLUT.getServoValue(r.turret.getTurretAngleToGoal(r.dt.getPose().getX(), r.dt.getPose().getY(), r.dt.getPose().getHeading()));
-
-        r.t1.setPosition(servoPosition);
-        r.t2.setPosition(servoPosition);
+        r.turret.followGoal();
 
         r.clearCache();
         r.noOuttakeLoop(r);
+        telemetry.addData("tx: ", Vision.getTx());
+        telemetry.addData("Correct fid: ", Vision.hasCorrectFiducial());
+        telemetry.addData("Pose: ", r.dt.getPose().getHeading());
+        telemetry.update();
     }
 }
