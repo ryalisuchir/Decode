@@ -44,7 +44,7 @@ public class Globals {
 
     public static final double VISION_MAX_VEL = 10;
 
-    public static double k = 0.9;
+    public static double k = 1.3;
 
     public static double KICKER1_RESET = 0.757;
     public static double KICKER1_KICK = 0.92;
