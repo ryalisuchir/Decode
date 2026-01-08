@@ -36,7 +36,7 @@ public class ShooterPositionTuner extends CommandOpMode {
 
     @Override
     public void initialize() {
-        r = new Robot(hardwareMap, Globals.OTHER_DEFAULT_START_POSE, Globals.Side.RED, true);
+        r = new Robot(hardwareMap, Globals.DEFAULT_START_POSE, Globals.Side.BLUE, true);
         r.initLoop(r);
         r.dt.startDrive();
         ahnaf = gamepad1;
@@ -46,10 +46,25 @@ public class ShooterPositionTuner extends CommandOpMode {
         );
         intakeTrigger
                 .whileActiveContinuous(
-                        r.spinner.toggleIn()
+                        new ParallelCommandGroup(
+                                new InstantCommand(() -> r.spinner.intakeIn()),
+                                new InstantCommand(() -> r.spinner.openGate()),
+                                KickCommands.resetAll(r.kicker)
+                        )
                 )
                 .whenInactive(
-                        r.spinner.toggleIn()
+                        new InstantCommand(() -> {
+                            if (r.spinner.oneBallDetected()) {
+                                CommandScheduler.getInstance().schedule(
+                                        r.spinner.transfer()
+                                );
+                            } else {
+                                CommandScheduler.getInstance().schedule(
+                                        new InstantCommand(() -> r.spinner.intakeStop()),
+                                        new InstantCommand(() -> r.spinner.transferStop())
+                                );
+                            }
+                        })
                 );
     }
 

@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.common.utility.Globals;
 import org.firstinspires.ftc.teamcode.common.utility.Robot;
+import org.firstinspires.ftc.teamcode.common.utility.functions.vision.Vision;
 
 @Autonomous
 @Config
@@ -23,7 +24,8 @@ public class MasterChecker extends OpMode {
     public static double gate = Globals.GATE_OPEN;
 
     public static double shooterSpeed = 0;
-    public static double rollerSpeed = 0;
+    public static double intakeSpeed = 0;
+    public static double transferSpeed = 0;
 
     public static double dtSpeed1 = 0;
     public static double dtSpeed2 = 0;
@@ -32,7 +34,7 @@ public class MasterChecker extends OpMode {
 
     @Override
     public void init() {
-        robot = new Robot(hardwareMap, Globals.DEFAULT_START_POSE, Globals.Side.BLUE, true);
+        robot = new Robot(hardwareMap, Globals.DEFAULT_START_POSE, Globals.Side.RED, true);
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         telemetry.addLine("Reset all encoders.");
         telemetry.update();
@@ -55,8 +57,8 @@ public class MasterChecker extends OpMode {
         robot.rl.setPower(dtSpeed3);
         robot.rr.setPower(dtSpeed4);
 
-        robot.t.setPower(rollerSpeed);
-        robot.i.setPower(rollerSpeed);
+        robot.t.setPower(transferSpeed);
+        robot.i.setPower(intakeSpeed);
 
         robot.s1.set(shooterSpeed);
         robot.s2.set(shooterSpeed);
@@ -64,6 +66,7 @@ public class MasterChecker extends OpMode {
         Pose fpose = robot.dt.getFollower().getPose();
 
         telemetry.addData("Transfer Motor Velocity:", robot.t.getVelocity(AngleUnit.DEGREES));
+        telemetry.addData("tx:", Vision.getTx());
         telemetry.addData("Shooter 1 Motor Velocity:", robot.s1.getCorrectedVelocity());
         telemetry.addData("Shooter 2 Motor Velocity:", robot.s2.getCorrectedVelocity());
         telemetry.addData("Shooter 1 Motor RPM: ", robot.s1.getCorrectedVelocity() / 28 * 60);

@@ -5,6 +5,7 @@ import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
+import com.seattlesolvers.solverslib.command.CommandScheduler;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
 import com.seattlesolvers.solverslib.command.UninterruptibleCommand;
@@ -14,6 +15,7 @@ import org.firstinspires.ftc.teamcode.common.commandbase.commands.teleopspecific
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.teleopspecific.KickOnePurpleTCmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.teleopspecific.KickOrderTCmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.utility.KickCommands;
+import org.firstinspires.ftc.teamcode.common.commandbase.commands.utility.RapidKickCommands;
 import org.firstinspires.ftc.teamcode.common.utility.Globals;
 import org.firstinspires.ftc.teamcode.common.utility.Robot;
 
@@ -30,7 +32,7 @@ public class Blue extends CommandOpMode {
 
     @Override
     public void initialize() {
-        r = new Robot(hardwareMap, Globals.OTHER_DEFAULT_START_POSE, Globals.Side.BLUE, true);
+        r = new Robot(hardwareMap, Globals.DEFAULT_START_POSE, Globals.Side.BLUE, false);
         r.initLoop(r);
         r.dt.startDrive();
         ahnaf = gamepad1;
@@ -41,12 +43,30 @@ public class Blue extends CommandOpMode {
         );
         intakeTrigger
                 .whileActiveContinuous(
-                        r.spinner.toggleIn()
+                        new ParallelCommandGroup(
+                                new InstantCommand(() -> r.spinner.intakeIn()),
+                                new InstantCommand(() -> r.spinner.openGate()),
+                                KickCommands.resetAll(r.kicker)
+                        )
                 )
                 .whenInactive(
-                        r.spinner.toggleIn()
+                        new InstantCommand(() -> {
+                            if (r.spinner.oneBallDetected()) {
+                                CommandScheduler.getInstance().schedule(
+                                        r.spinner.transfer()
+                                );
+                            } else {
+                                CommandScheduler.getInstance().schedule(
+                                        new ParallelCommandGroup(
+                                        r.spinner.intakeOut(),
+                                new InstantCommand(() -> r.spinner.transferStop())
+                                        )
+                                );
+                            }
+                        })
                 );
     }
+
 
     @Override
     public void run() {
@@ -72,6 +92,7 @@ public class Blue extends CommandOpMode {
         telemetry.addData("Pose: ", r.dt.getPose());
         telemetry.addData("Side: ", Globals.side);
         telemetry.addData("DT Side: ", r.dt.a);
+        telemetry.addData("Transfer State: ", Globals.transferState);
 
         telemetry.update();
 
@@ -90,6 +111,12 @@ public class Blue extends CommandOpMode {
                                 swetha.rumble(1000);
                             })
                     )
+            );
+        }
+
+        if (ahnaf.crossWasPressed()) { //rapid fire
+            schedule(
+                    RapidKickCommands.kickAndResetMany(r.kicker,2,1,3)
             );
         }
 

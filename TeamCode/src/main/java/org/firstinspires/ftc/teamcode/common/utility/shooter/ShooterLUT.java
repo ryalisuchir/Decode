@@ -38,17 +38,23 @@ public class ShooterLUT {
     }
 
     public ShooterParams getShooterValue(double dist, double actualVel) {
-        double baseHood = 0.638878 + 0.003353*dist - 0.000011*dist*dist;
-        double baseVel  = 1239.701158 - 2.816762*dist + 0.040582*dist*dist;
+        double baseHood = 0.616892 + 0.003685*dist - 0.000011*dist*dist;
+        double baseVel = 1100.622035 - 1.367801*dist + 0.045720*dist*dist;
 
-        double hoodSlope = 0.003353 - 2 * 0.000011 * dist;
-        double velSlope  = -2.816762 + 2 * 0.040582 * dist;
+        double hoodSlope = 0.003685 - 2 * 0.000011 * dist;
+        double velSlope  = -1.367801 + 2 * 0.045720 * dist;
         double dhdV = hoodSlope / velSlope;
         double velError = actualVel - baseVel;
 
-        double correctedHood = baseHood + Globals.k * dhdV * velError;
+        double correction = Globals.k * dhdV * velError;
 
-        if (Globals.robotState == Globals.RobotState.NOT_KICKING) correctedHood = baseHood;
+        correction = Math.max(-0.15, Math.min(0.05, correction));
+
+        double correctedHood = baseHood + correction;
+
+        if (Globals.shooterKicking) {
+            correctedHood = baseHood + correction;
+        }
 
         return new ShooterParams(correctedHood, baseVel);
     }

@@ -61,4 +61,8 @@ public final class Vision {
 
         return 0.0;
     }
+
+    public static double txToServoPos(double txDeg) {
+        return -0.0035 * txDeg + 0.0052;
+    }
 }

@@ -36,10 +36,25 @@ public class TurretTuner extends CommandOpMode {
         );
         intakeTrigger
                 .whileActiveContinuous(
-                        r.spinner.toggleIn()
+                        new ParallelCommandGroup(
+                                new InstantCommand(() -> r.spinner.intakeIn()),
+                                new InstantCommand(() -> r.spinner.openGate()),
+                                KickCommands.resetAll(r.kicker)
+                        )
                 )
                 .whenInactive(
-                        r.spinner.toggleIn()
+                        new InstantCommand(() -> {
+                            if (r.spinner.oneBallDetected()) {
+                                CommandScheduler.getInstance().schedule(
+                                        r.spinner.transfer()
+                                );
+                            } else {
+                                CommandScheduler.getInstance().schedule(
+                                        new InstantCommand(() -> r.spinner.intakeStop()),
+                                        new InstantCommand(() -> r.spinner.transferStop())
+                                );
+                            }
+                        })
                 );
     }
 

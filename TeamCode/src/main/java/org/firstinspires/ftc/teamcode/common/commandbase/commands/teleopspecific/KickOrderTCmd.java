@@ -27,14 +27,20 @@ public class KickOrderTCmd extends SequentialCommandGroup {
 
         List<Command> sequence = new ArrayList<>();
 
-        sequence.add(new InstantCommand(() -> r.spinner.transferStart()));
-        sequence.add(new InstantCommand(() -> Globals.robotState = Globals.RobotState.KICKING));
-        sequence.add(r.shooter.startShooter());
+        sequence.add(new ParallelCommandGroup(
+                new InstantCommand(() -> {
+            r.turret.applyVisionCorrectionOnce();
+        }),
+                new InstantCommand(() -> r.spinner.transferStart()),
+                r.shooter.startShooter()
+        ));
 
         for (int i = 0; i < firingOrder.size(); i++) {
             int slot = firingOrder.get(i);
             sequence.add(kickCommand(r.kicker, slot));
         }
+
+        sequence.add(new WaitCommand(Globals.KICK_WAIT_AUTO));
 
         sequence.add(
                 new ResetShooterCmd(r, false, 0)
@@ -45,6 +51,7 @@ public class KickOrderTCmd extends SequentialCommandGroup {
 
     private Command kickCommand(Kicker kicker, int slot) {
         return new SequentialCommandGroup(
+                new InstantCommand(() -> Globals.shooterKicking = true),
                 KickCommands.kickOnce(kicker, slot),
                 new WaitCommand(Globals.KICK_WAIT_TELE)
         );

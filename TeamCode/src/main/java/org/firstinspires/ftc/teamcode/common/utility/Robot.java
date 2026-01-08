@@ -61,7 +61,6 @@ public class Robot {
         if (a) { //If we say that we're running auto, all the global enums will reset
             Globals.intakeState = Globals.IntakeState.STOPPED;
             Globals.transferState = Globals.TransferState.STOPPED;
-            Globals.robotState = Globals.RobotState.NOT_KICKING;
             Globals.match = Globals.Match.AUTO;
             Globals.shooterState = Globals.ShooterState.STOPPED;
             Globals.kicker1State = Globals.Kicker1State.RESET;
@@ -78,9 +77,6 @@ public class Robot {
             }
             if (Globals.transferState == null) {
                 Globals.transferState = Globals.TransferState.STOPPED;
-            }
-            if (Globals.robotState == null) {
-                Globals.robotState = Globals.RobotState.NOT_KICKING;
             }
             if (Globals.shooterState == null) {
                 Globals.shooterState = Globals.ShooterState.STOPPED;

@@ -38,21 +38,19 @@ public class Spinner {
         setTransferTarget(0);
     }
 
-    private void openGate() {
+    public void openGate() {
         if (Math.abs(Globals.GATE_OPEN - g.getPosition()) < 0.05) return;
 
         g.setPosition(Globals.GATE_OPEN);
     }
 
-    private void closeGate() {
+    public void closeGate() {
         if (Math.abs(Globals.GATE_CLOSED - g.getPosition()) < 0.05) return;
 
         g.setPosition(Globals.GATE_CLOSED);
     }
 
     private void setIntakeTarget(double power) {
-        if (Math.abs(power - i.getPower()) < 0.05) return;
-
         intakeTargetPower = power;
     }
 
@@ -65,34 +63,40 @@ public class Spinner {
     public void intakeIn() {
         Globals.intakeState = Globals.IntakeState.INTAKING;
         Globals.transferState = Globals.TransferState.INTAKING;
-        if (Math.abs(Globals.MAX_INTAKING_POWER - i.getPower()) < 0.05) return;
-        setIntakeTarget(Globals.MAX_INTAKING_POWER);
 
-        if (Math.abs(Globals.TRANSFER_INTAKING - t.getPower()) < 0.05) return;
+        setIntakeTarget(Globals.MAX_INTAKING_POWER);
         setTransferTarget(Globals.TRANSFER_INTAKING);
     }
 
     public SequentialCommandGroup intakeOut() {
-        Globals.intakeState = Globals.IntakeState.EJECTING;
+        Globals.intakeState = Globals.IntakeState.STOPPED;
 
-        return new SequentialCommandGroup(new InstantCommand(() -> setIntakeTarget(-0.6)), new WaitCommand(600), new InstantCommand(this::intakeStop));
+        return new SequentialCommandGroup(
+                new InstantCommand(() -> setIntakeTarget(-0.4)),
+                new WaitCommand(600),
+                new InstantCommand(this::intakeStop)
+        );
     }
 
-    private void intakeStop() {
+    public void intakeStop() {
         setIntakeTarget(0);
         Globals.intakeState = Globals.IntakeState.STOPPED;
         closeGate();
     }
 
-    private ParallelCommandGroup intake() {
+
+    public ParallelCommandGroup intake() {
         return new ParallelCommandGroup(new InstantCommand(this::intakeIn), new InstantCommand(this::openGate));
     }
 
-    private ParallelCommandGroup transfer() {
-        return new ParallelCommandGroup(new InstantCommand(this::intakeOut), new InstantCommand(this::transferStart));
+    public ParallelCommandGroup transfer() {
+        return new ParallelCommandGroup(
+                intakeOut(),
+                new InstantCommand(this::transferStart)
+        );
     }
 
-    private ParallelCommandGroup stop() {
+    public ParallelCommandGroup stop() {
         long wait;
         if (Globals.match == Globals.Match.AUTO) {
             wait = Globals.GATE_WAIT_AUTO;
@@ -100,7 +104,7 @@ public class Spinner {
             wait = Globals.GATE_WAIT_TELE;
         }
 
-        if (!oneBallDetected()) {
+        if (!threeBallsDetected()) {
             return new ParallelCommandGroup(new SequentialCommandGroup(new InstantCommand(() -> setIntakeTarget(-0.6)), new WaitCommand(wait), new InstantCommand(() -> {
                 setIntakeTarget(0);
                 Globals.intakeState = Globals.IntakeState.STOPPED;
@@ -164,7 +168,9 @@ public class Spinner {
             }
         }
 
-        if ((Globals.intakeState == Globals.IntakeState.INTAKING && threeBallsDetected() && !autoTransferTriggered) || (Globals.intakeState == Globals.IntakeState.STOPPED && oneBallDetected())) {
+        if (Globals.intakeState == Globals.IntakeState.INTAKING
+                && threeBallsDetected()
+                && !autoTransferTriggered) {
             autoTransferTriggered = true;
             CommandScheduler.getInstance().schedule(transfer());
         }

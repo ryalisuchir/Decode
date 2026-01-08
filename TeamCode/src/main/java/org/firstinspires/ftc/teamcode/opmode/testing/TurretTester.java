@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode.opmode.testing;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.seattlesolvers.solverslib.command.CommandScheduler;
+import com.seattlesolvers.solverslib.command.InstantCommand;
 
 import org.firstinspires.ftc.teamcode.common.utility.Globals;
 import org.firstinspires.ftc.teamcode.common.utility.Robot;
@@ -13,14 +15,27 @@ public class TurretTester extends OpMode {
 
     @Override
     public void init() {
-        r = new Robot(hardwareMap, Globals.OTHER_DEFAULT_START_POSE, Globals.Side.RED, true);
+        r = new Robot(hardwareMap, Globals.DEFAULT_START_POSE, Globals.Side.BLUE, true);
         r.dt.startDrive();
+        Globals.turretState = Globals.TurretState.FOLLOWING;
     }
 
     @Override
     public void loop() {
         r.dt.drive(gamepad1);
-        r.turret.followGoal();
+        r.turret.loop();
+
+        if (gamepad1.crossWasPressed()) {
+            CommandScheduler.getInstance().schedule(new InstantCommand(() -> {
+                r.turret.applyVisionCorrectionOnce();
+            }));
+        }
+
+        if (gamepad1.circleWasPressed()) {
+            CommandScheduler.getInstance().schedule(new InstantCommand(() -> {
+                r.turret.clearVisionCorrection();
+            }));
+        }
 
         r.clearCache();
         r.noOuttakeLoop(r);
