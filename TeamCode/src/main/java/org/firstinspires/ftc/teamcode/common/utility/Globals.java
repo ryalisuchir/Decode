@@ -40,7 +40,7 @@ public class Globals {
 
     public static final double TURRET_OFFSET_X = 1.1674169;  // forward from center
     public static final double TURRET_OFFSET_Y = 2.9559;  // left from center
-    public static final double BARREL_LENGTH = 6.0; // inches (measure this)
+    public static final double BARREL_LENGTH = 6.0;
 
     public static final double VISION_MAX_VEL = 10;
 

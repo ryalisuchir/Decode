@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.common.utility.functions;
+package org.firstinspires.ftc.teamcode.common.utility.functions.luts;
 
 public class ShooterParams {
     public double hoodPos;

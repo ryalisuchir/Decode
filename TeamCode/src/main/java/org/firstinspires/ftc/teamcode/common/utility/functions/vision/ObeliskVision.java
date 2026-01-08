@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.common.utility.functions;
+package org.firstinspires.ftc.teamcode.common.utility.functions.vision;
 
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;

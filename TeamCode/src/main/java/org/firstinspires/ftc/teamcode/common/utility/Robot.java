@@ -14,6 +14,7 @@ import com.qualcomm.robotcore.hardware.ServoImplEx;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
 import com.seattlesolvers.solverslib.hardware.motors.Motor;
 
+import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.teamcode.common.commandbase.subsystems.Drivetrain;
 import org.firstinspires.ftc.teamcode.common.commandbase.subsystems.Kicker;
 import org.firstinspires.ftc.teamcode.common.commandbase.subsystems.Shooter;
@@ -21,14 +22,14 @@ import org.firstinspires.ftc.teamcode.common.commandbase.subsystems.Spinner;
 import org.firstinspires.ftc.teamcode.common.commandbase.subsystems.Turret;
 import org.firstinspires.ftc.teamcode.common.utility.functions.ColorReader;
 import org.firstinspires.ftc.teamcode.common.utility.functions.DenoiseFilter;
-import org.firstinspires.ftc.teamcode.common.utility.functions.ObeliskVision;
+import org.firstinspires.ftc.teamcode.common.utility.functions.vision.ObeliskVision;
 import org.firstinspires.ftc.teamcode.common.utility.functions.vision.Vision;
 
 import java.util.Arrays;
 import java.util.List;
 
 public class Robot {
-
+    YawPitchRollAngles orientation;
     public DcMotorEx i, t;
     public Motor s1, s2;
     public DcMotorEx fl, fr, rl, rr;
@@ -155,11 +156,8 @@ public class Robot {
         i.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         l = h.get(Limelight3A.class, "limelight");
-        l.setPollRateHz(100);
-        l.start();
-        l.pipelineSwitch(2);
-
         Vision.init(l);
+        Vision.switchToDistance();
 
         if (s == Globals.Side.RED) {
             gX = Globals.RED_CASTLE.getX();

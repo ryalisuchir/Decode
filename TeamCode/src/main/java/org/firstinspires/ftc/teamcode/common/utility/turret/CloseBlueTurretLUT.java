@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.common.utility.turret;
 
-import org.firstinspires.ftc.teamcode.common.utility.Globals;
-import org.firstinspires.ftc.teamcode.common.utility.functions.InterpolatedLUT;
+import org.firstinspires.ftc.teamcode.common.utility.functions.luts.InterpolatedLUT;
 
 public class CloseBlueTurretLUT {
     private final InterpolatedLUT turretServoLUT = new InterpolatedLUT();

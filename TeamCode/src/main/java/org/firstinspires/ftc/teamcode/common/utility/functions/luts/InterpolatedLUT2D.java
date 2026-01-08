@@ -1,7 +1,4 @@
-package org.firstinspires.ftc.teamcode.common.utility.functions;
-
-import org.firstinspires.ftc.teamcode.common.utility.functions.ShooterParams;
-import org.firstinspires.ftc.teamcode.common.utility.functions.MonotoneCubic;
+package org.firstinspires.ftc.teamcode.common.utility.functions.luts;
 
 import java.util.ArrayList;
 import java.util.List;

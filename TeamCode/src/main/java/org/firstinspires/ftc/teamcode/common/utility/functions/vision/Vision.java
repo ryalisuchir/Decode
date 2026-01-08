@@ -1,9 +1,11 @@
 package org.firstinspires.ftc.teamcode.common.utility.functions.vision;
 
+import com.pedropathing.math.Vector;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.common.utility.Globals;
 
 import java.util.List;
@@ -11,6 +13,8 @@ import java.util.List;
 public final class Vision {
 
     private static Limelight3A limelight;
+    private static final int distance = 0, regular = 2;
+    private static int pipeline = regular;
 
     private Vision() {}
 
@@ -43,7 +47,33 @@ public final class Vision {
         return false;
     }
 
-    /** TX in degrees of the correct fiducial (0 if not found) */
+    public static double distanceFromTag() {
+        List<LLResultTypes.FiducialResult> r = limelight.getLatestResult().getFiducialResults();
+
+        if (r.isEmpty()) return 0;
+
+        int tagID = (Globals.side == Globals.Side.BLUE) ? 20 : 24;
+
+        LLResultTypes.FiducialResult target = null;
+        for (LLResultTypes.FiducialResult i: r) {
+            if (i != null && i.getFiducialId() ==  tagID) {
+                target = i;
+                break;
+            }
+        }
+
+        if (target != null) {
+            double x = (target.getCameraPoseTargetSpace().getPosition().x / DistanceUnit.mPerInch) + 8; // right/left from tag
+            double z = (target.getCameraPoseTargetSpace().getPosition().z / DistanceUnit.mPerInch) + 8; // forward/back from tag
+
+            Vector e = new Vector();
+            e.setOrthogonalComponents(x, z);
+            return e.getMagnitude();
+        }
+
+        return 0;
+    }
+
     public static double getTx() {
         LLResult result = getLatestResult();
         if (result == null) return 0.0;
@@ -64,5 +94,19 @@ public final class Vision {
 
     public static double txToServoPos(double txDeg) {
         return -0.0035 * txDeg + 0.0052;
+    }
+
+    public static void switchToRegular() {
+        if (pipeline != regular)
+            limelight.pipelineSwitch(regular);
+        limelight.setPollRateHz(20);
+        limelight.start();
+    }
+
+    public static void switchToDistance() {
+        if (pipeline != distance)
+            limelight.pipelineSwitch(distance);
+        limelight.setPollRateHz(20);
+        limelight.start();
     }
 }

@@ -7,12 +7,12 @@ import com.seattlesolvers.solverslib.command.SubsystemBase;
 import com.seattlesolvers.solverslib.geometry.Vector2d;
 import com.seattlesolvers.solverslib.hardware.motors.Motor;
 import org.firstinspires.ftc.teamcode.common.utility.Globals;
-import org.firstinspires.ftc.teamcode.common.utility.functions.ShooterParams;
+import org.firstinspires.ftc.teamcode.common.utility.functions.luts.ShooterParams;
 import org.firstinspires.ftc.teamcode.common.utility.shooter.ShooterLUT;
 
 public class Shooter extends SubsystemBase {
 
-    private final ShooterLUT closeShooterLUT = new ShooterLUT();
+    private final ShooterLUT shooterLUT = new ShooterLUT();
 
     public static double kV = 0.00045;
     public static double kS = 0.02;
@@ -92,7 +92,11 @@ public class Shooter extends SubsystemBase {
             y = follower.getPose().getY() - gY;
         }
 
-        ShooterParams params = closeShooterLUT.getShooterValue(Math.hypot(x,y), -shooterMotor2.getCorrectedVelocity());
+        double dist = Math.hypot(x,y);
+
+//        double dist = (Vision.distanceFromTag() > 0) ? Vision.distanceFromTag() : Math.hypot(x,y);
+
+        ShooterParams params = shooterLUT.getShooterValue(dist, -shooterMotor2.getCorrectedVelocity());
 
         double hoodPos = clamp(params.hoodPos,
                 Globals.HOOD_LOWERED,

@@ -15,6 +15,8 @@ import com.seattlesolvers.solverslib.command.button.Trigger;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.utility.KickCommands;
 import org.firstinspires.ftc.teamcode.common.utility.Globals;
 import org.firstinspires.ftc.teamcode.common.utility.Robot;
+import org.firstinspires.ftc.teamcode.common.utility.functions.luts.ShooterParams;
+import org.firstinspires.ftc.teamcode.common.utility.shooter.ShooterLUT;
 
 @TeleOp
 @Config
@@ -33,10 +35,12 @@ public class ShooterPositionTuner extends CommandOpMode {
     public double kS = 0.02;
     public double kP = 0.0012;
     public static double targetVelocity = 0;
+    ShooterLUT shooterLUT = new ShooterLUT();
 
     @Override
     public void initialize() {
-        r = new Robot(hardwareMap, Globals.DEFAULT_START_POSE, Globals.Side.BLUE, true);
+
+        r = new Robot(hardwareMap, Globals.RED_CUBE_START, Globals.Side.RED, true);
         r.initLoop(r);
         r.dt.startDrive();
         ahnaf = gamepad1;
@@ -80,15 +84,18 @@ public class ShooterPositionTuner extends CommandOpMode {
 
         lastLoopTimeNs = now;
 
-        telemetry.addData("Obelisk: ", Globals.obeliskOptions);
-        telemetry.addData("Shooter Velocity: ", r.shooter.getShooterVelocity());
-        telemetry.addData("Hood: ", r.r.getPosition());
-        telemetry.addData("X: ", r.dt.getPose().getX());
-        telemetry.addData("Y: ", r.dt.getPose().getY());
-        telemetry.addData("Loop Time (ms)", "%.2f", loopTimeMs);
-        telemetry.addData("Loop Rate (Hz)", "%.1f", loopHz);
-
         telemetry.update();
+        if (gamepad1.crossWasPressed()) {
+            CommandScheduler.getInstance().schedule(new InstantCommand(() -> {
+                r.turret.applyVisionCorrectionOnce();
+            }));
+        }
+
+        if (gamepad1.circleWasPressed()) {
+            CommandScheduler.getInstance().schedule(new InstantCommand(() -> {
+                r.turret.clearVisionCorrection();
+            }));
+        }
 
         if (gamepad1.dpadLeftWasPressed()) {
             schedule(
@@ -130,6 +137,7 @@ public class ShooterPositionTuner extends CommandOpMode {
         telemetry.addData("Distance: ", r.dt.getGoalDistance());
         telemetry.addData("X: ", r.dt.getPose().getX());
         telemetry.addData("Y: ", r.dt.getPose().getY());
+        telemetry.addData("Optimal Params from this Distance:", shooterLUT.getShooterValue(r.dt.getGoalDistance(), -r.s2.getCorrectedVelocity()));
         telemetry.addData("Current Velocity: ", r.s2.getCorrectedVelocity());
         telemetry.addData("Hood Value: ", r.r.getPosition());
         telemetry.update();

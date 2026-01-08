@@ -1,11 +1,14 @@
 package org.firstinspires.ftc.teamcode.common.utility.shooter;
 
+import static androidx.core.math.MathUtils.clamp;
+
 import org.firstinspires.ftc.teamcode.common.utility.Globals;
-import org.firstinspires.ftc.teamcode.common.utility.functions.InterpolatedLUT2D;
-import org.firstinspires.ftc.teamcode.common.utility.functions.ShooterParams;
+import org.firstinspires.ftc.teamcode.common.utility.functions.luts.InterpolatedLUT2D;
+import org.firstinspires.ftc.teamcode.common.utility.functions.luts.ShooterParams;
 
 public class ShooterLUT {
     private final InterpolatedLUT2D shooterLUT = new InterpolatedLUT2D();
+    private VelocityErrorLUT velocityErrorLUT = new VelocityErrorLUT();
 
     public ShooterLUT() {
         shooterLUT.addPoint(28, 110, new ShooterParams(0.78, 1200));
@@ -41,20 +44,17 @@ public class ShooterLUT {
         double baseHood = 0.616892 + 0.003685*dist - 0.000011*dist*dist;
         double baseVel = 1100.622035 - 1.367801*dist + 0.045720*dist*dist;
 
-        double hoodSlope = 0.003685 - 2 * 0.000011 * dist;
-        double velSlope  = -1.367801 + 2 * 0.045720 * dist;
-        double dhdV = hoodSlope / velSlope;
         double velError = actualVel - baseVel;
 
-        double correction = Globals.k * dhdV * velError;
-
-        correction = Math.max(-0.15, Math.min(0.05, correction));
+        double correction = velocityErrorLUT.getHoodErrorChange(dist, velError);
 
         double correctedHood = baseHood + correction;
 
-        if (Globals.shooterKicking) {
-            correctedHood = baseHood + correction;
+        if (!Globals.shooterKicking) {
+            correctedHood = baseHood;
         }
+
+        correctedHood = clamp(correctedHood, Globals.HOOD_LOWERED, Globals.HOOD_MAX);
 
         return new ShooterParams(correctedHood, baseVel);
     }
