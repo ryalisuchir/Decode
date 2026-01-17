@@ -10,7 +10,7 @@ import org.firstinspires.ftc.teamcode.common.utility.Robot;
 import org.firstinspires.ftc.teamcode.common.utility.functions.DenoiseFilter;
 
 
-@TeleOp
+//@TeleOp
 public class ColorDetectionTest extends OpMode {
     Robot r;
 

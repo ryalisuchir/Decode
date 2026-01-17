@@ -20,7 +20,7 @@ import org.firstinspires.ftc.teamcode.common.utility.Globals;
 import org.firstinspires.ftc.teamcode.common.utility.Robot;
 
 @TeleOp
-public class Blue extends CommandOpMode {
+public class RedFailsafeTele extends CommandOpMode {
 
     Robot r;
     private boolean hasStarted = false;
@@ -41,8 +41,9 @@ public class Blue extends CommandOpMode {
 
     @Override
     public void initialize() {
-        r = new Robot(hardwareMap, Globals.BLUE_CUBE_START, Globals.Side.BLUE, false);
+        r = new Robot(hardwareMap, Globals.RED_CUBE_START, Globals.Side.RED, false);
         r.dt.startDrive();
+        r.shooter.setCustomDistance(99.80403458213259, 99.80403458213254);
         ahnaf = gamepad1;
         swetha = gamepad2;
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
@@ -103,20 +104,7 @@ public class Blue extends CommandOpMode {
 
         lastLoopTimeNs = now;
 
-        telemetry.addData("Color 1: ", Globals.ballColors[0]);
-        telemetry.addData("Color 2: ", Globals.ballColors[1]);
-        telemetry.addData("Color 3: ", Globals.ballColors[2]);
-        telemetry.addData("Obelisk: ", Globals.obeliskOptions);
-        telemetry.addData("Shooter State: ", Globals.shooterState);
-        telemetry.addData("Shooter Power: ", r.shooter.getShooterPower());
-        telemetry.addData("Shooter RPM: ", r.shooter.getShooterRPM());
-        telemetry.addData("Shooter Velocity: ", r.shooter.getShooterVelocity());
-        telemetry.addData("Loop Time (ms)", "%.2f", loopTimeMs);
-        telemetry.addData("Loop Rate (Hz)", "%.1f", loopHz);
-        telemetry.addData("Pose: ", r.dt.getPose());
-        telemetry.addData("Side: ", Globals.side);
-        telemetry.addData("DT Side: ", r.dt.a);
-        telemetry.addData("Transfer State: ", Globals.transferState);
+        telemetry.addLine("FAILSAFE BLUE SIDE TELE RUNNING ");
 
         telemetry.update();
 
@@ -211,6 +199,6 @@ public class Blue extends CommandOpMode {
             threeBallRumbleLatched = false;
         }
 
-        r.loop(r);
+        r.noTurretLoop(r);
     }
 }

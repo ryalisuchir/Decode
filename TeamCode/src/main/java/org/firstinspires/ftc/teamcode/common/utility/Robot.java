@@ -157,7 +157,9 @@ public class Robot {
 
         l = h.get(Limelight3A.class, "limelight");
         Vision.init(l);
-        Vision.switchToDistance();
+        l.pipelineSwitch(2);
+        l.setPollRateHz(100);
+        l.start();
 
         if (s == Globals.Side.RED) {
             gX = Globals.RED_CASTLE.getX();
@@ -205,6 +207,31 @@ public class Robot {
         CommandScheduler.getInstance().run();
     }
 
+    public void noVisionLoop(Robot r) {
+        clearCache();
+        dt.loop();
+        spinner.periodic();
+        shooter.loop();
+        turret.loop();
+        readColors(r);
+        CommandScheduler.getInstance().run();
+    }
+
+    public void noTurretLoop(Robot r) {
+        clearCache();
+        dt.loop();
+        spinner.periodic();
+        shooter.loop();
+        readColors(r);
+        CommandScheduler.getInstance().run();
+    }
+
+    public void nothingLoop(Robot r) {
+        clearCache();
+        dt.loop();
+        CommandScheduler.getInstance().run();
+    }
+
     public void noOuttakeLoop(Robot r) {
         clearCache();
         dt.loop();
@@ -214,7 +241,7 @@ public class Robot {
         CommandScheduler.getInstance().run();
     }
 
-    private void updateVision() {
+    public void updateVision() {
         LLResult result = Vision.getLatestResult();
         if (result != null) {
             Globals.obeliskOptions = ObeliskVision.getObeliskFiducial(result);

@@ -15,9 +15,9 @@ import org.firstinspires.ftc.teamcode.common.utility.Robot;
 import java.util.ArrayList;
 import java.util.List;
 
-public class KickOrderACmd extends SequentialCommandGroup {
+public class FarKickCmd extends SequentialCommandGroup {
 
-    public KickOrderACmd(Robot r) {
+    public FarKickCmd(Robot r) {
         List<Integer> firingOrder = computeFiringOrder();
 
         if (firingOrder.isEmpty()) {
@@ -49,7 +49,7 @@ public class KickOrderACmd extends SequentialCommandGroup {
         return new SequentialCommandGroup(
                 new InstantCommand(() -> Globals.shooterKicking = true),
                 KickCommands.kickOnce(kicker, slot),
-                new WaitCommand(Globals.KICK_WAIT_AUTO)
+                new WaitCommand(Globals.KICK_WAIT_AUTO*3)
         );
     }
 

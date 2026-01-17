@@ -6,27 +6,30 @@ public class FarBlueTurretLUT {
     private final InterpolatedLUT turretServoLUT = new InterpolatedLUT();
 
     public FarBlueTurretLUT() {
-        turretServoLUT.addPoint(-2.47697, 0); //radians, servo position
-        turretServoLUT.addPoint(-2.22762, 0.05); //radians, servo position
-        turretServoLUT.addPoint(-1.98731, 0.1); //radians, servo position
-        turretServoLUT.addPoint(-1.68953, 0.15); //radians, servo position
-        turretServoLUT.addPoint(-1.43998, 0.2); //radians, servo position
-        turretServoLUT.addPoint(-1.12852, 0.25); //radians, servo position
-        turretServoLUT.addPoint(-0.86499, 0.3); //radians, servo position
-        turretServoLUT.addPoint(-0.58244, 0.35); //radians, servo position
-        turretServoLUT.addPoint(-0.31387, 0.4); //radians, servo position
-        turretServoLUT.addPoint(0.01512, 0.45); //radians, servo position
-        turretServoLUT.addPoint(0.27956, 0.5); //radians, servo position
-        turretServoLUT.addPoint(0.52901, 0.55); //radians, servo position
-        turretServoLUT.addPoint(0.84317, 0.6); //radians, servo position
-        turretServoLUT.addPoint(1.16463, 0.65); //radians, servo position
-        turretServoLUT.addPoint(1.49227, 0.7); //radians, servo position
-        turretServoLUT.addPoint(1.78602, 0.75); //radians, servo position
-        turretServoLUT.addPoint(2.06040, 0.8); //radians, servo position
-        turretServoLUT.addPoint(2.42538, 0.85); //radians, servo position
+        turretServoLUT.addPoint(-1.69617, 0.000); // radians, servo position
+        turretServoLUT.addPoint(-1.60937, 0.050); // radians, servo position
+        turretServoLUT.addPoint(-1.41700, 0.100); // radians, servo position
+        turretServoLUT.addPoint(-1.13982, 0.150); // radians, servo position
+        turretServoLUT.addPoint(-0.87439, 0.200); // radians, servo position
+        turretServoLUT.addPoint(-0.58912, 0.250); // radians, servo position
+        turretServoLUT.addPoint(-0.32742, 0.300); // radians, servo position
+        turretServoLUT.addPoint(-0.04500, 0.350); // radians, servo position
+        turretServoLUT.addPoint( 0.13074, 0.400); // radians, servo position
+        turretServoLUT.addPoint( 0.48156, 0.450); // radians, servo position
+        turretServoLUT.addPoint( 0.84031, 0.500); // radians, servo position
+        turretServoLUT.addPoint( 1.11846, 0.550); // radians, servo position
+        turretServoLUT.addPoint( 1.39642, 0.600); // radians, servo position
+        turretServoLUT.addPoint( 1.67684, 0.650); // radians, servo position
+        turretServoLUT.addPoint( 1.95365, 0.700); // radians, servo position
+        turretServoLUT.addPoint( 2.24119, 0.750); // radians, servo position
+        turretServoLUT.addPoint( 2.49415, 0.800); // radians, servo position
+        turretServoLUT.addPoint( 2.79987, 0.850); // radians, servo position
+        turretServoLUT.addPoint( 3.01127, 0.900); // radians, servo position
+        turretServoLUT.addPoint( 3.13092, 0.950); // radians, servo position
+        turretServoLUT.addPoint( 3.13003, 1.000); // radians, servo position
     }
 
     public double getServoValue(double robotAngle) {
-        return robotAngle * 0.18 + 0.41;
+        return turretServoLUT.get(robotAngle);
     }
 }

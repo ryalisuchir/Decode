@@ -35,6 +35,8 @@ public class KickOrderTCmd extends SequentialCommandGroup {
                 r.shooter.startShooter()
         ));
 
+        sequence.add(new WaitCommand(300));
+
         for (int i = 0; i < firingOrder.size(); i++) {
             int slot = firingOrder.get(i);
             sequence.add(kickCommand(r.kicker, slot));

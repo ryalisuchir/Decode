@@ -45,8 +45,6 @@ public class Spinner {
     }
 
     public void closeGate() {
-        if (Math.abs(Globals.GATE_CLOSED - g.getPosition()) < 0.05) return;
-
         g.setPosition(Globals.GATE_CLOSED);
     }
 

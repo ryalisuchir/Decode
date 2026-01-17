@@ -13,7 +13,7 @@ import java.util.List;
 public final class Vision {
 
     private static Limelight3A limelight;
-    private static final int distance = 0, regular = 2;
+    private static final int distance = 0, regular = 1;
     private static int pipeline = regular;
 
     private Vision() {}
@@ -49,6 +49,7 @@ public final class Vision {
 
     public static double distanceFromTag() {
         List<LLResultTypes.FiducialResult> r = limelight.getLatestResult().getFiducialResults();
+        limelight.getLatestResult().getBotpose_MT2();
 
         if (r.isEmpty()) return 0;
 
@@ -68,7 +69,7 @@ public final class Vision {
 
             Vector e = new Vector();
             e.setOrthogonalComponents(x, z);
-            return e.getMagnitude();
+            return 0.04321*(Math.pow(e.getMagnitude(), 1.48));
         }
 
         return 0;
@@ -85,7 +86,7 @@ public final class Vision {
 
         for (LLResultTypes.FiducialResult f : fiducials) {
             if (f.getFiducialId() == wantedId) {
-                return f.getTargetXDegrees(); // <-- correct method
+                return f.getTargetXDegrees();
             }
         }
 
@@ -93,20 +94,20 @@ public final class Vision {
     }
 
     public static double txToServoPos(double txDeg) {
-        return -0.0035 * txDeg + 0.0052;
+        return -0.0033 * txDeg + 0.0053;
     }
 
     public static void switchToRegular() {
         if (pipeline != regular)
             limelight.pipelineSwitch(regular);
-        limelight.setPollRateHz(20);
+        limelight.setPollRateHz(100);
         limelight.start();
     }
 
     public static void switchToDistance() {
         if (pipeline != distance)
             limelight.pipelineSwitch(distance);
-        limelight.setPollRateHz(20);
+        limelight.setPollRateHz(100);
         limelight.start();
     }
 }

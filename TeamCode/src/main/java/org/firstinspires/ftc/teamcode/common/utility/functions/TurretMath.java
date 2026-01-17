@@ -35,4 +35,10 @@ public final class TurretMath {
         return Math.hypot(dxOdo, dyOdo);
     }
 
+    public static double getDistanceToGoalPinpoint(double rX, double rY, double gX, double gY) {
+        double dxOdo = rX - gX;
+        double dyOdo = rY - gY;
+        return Math.hypot(dxOdo, dyOdo);
+    }
+
 }

@@ -1,34 +1,30 @@
 package org.firstinspires.ftc.teamcode.opmode.auto.blue.paths;
 
-import android.util.Log;
-
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
-import com.seattlesolvers.solverslib.command.CommandScheduler;
 
-import org.firstinspires.ftc.teamcode.common.commandbase.commands.KickOrderACmd;
 import org.firstinspires.ftc.teamcode.common.utility.Globals;
 import org.firstinspires.ftc.teamcode.common.utility.Robot;
 
 public class B12ClosePaths {
     private final Follower f;
 
-    public Pose start = new Pose(55, 137, Math.toRadians(-90));
-    public Pose shoot0 = new Pose(67, 68, Math.toRadians(180));
-    public Pose intakeMidHold1 = new Pose(60, 45);
-    public Pose intakeMid = new Pose(23, 46, Math.toRadians(180));
-    public Pose shoot1Hold = new Pose(42.500, 50);
-    public Pose shoot1 = new Pose(61, 72, Math.toRadians(180));
-    public Pose intakeRight = new Pose(33, 72, Math.toRadians(180));
-    public Pose shoot2 = new Pose(63, 75, Math.toRadians(180));
-    public Pose intakeCloseHold = new Pose(76, 20);
-    public Pose intakeClose = new Pose(24, 23, Math.toRadians(180));
-    public Pose shoot3Hold1 = new Pose(42.500, 55.228);
-    public Pose shoot3 = new Pose(67, 73, Math.toRadians(180));
-    public Pose park = new Pose(50, 79, Math.toRadians(-90));
+    public final Pose startPos = Globals.BLUE_CUBE_START;
+    public final Pose shoot0Pos = new Pose(51.873, 79.055, Math.toRadians(180));
+    public final Pose intakeFarPos = new Pose(16.081, 78.017);
+    public final Pose shoot1Pos = new Pose(51.666, 79.262);
+    public final Pose intakeMidHold1Pos = new Pose(49.174, 57.735);
+    public final Pose intakeMidHold2Pos = new Pose(32.990, 58.329);
+    public final Pose intakeMidPos = new Pose(10.182, 58.069);
+    public final Pose shoot2Pos = new Pose(51.118, 79.340);
+    public final Pose intakeCloseHold1Pos = new Pose(49.716, 33.849);
+    public final Pose intakeCloseHold2Pos = new Pose(34.909, 35.774);
+    public final Pose intakeClosePos = new Pose(10.003, 35.516);
+    public final Pose shoot3Pos = new Pose(58.758, 109.291);
+
 
     private int index;
 
@@ -37,109 +33,88 @@ public class B12ClosePaths {
         index = 0;
     }
 
-    public PathChain score0intake0() { //score preloads + get to intake position
+    public PathChain score0() {
         return f.pathBuilder()
                 .addPath(
                         new BezierLine(
-                                start,
-                                shoot0
+                                startPos,
+                                shoot0Pos
                         )
-                )
-                .setLinearHeadingInterpolation(start.getHeading(), shoot0.getHeading())
-                .addParametricCallback(0, () -> f.setMaxPower(1))
-                .addParametricCallback(0.3, () -> f.setMaxPower(0.4))
-                .addParametricCallback(0.6, () -> f.setMaxPower(1))
-                .addPath(
-                        new BezierCurve(
-                                shoot0,
-                                intakeMidHold1,
-                                intakeMid
-                        )
-                )
-                .addParametricCallback(0.6, () -> f.setMaxPower(0.5))
-                .addParametricCallback(0.8, () -> f.setMaxPower(0.3))
-                .setLinearHeadingInterpolation(shoot0.getHeading(), intakeMid.getHeading())
+                ).setLinearHeadingInterpolation(startPos.getHeading(), shoot0Pos.getHeading())
                 .build();
     }
 
-    public PathChain score1() { //score mid spike
-        return f.pathBuilder()
-                .addPath(
-                        new BezierCurve(intakeMid, shoot1Hold, shoot1)
-                )
-                .setLinearHeadingInterpolation(intakeMid.getHeading(), shoot1.getHeading())
-                .build();
-    }
-
-    public PathChain intake1() { //intake from ramp go 1
+    public PathChain intakeFarAndShoot() {
         return f.pathBuilder()
                 .addPath(
                         new BezierLine(
-                                shoot1,
-                                intakeRight
+                                shoot0Pos,
+                                intakeFarPos
                         )
-                )
-                .addParametricCallback(0, () -> f.setMaxPower(0.4))
-                .setLinearHeadingInterpolation(shoot1.getHeading(), intakeRight.getHeading())
-                .build();
-    }
-
-    public PathChain score2() { //score the balls from the ramp
-        return f.pathBuilder()
+                ).setTangentHeadingInterpolation()
+                .addParametricCallback(0.9, () -> f.setMaxPower(0.3))
                 .addPath(
-                        new BezierLine(intakeRight, shoot2)
-                )
+                        new BezierLine(
+                                intakeFarPos,
+                                shoot1Pos
+                        )
+                ).setTangentHeadingInterpolation()
                 .addParametricCallback(0, () -> f.setMaxPower(1))
-                .setLinearHeadingInterpolation(intakeRight.getHeading(), shoot2.getHeading())
+                .setReversed()
                 .build();
     }
 
-    public PathChain intake2() { //second go at intaking from the ramp
+    public PathChain intakeMidAndShoot() {
         return f.pathBuilder()
                 .addPath(
                         new BezierCurve(
-                                shoot2,
-                                intakeCloseHold,
-                                intakeClose
+                                shoot1Pos,
+                                intakeMidHold1Pos,
+                                intakeMidHold2Pos,
+                                intakeMidPos
                         )
-                )
-                .addParametricCallback(0.7, () -> f.setMaxPower(0.4))
-                .addParametricCallback(0.85, () -> f.setMaxPower(0.3))
-                .setLinearHeadingInterpolation(shoot2.getHeading(), intakeClose.getHeading())
-                .build();
-    }
-
-    public PathChain score3() {
-        return f.pathBuilder()
-                .addPath(
-                        new BezierCurve(intakeClose, shoot3Hold1, shoot3)
-                )
-                .addParametricCallback(0, () -> f.setMaxPower(1))
-                .setLinearHeadingInterpolation(intakeClose.getHeading(), shoot3.getHeading())
-                .build();
-    }
-
-    public PathChain parkX() { //scores the last spike mark
-        return f.pathBuilder()
+                ).setTangentHeadingInterpolation()
+                .addParametricCallback(0.9, () -> f.setMaxPower(0.5))
                 .addPath(
                         new BezierLine(
-                                shoot3,
-                                park
+                                intakeMidPos,
+                                shoot2Pos
                         )
-                )
-                .setLinearHeadingInterpolation(shoot3.getHeading(), park.getHeading())
+                ).setTangentHeadingInterpolation()
+                .addParametricCallback(0, () -> f.setMaxPower(1))
+                .setReversed()
                 .build();
     }
+
+    public PathChain intakeCloseAndShoot() {
+        return f.pathBuilder()
+                .addPath(
+                        new BezierCurve(
+                                shoot2Pos,
+                                intakeCloseHold1Pos,
+                                intakeCloseHold2Pos,
+                                intakeClosePos
+                        )
+                ).setTangentHeadingInterpolation()
+                .addParametricCallback(0.9, () -> f.setMaxPower(0.5))
+                .addPath(
+                        new BezierLine(
+                                intakeClosePos,
+                                shoot3Pos
+                        )
+                ).setTangentHeadingInterpolation()
+                .addParametricCallback(0, () -> f.setMaxPower(1))
+                .setReversed()
+                .build();
+    }
+
 
     public PathChain next() {
         switch (index++) {
-            case 0: return score0intake0();
-            case 1: return score1();
-            case 2: return intake1();
-            case 3: return score2();
-            case 4: return intake2();
-            case 5: return score3();
-            case 6: return parkX();
+            case 0: return score0();
+            case 1: return intakeFarAndShoot();
+            case 2: return intakeMidAndShoot();
+            case 3: return intakeCloseAndShoot();
             default: return null;
         }
     }

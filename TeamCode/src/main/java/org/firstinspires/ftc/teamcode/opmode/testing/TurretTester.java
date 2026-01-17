@@ -9,7 +9,7 @@ import org.firstinspires.ftc.teamcode.common.utility.Globals;
 import org.firstinspires.ftc.teamcode.common.utility.Robot;
 import org.firstinspires.ftc.teamcode.common.utility.functions.vision.Vision;
 
-@TeleOp
+//@TeleOp
 public class TurretTester extends OpMode {
     Robot r;
 

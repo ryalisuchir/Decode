@@ -9,7 +9,7 @@ import com.pedropathing.paths.PathChain;
 import org.firstinspires.ftc.teamcode.common.utility.Globals;
 import org.firstinspires.ftc.teamcode.common.utility.Robot;
 
-public class R12ClosePaths {
+public class R9ClosePaths {
     private final Follower f;
 
     public final Pose startPos = Globals.RED_CUBE_START;
@@ -20,14 +20,12 @@ public class R12ClosePaths {
     public final Pose shoot1Pos = new Pose(76, 85, Math.toRadians(0));
     public final Pose intakeFarPos = new Pose(114, 87, Math.toRadians(0));
     public final Pose shoot2Pos = new Pose(76, 86, Math.toRadians(0));
-    public final Pose intakeClosePosOG = new Pose(83, 40, Math.toRadians(0));
-    public final Pose intakeClosePos = new Pose(123, 38, Math.toRadians(0));
-    public final Pose shoot3Pos = new Pose(73, 109, Math.toRadians(0));
+    public final Pose parkPos = new Pose(121, 74, Math.toRadians(-90));
 
 
     private int index;
 
-    public R12ClosePaths(Robot r) {
+    public R9ClosePaths(Robot r) {
         this.f = r.dt.getFollower();
         index = 0;
     }
@@ -97,23 +95,9 @@ public class R12ClosePaths {
                 .addPath(
                         new BezierLine(
                                 shoot2Pos,
-                                intakeClosePosOG
+                                parkPos
                         )
-                ).setLinearHeadingInterpolation(shoot2Pos.getHeading(), intakeClosePosOG.getHeading())
-                .addPath(
-                        new BezierLine(
-                                intakeClosePosOG,
-                                intakeClosePos
-                        )
-                ).setLinearHeadingInterpolation(intakeClosePosOG.getHeading(), intakeClosePos.getHeading())
-                .addParametricCallback(0.6, () -> f.setMaxPower(0.5))
-                .addPath(
-                        new BezierLine(
-                                intakeClosePos,
-                                shoot3Pos
-                        )
-                ).setLinearHeadingInterpolation(intakeClosePos.getHeading(), shoot3Pos.getHeading())
-                .addParametricCallback(0, () -> f.setMaxPower(1))
+                ).setLinearHeadingInterpolation(shoot2Pos.getHeading(), parkPos.getHeading())
                 .build();
     }
 

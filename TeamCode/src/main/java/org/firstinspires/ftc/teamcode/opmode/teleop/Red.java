@@ -23,6 +23,7 @@ import org.firstinspires.ftc.teamcode.common.utility.Robot;
 public class Red extends CommandOpMode {
 
     Robot r;
+    private boolean hasStarted = false;
     private boolean threeBallRumbleLatched = false;
     Gamepad ahnaf, swetha;
     Trigger intakeTrigger;
@@ -30,10 +31,18 @@ public class Red extends CommandOpMode {
     private double loopTimeMs = 0;
     private double loopHz = 0;
 
+    private boolean driveHoldEnabled = false;
+
+    private boolean drivetrainCommanded(Gamepad gp) {
+        return Math.abs(gp.left_stick_x)  > 0.05 ||
+                Math.abs(gp.left_stick_y)  > 0.05 ||
+                Math.abs(gp.right_stick_x) > 0.05;
+    }
+
     @Override
     public void initialize() {
-        r = new Robot(hardwareMap, Globals.DEFAULT_START_POSE, Globals.Side.RED, true);
-        r.initLoop(r);
+        r = new Robot(hardwareMap, Globals.RED_CUBE_START, Globals.Side.RED, false);
+
         r.dt.startDrive();
         ahnaf = gamepad1;
         swetha = gamepad2;
@@ -70,6 +79,22 @@ public class Red extends CommandOpMode {
 
     @Override
     public void run() {
+        r.dt.drive(gamepad1);
+        r.dt.loop();
+
+        if (!hasStarted) {
+            telemetry.addLine("Move to begin.");
+            telemetry.update();
+
+            if (drivetrainCommanded(ahnaf)) {
+                hasStarted = true;
+                lastLoopTimeNs = 0;
+            } else {
+                return;
+            }
+        }
+
+
         long now = System.nanoTime();
 
         if (lastLoopTimeNs != 0) {
@@ -116,29 +141,32 @@ public class Red extends CommandOpMode {
 
         if (ahnaf.crossWasPressed()) { //rapid fire
             schedule(
-                    RapidKickCommands.kickAndResetMany(r.kicker,2,1,3)
+                    RapidKickCommands.kickAndResetMany(r,3,1,2)
             );
         }
 
         if (swetha.circleWasPressed()) {
-            r.turret.xChange(1);
+            Globals.KICK_WAIT_TELE = 500;
         }
-
-        if (swetha.squareWasPressed()) {
-            r.turret.yChange(1);
-        }
-
-        telemetry.addData("x of goal:", r.turret.goalX);
-        telemetry.addData("y of goal:", r.turret.goalY);
 
         //Failsafes:
-        if (swetha.leftBumperWasPressed()) {
+        if (swetha.leftBumperWasPressed() || ahnaf.triangleWasPressed()) {
             schedule(
                     new UninterruptibleCommand(new KickOneGreenTCmd(r))
             );
         }
 
-        if (swetha.rightBumperWasPressed()) {
+        if (ahnaf.circleWasPressed()) {
+            driveHoldEnabled = !driveHoldEnabled;
+
+            if (driveHoldEnabled) {
+                schedule(new InstantCommand(() -> r.dt.holdCurrent()));
+            } else {
+                schedule(new InstantCommand(() -> r.dt.releaseHold()));
+            }
+        }
+
+        if (swetha.rightBumperWasPressed() || ahnaf.squareWasPressed()) {
             schedule(
                     new UninterruptibleCommand(new KickOnePurpleTCmd(r))
             );
@@ -184,7 +212,6 @@ public class Red extends CommandOpMode {
             threeBallRumbleLatched = false;
         }
 
-        r.dt.drive(gamepad1);
         r.loop(r);
     }
 }

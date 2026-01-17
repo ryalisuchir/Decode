@@ -15,7 +15,6 @@ import com.seattlesolvers.solverslib.command.button.Trigger;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.utility.KickCommands;
 import org.firstinspires.ftc.teamcode.common.utility.Globals;
 import org.firstinspires.ftc.teamcode.common.utility.Robot;
-import org.firstinspires.ftc.teamcode.common.utility.functions.luts.ShooterParams;
 import org.firstinspires.ftc.teamcode.common.utility.shooter.ShooterLUT;
 
 @TeleOp
@@ -137,8 +136,10 @@ public class ShooterPositionTuner extends CommandOpMode {
         telemetry.addData("Distance: ", r.dt.getGoalDistance());
         telemetry.addData("X: ", r.dt.getPose().getX());
         telemetry.addData("Y: ", r.dt.getPose().getY());
-        telemetry.addData("Optimal Params from this Distance:", shooterLUT.getShooterValue(r.dt.getGoalDistance(), -r.s2.getCorrectedVelocity()));
+        telemetry.addData("Angle: ", r.dt.getPose().getHeading());
         telemetry.addData("Current Velocity: ", r.s2.getCorrectedVelocity());
+        telemetry.addData("Shooter 1 Motor RPM: ", r.s1.getCorrectedVelocity() / 28 * 60);
+        telemetry.addData("Shooter 2 Motor RPM: ", r.s2.getCorrectedVelocity() / 28 * 60);
         telemetry.addData("Hood Value: ", r.r.getPosition());
         telemetry.update();
     }

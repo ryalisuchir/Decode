@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.opmode.testing;
 
+import static androidx.core.math.MathUtils.clamp;
+
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
@@ -14,13 +16,14 @@ import org.firstinspires.ftc.teamcode.common.utility.functions.vision.Vision;
 
 @Autonomous
 @Config
-public class MasterChecker extends OpMode {
+public class HoodAngleTester extends OpMode {
     Robot robot;
     public static double kicker1 = Globals.KICKER1_RESET;
     public static double kicker2 = Globals.KICKER2_RESET;
     public static double kicker3 = Globals.KICKER3_RESET;
     public static double turret = Globals.TURRET_RESET;
-    public static double hood = Globals.HOOD_MAX;
+    public static double hoodAngle = 45;
+    public double hood = Globals.HOOD_MAX;
     public static double gate = Globals.GATE_OPEN;
 
     public static double shooterSpeed = 0;
@@ -44,6 +47,10 @@ public class MasterChecker extends OpMode {
 
     @Override
     public void loop() {
+        hood = (hoodAngle-198.81)/-168.17;
+
+        hood = clamp(hood, Globals.HOOD_LOWERED, Globals.HOOD_MAX);
+
         robot.k1.setPosition(kicker1);
         robot.k2.setPosition(kicker2);
         robot.k3.setPosition(kicker3);

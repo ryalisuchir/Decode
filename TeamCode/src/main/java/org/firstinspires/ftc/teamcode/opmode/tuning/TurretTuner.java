@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.opmode.tuning;
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
@@ -14,6 +16,7 @@ import org.firstinspires.ftc.teamcode.common.commandbase.commands.utility.KickCo
 import org.firstinspires.ftc.teamcode.common.utility.Globals;
 import org.firstinspires.ftc.teamcode.common.utility.Robot;
 import org.firstinspires.ftc.teamcode.common.utility.functions.TurretCalibrator;
+import org.firstinspires.ftc.teamcode.common.utility.functions.vision.Vision;
 
 @TeleOp
 @Config
@@ -26,7 +29,8 @@ public class TurretTuner extends CommandOpMode {
 
     @Override
     public void initialize() {
-        r = new Robot(hardwareMap, Globals.OTHER_DEFAULT_START_POSE, Globals.Side.RED, true);
+        r = new Robot(hardwareMap, Globals.RED_CUBE_START, Globals.Side.RED, true);
+        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         r.initLoop(r);
         r.dt.startDrive();
         t = new TurretCalibrator();
@@ -64,6 +68,9 @@ public class TurretTuner extends CommandOpMode {
         r.r.setPosition(hoodAngle);
         r.s1.set(shooterPower);
         r.s2.set(shooterPower);
+
+        telemetry.addData("tx: ", Vision.getTx());
+        telemetry.update();
 
         t.update(
                 r.turret,

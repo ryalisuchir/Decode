@@ -68,21 +68,38 @@ public class Turret {
         visionLocked = true;
     }
 
+    public void applyVisionCorrection() {
+        if (!Vision.hasCorrectFiducial()) return;
+        if (!robotIsStable()) return;
+
+        double tx = Vision.getTx();
+        visionOffset = Vision.txToServoPos(tx);
+        visionLocked = true;
+    }
+
     public void clearVisionCorrection() {
         visionOffset = 0.0;
         visionLocked = false;
     }
 
-    public void xChange(double deltaX) {
-        goalX = goalX + deltaX;
-    }
-
-    public void yChange(double deltaY) {
-        goalX = goalX + deltaY;
-    }
-
     public InstantCommand reset() {
+        clearVisionCorrection();
         return new InstantCommand(() ->setPositionOnce(Globals.TURRET_RESET));
+    }
+
+    public InstantCommand initClose() {
+        clearVisionCorrection();
+        return new InstantCommand(() ->setPositionOnce(Globals.TURRET_RESET));
+    }
+
+    public InstantCommand initFarBlue() {
+        clearVisionCorrection();
+        return new InstantCommand(() ->setPositionOnce(Globals.TURRET_BLUE_FAR_READ));
+    }
+
+    public InstantCommand initFarRed() {
+        clearVisionCorrection();
+        return new InstantCommand(() ->setPositionOnce(Globals.TURRET_RED_FAR_READ));
     }
 
     public InstantCommand blueObeliskRead() {
@@ -108,6 +125,8 @@ public class Turret {
 
         boolean isFar = follower.getPose().getY() < 50;
 
+        boolean isClose = follower.getPose().getY() > 132;
+
         double servoPosition; if (side == Globals.Side.BLUE) {
             servoPosition = isFar ? farBlueTurretLUT.getServoValue(turretAngle) : closeBlueTurretLUT.getServoValue(turretAngle);
         } else {
@@ -116,11 +135,31 @@ public class Turret {
 
         servoPosition += visionOffset;
 
+        if (side == Globals.Side.RED && isClose) {
+            if (visionOffset!=0) servoPosition -= Globals.CLOSE_TURRET_OFFSET;
+        }
+
+        if (side == Globals.Side.BLUE && isClose) {
+            if (visionOffset!=0) servoPosition -= Globals.CLOSE_TURRET_OFFSET;
+        }
+
+        if (side == Globals.Side.RED && isFar) {
+            if (visionOffset !=0) servoPosition -=Globals.FAR_TURRET_OFFSET;
+        }
+
+        if (side == Globals.Side.BLUE && isFar) {
+            if (visionOffset !=0) servoPosition +=Globals.FAR_TURRET_OFFSET;
+        }
+
         setFixedPosition(servoPosition);
     }
 
     private boolean robotIsStable() {
-        return follower.getVelocity().getMagnitude() < Globals.VISION_MAX_VEL;
+        if (Globals.match == Globals.Match.AUTO) {
+            return follower.getVelocity().getMagnitude() < Globals.VISION_MAX_VEL_AUTO;
+        } else {
+            return follower.getVelocity().getMagnitude() < Globals.VISION_MAX_VEL_TELE;
+        }
     }
 
 
@@ -152,7 +191,7 @@ public class Turret {
             followObelisk();
         }
 
-        if (visionLocked && follower.getVelocity().getMagnitude() > Globals.VISION_MAX_VEL) {
+        if (visionLocked && ((follower.getVelocity().getMagnitude() > Globals.VISION_MAX_VEL_TELE && Globals.match == Globals.Match.TELEOP) || follower.getVelocity().getMagnitude() > Globals.VISION_MAX_VEL_AUTO && Globals.match == Globals.Match.AUTO)) {
             clearVisionCorrection();
         }
     }

@@ -1,8 +1,7 @@
-package org.firstinspires.ftc.teamcode.common.commandbase.commands;
+package org.firstinspires.ftc.teamcode.common.commandbase.commands.utility;
 
 
 import com.pedropathing.follower.Follower;
-import com.pedropathing.paths.Path;
 import com.pedropathing.paths.PathChain;
 import com.seattlesolvers.solverslib.command.CommandBase;
 

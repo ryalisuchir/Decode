@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.opmode.auto.blue.paths;
+package org.firstinspires.ftc.teamcode.opmode.auto.red.paths;
 
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierCurve;
@@ -9,12 +9,13 @@ import com.pedropathing.paths.PathChain;
 import org.firstinspires.ftc.teamcode.common.utility.Globals;
 import org.firstinspires.ftc.teamcode.common.utility.Robot;
 
-public class B6BackPaths {
+public class R6FarPaths {
     private final Follower f;
+
 
     private int index;
 
-    public B6BackPaths(Robot r) {
+    public R6FarPaths(Robot r) {
         this.f = r.dt.getFollower();
         index = 0;
     }
@@ -23,58 +24,60 @@ public class B6BackPaths {
         return f.pathBuilder()
                 .addPath(
                         new BezierLine(
-                                new Pose(36, 0),
+                                new Pose(69.000, 0),
 
-                                    new Pose(16, 1  )
+                                new Pose(120, 22)
                         )
-                ).setLinearHeadingInterpolation(Math.toRadians(90), Math.toRadians(-167))
+                ).setLinearHeadingInterpolation(Math.toRadians(90), Math.toRadians(-45))
+                .setHeadingConstraint(10)
                 .addPath(
                         new BezierLine(
-                                new Pose(16, 1),
+                                new Pose(126, 22),
 
-                                new Pose(12, 0)
+                                new Pose(131.000, 15)
                         )
-                ).setLinearHeadingInterpolation(Math.toRadians(-167), Math.toRadians(-136))
+                ).setLinearHeadingInterpolation(Math.toRadians(-45), Math.toRadians(-53))
                 .setHeadingConstraint(Math.toRadians(10))
                 .addPath(
                         new BezierLine(
-                                new Pose(12, 0),
+                                new Pose(113.000, 15),
 
-                                new Pose(13, 1)
+                                new Pose(133, 10)
                         )
-                ).setLinearHeadingInterpolation(Math.toRadians(-136), Math.toRadians(-114))
+                ).setLinearHeadingInterpolation(Math.toRadians(-53), Math.toRadians(-64))
                 .setHeadingConstraint(Math.toRadians(10))
                 .addPath(
                         new BezierLine(
-                                new Pose(13, 1),
+                                new Pose(131.000, 19.000),
 
-                                new Pose(10, 5)
+                                new Pose(130, 10.000)
                         )
-                ).setLinearHeadingInterpolation(Math.toRadians(-114), Math.toRadians(-90))
+                ).setLinearHeadingInterpolation(Math.toRadians(-64), Math.toRadians(-71))
                 .setHeadingConstraint(Math.toRadians(10))
                 .addPath(
                         new BezierLine(
-                                new Pose(10, 5),
+                                new Pose(134.000, 10.000),
 
-                                new Pose(15, 6)
+                                new Pose(124, 16)
                         )
-                ).setLinearHeadingInterpolation(Math.toRadians(-90), Math.toRadians(-120))
+                ).setLinearHeadingInterpolation(Math.toRadians(-71), Math.toRadians(-36))
                 .setHeadingConstraint(Math.toRadians(10))
                 .addPath(
                         new BezierLine(
-                                new Pose(15, 6),
+                                new Pose(124, 16),
 
-                                new Pose(11, 7)
+                                new Pose(130, 10)
                         )
-                ).setLinearHeadingInterpolation(Math.toRadians(-120), Math.toRadians(-90))
+                ).setLinearHeadingInterpolation(Math.toRadians(-36), Math.toRadians(-73))
                 .setHeadingConstraint(Math.toRadians(10))
                 .addPath(
                         new BezierLine(
-                                new Pose(11, 7),
+                                new Pose(130, 10),
 
-                                new Pose(16, 13)
+                                new Pose(135, 12)
                         )
-                ).setLinearHeadingInterpolation(Math.toRadians(-90), Math.toRadians(-90))
+                ).setLinearHeadingInterpolation(Math.toRadians(-73), Math.toRadians(-90))
+                .setHeadingConstraint(Math.toRadians(10))
                 .build();
     }
 
@@ -82,11 +85,11 @@ public class B6BackPaths {
         return f.pathBuilder()
                 .addPath(
                         new BezierLine(
-                                new Pose(16, 13),
+                                new Pose(135, 12),
 
-                                new Pose(46, 12)
+                                new Pose(79.000, -1.000)
                         )
-                ).setLinearHeadingInterpolation(Math.toRadians(-90), Math.toRadians(0))
+                ).setLinearHeadingInterpolation(Math.toRadians(-90), Math.toRadians(180))
                 .build();
     }
 
@@ -94,11 +97,11 @@ public class B6BackPaths {
         return f.pathBuilder()
                 .addPath(
                         new BezierLine(
-                                new Pose(46, 12),
+                                new Pose(79.000, -1.000),
 
-                                new Pose(15, 0)
+                                new Pose(110, 27)
                         )
-                ).setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(90))
+                ).setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(-90))
                 .build();
     }
 

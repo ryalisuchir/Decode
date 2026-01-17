@@ -16,7 +16,7 @@ import org.firstinspires.ftc.teamcode.common.commandbase.commands.utility.KickCo
 import org.firstinspires.ftc.teamcode.common.utility.Globals;
 import org.firstinspires.ftc.teamcode.common.utility.Robot;
 
-@Autonomous
+//@Autonomous
 @Config
 public class PositionTurretTuner extends OpMode {
     Robot robot;

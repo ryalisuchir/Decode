@@ -15,7 +15,7 @@ public class PullPose extends OpMode {
     @Override
     public void init() {
         CommandScheduler.getInstance().reset();
-        r = new Robot(hardwareMap, Globals.DEFAULT_START_POSE, Globals.Side.RED, true);
+        r = new Robot(hardwareMap, Globals.RED_CUBE_START, Globals.Side.RED, true);
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
     }
 

@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.opmode.auto.red.paths;
+package org.firstinspires.ftc.teamcode.opmode.auto.blue.paths;
 
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierCurve;
@@ -9,25 +9,23 @@ import com.pedropathing.paths.PathChain;
 import org.firstinspires.ftc.teamcode.common.utility.Globals;
 import org.firstinspires.ftc.teamcode.common.utility.Robot;
 
-public class R12ClosePaths {
+public class B9ClosePaths {
     private final Follower f;
 
-    public final Pose startPos = Globals.RED_CUBE_START;
-    public final Pose shoot0Pos = new Pose(76, 86, Math.toRadians(0));
-    public final Pose intakeMidOG = new Pose(90, 62, Math.toRadians(0));
-    public final Pose intakeMidPos = new Pose(118, 62, Math.toRadians(0));
-    public final Pose shoot1HoldPos = new Pose(105, 65);
-    public final Pose shoot1Pos = new Pose(76, 85, Math.toRadians(0));
-    public final Pose intakeFarPos = new Pose(114, 87, Math.toRadians(0));
-    public final Pose shoot2Pos = new Pose(76, 86, Math.toRadians(0));
-    public final Pose intakeClosePosOG = new Pose(83, 40, Math.toRadians(0));
-    public final Pose intakeClosePos = new Pose(123, 38, Math.toRadians(0));
-    public final Pose shoot3Pos = new Pose(73, 109, Math.toRadians(0));
+    public final Pose startPos = Globals.BLUE_CUBE_START;
+    public final Pose shoot0Pos = new Pose(45, 66, Math.toRadians(180));
+    public final Pose intakeMidOG = new Pose(45, 41, Math.toRadians(180));
+    public final Pose intakeMidPos = new Pose(2, 41, Math.toRadians(180));
+    public final Pose shoot1HoldPos = new Pose(44, 44);
+    public final Pose shoot1Pos = new Pose(45, 66, Math.toRadians(180));
+    public final Pose intakeFarPos = new Pose(14, 65, Math.toRadians(180));
+    public final Pose shoot2Pos = new Pose(45, 66, Math.toRadians(180));
+    public final Pose parkPos = new Pose(26, 73, Math.toRadians(270));
 
 
     private int index;
 
-    public R12ClosePaths(Robot r) {
+    public B9ClosePaths(Robot r) {
         this.f = r.dt.getFollower();
         index = 0;
     }
@@ -97,26 +95,11 @@ public class R12ClosePaths {
                 .addPath(
                         new BezierLine(
                                 shoot2Pos,
-                                intakeClosePosOG
+                                parkPos
                         )
-                ).setLinearHeadingInterpolation(shoot2Pos.getHeading(), intakeClosePosOG.getHeading())
-                .addPath(
-                        new BezierLine(
-                                intakeClosePosOG,
-                                intakeClosePos
-                        )
-                ).setLinearHeadingInterpolation(intakeClosePosOG.getHeading(), intakeClosePos.getHeading())
-                .addParametricCallback(0.6, () -> f.setMaxPower(0.5))
-                .addPath(
-                        new BezierLine(
-                                intakeClosePos,
-                                shoot3Pos
-                        )
-                ).setLinearHeadingInterpolation(intakeClosePos.getHeading(), shoot3Pos.getHeading())
-                .addParametricCallback(0, () -> f.setMaxPower(1))
+                ).setLinearHeadingInterpolation(shoot2Pos.getHeading(), parkPos.getHeading())
                 .build();
     }
-
 
 
     public PathChain next() {

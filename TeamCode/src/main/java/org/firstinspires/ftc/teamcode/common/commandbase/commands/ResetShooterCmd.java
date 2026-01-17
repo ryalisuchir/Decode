@@ -14,7 +14,6 @@ public class ResetShooterCmd extends ParallelCommandGroup {
                             KickCommands.resetAll(r.kicker),
                             new InstantCommand(() -> Globals.shooterKicking = false),
                             r.turret.reset(),
-                            new InstantCommand(() -> r.turret.clearVisionCorrection()),
                             r.shooter.stopShooter(),
                             i ? new IntakeCmd(r, x) : new InstantCommand(() -> r.spinner.transferStop())
                     )

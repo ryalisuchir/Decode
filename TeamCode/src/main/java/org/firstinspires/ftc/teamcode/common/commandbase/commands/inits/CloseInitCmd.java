@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.common.commandbase.commands;
+package org.firstinspires.ftc.teamcode.common.commandbase.commands.inits;
 
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
@@ -7,12 +7,12 @@ import org.firstinspires.ftc.teamcode.common.commandbase.commands.utility.KickCo
 import org.firstinspires.ftc.teamcode.common.utility.Globals;
 import org.firstinspires.ftc.teamcode.common.utility.Robot;
 
-public class InitCmd extends ParallelCommandGroup {
-    public InitCmd(Robot r) { //boolean is to ask if we want to start running the intake or not
+public class CloseInitCmd extends ParallelCommandGroup {
+    public CloseInitCmd(Robot r) {
         super(
                 new ParallelCommandGroup(
                         KickCommands.resetAll(r.kicker),
-                        r.turret.reset(),
+                        r.turret.initClose(),
                         new InstantCommand(() -> r.r.setPosition(Globals.HOOD_LOWERED)),
                         new InstantCommand(() -> r.g.setPosition(Globals.GATE_CLOSED))
                 )

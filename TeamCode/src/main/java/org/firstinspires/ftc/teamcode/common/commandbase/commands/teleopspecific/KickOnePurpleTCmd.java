@@ -21,9 +21,13 @@ public class KickOnePurpleTCmd extends SequentialCommandGroup {
         boolean lastBall = isLastBall(purpleSlot);
 
         addCommands(
-                new InstantCommand(() -> r.spinner.transferStart()),
-                r.shooter.startShooter(),
-
+                new ParallelCommandGroup(
+                        new InstantCommand(() -> r.spinner.transferStart()),
+                        r.shooter.startShooter(),
+                        new InstantCommand(() -> {
+                            r.turret.applyVisionCorrectionOnce();
+                        })
+                ),
                 new SequentialCommandGroup(
                         KickCommands.kickOnce(r.kicker, purpleSlot),
                         new WaitCommand(Globals.KICK_WAIT_TELE)

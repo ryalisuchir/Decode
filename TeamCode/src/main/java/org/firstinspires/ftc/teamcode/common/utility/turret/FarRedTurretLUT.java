@@ -6,27 +6,27 @@ public class FarRedTurretLUT {
     private final InterpolatedLUT turretServoLUT = new InterpolatedLUT();
 
     public FarRedTurretLUT() {
-        turretServoLUT.addPoint(-2.27075, 0); //radians, servo position
-        turretServoLUT.addPoint(-1.98240, 0.05); //radians, servo position
-        turretServoLUT.addPoint(-1.72783, 0.1); //radians, servo position
-        turretServoLUT.addPoint(-1.47496, 0.15); //radians, servo position
-        turretServoLUT.addPoint(-1.19432, 0.2); //radians, servo position
-        turretServoLUT.addPoint(-0.94247, 0.25); //radians, servo position
-        turretServoLUT.addPoint(-0.64718, 0.3); //radians, servo position
-        turretServoLUT.addPoint(-0.39162, 0.35); //radians, servo position
-        turretServoLUT.addPoint(-0.10809, 0.4); //radians, servo position
-        turretServoLUT.addPoint(0.17941, 0.45); //radians, servo position
-        turretServoLUT.addPoint(0.47079, 0.5); //radians, servo position
-        turretServoLUT.addPoint(0.78328, 0.55); //radians, servo position
-        turretServoLUT.addPoint(1.09655, 0.6); //radians, servo position
-        turretServoLUT.addPoint(1.36225, 0.65); //radians, servo position
-        turretServoLUT.addPoint(1.69092, 0.7); //radians, servo position
-        turretServoLUT.addPoint(2.02666, 0.75); //radians, servo position
-        turretServoLUT.addPoint(2.35162, 0.8); //radians, servo position
-        turretServoLUT.addPoint(2.63771, 0.85); //radians, servo position
-        turretServoLUT.addPoint(2.91599, 0.90); //radians, servo position
-        turretServoLUT.addPoint(-3.05585, 0.95); //radians, servo position
-        turretServoLUT.addPoint(-2.73323, 1); //radiansh, servo position
+        turretServoLUT.addPoint(-1.92445, 0.000); // radians, servo position
+        turretServoLUT.addPoint(-1.68102, 0.050); // radians, servo position
+        turretServoLUT.addPoint(-1.40048, 0.100); // radians, servo position
+        turretServoLUT.addPoint(-1.11287, 0.150); // radians, servo position
+        turretServoLUT.addPoint(-0.84729, 0.200); // radians, servo position
+        turretServoLUT.addPoint(-0.55705, 0.250); // radians, servo position
+        turretServoLUT.addPoint(-0.27869, 0.300); // radians, servo position
+        turretServoLUT.addPoint(-0.00143, 0.350); // radians, servo position
+        turretServoLUT.addPoint( 0.26890, 0.400); // radians, servo position
+        turretServoLUT.addPoint( 0.52325, 0.450); // radians, servo position
+        turretServoLUT.addPoint( 0.87320, 0.500); // radians, servo position
+        turretServoLUT.addPoint( 1.14444, 0.550); // radians, servo position
+        turretServoLUT.addPoint( 1.41615, 0.600); // radians, servo position
+        turretServoLUT.addPoint( 1.71129, 0.650); // radians, servo position
+        turretServoLUT.addPoint( 1.99640, 0.700); // radians, servo position
+        turretServoLUT.addPoint( 2.28795, 0.750); // radians, servo position
+        turretServoLUT.addPoint( 2.55876, 0.800); // radians, servo position
+        turretServoLUT.addPoint( 2.80775, 0.850); // radians, servo position
+        turretServoLUT.addPoint( 2.99928, 0.900); // radians, servo position
+        turretServoLUT.addPoint( 3.11347, 0.950); // radians, servo position
+        turretServoLUT.addPoint( 3.11352, 1.000); // radians, servo position
 
     }
 
