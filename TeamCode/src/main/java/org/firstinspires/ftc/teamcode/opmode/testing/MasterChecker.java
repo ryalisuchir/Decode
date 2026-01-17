@@ -93,28 +93,11 @@ public class MasterChecker extends OpMode {
             double robotY,
             double robotHeadingRadians
     ) {
-        double cos = Math.cos(robotHeadingRadians);
-        double sin = Math.sin(robotHeadingRadians);
-
-        double turretWorldX =
-                robotX + Globals.TURRET_OFFSET_X * cos - Globals.TURRET_OFFSET_Y * sin;
-        double turretWorldY =
-                robotY + Globals.TURRET_OFFSET_X * sin + Globals.TURRET_OFFSET_Y * cos;
-
-        double dx = Globals.RED_CASTLE.getX() - turretWorldX;
-        double dy = Globals.RED_CASTLE.getY() - turretWorldY;
+        double dx = Globals.RED_CASTLE.getX() - robotX;
+        double dy = Globals.RED_CASTLE.getY() - robotY;
         double angleToGoal = Math.atan2(dy, dx);
 
-        double barrelWorldX =
-                turretWorldX + Globals.BARREL_LENGTH * Math.cos(angleToGoal);
-        double barrelWorldY =
-                turretWorldY + Globals.BARREL_LENGTH * Math.sin(angleToGoal);
-
-        double bdx = Globals.RED_CASTLE.getX() - barrelWorldX;
-        double bdy = Globals.RED_CASTLE.getY() - barrelWorldY;
-        double correctedAngle = Math.atan2(bdy, bdx);
-
-        double turretAngle = correctedAngle - robotHeadingRadians;
+        double turretAngle = angleToGoal - robotHeadingRadians;
 
         return Math.atan2(Math.sin(turretAngle), Math.cos(turretAngle));
     }

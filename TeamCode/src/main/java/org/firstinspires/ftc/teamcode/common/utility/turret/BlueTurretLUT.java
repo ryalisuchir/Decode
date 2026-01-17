@@ -2,10 +2,10 @@ package org.firstinspires.ftc.teamcode.common.utility.turret;
 
 import org.firstinspires.ftc.teamcode.common.utility.functions.luts.InterpolatedLUT;
 
-public class CloseBlueTurretLUT {
+public class BlueTurretLUT {
     private final InterpolatedLUT turretServoLUT = new InterpolatedLUT();
 
-    public CloseBlueTurretLUT() {
+    public BlueTurretLUT() {
         turretServoLUT.addPoint(-2.03035, 0.000); // radians, servo position
         turretServoLUT.addPoint(-1.80217, 0.050); // radians, servo position
         turretServoLUT.addPoint(-1.52498, 0.100); // radians, servo position

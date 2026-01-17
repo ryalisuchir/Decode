@@ -26,7 +26,6 @@ public class Globals {
     public static Globals.FailsafeState failsafeState;
 
     public static Pose DEFAULT_START_POSE = new Pose(8.069164265129686, 9.037463976945268, Math.toRadians(90));
-    public static Pose OTHER_DEFAULT_START_POSE = new Pose(134, 5, Math.toRadians(90));
 
     public static Pose BLUE_CUBE_START = new Pose(32, 134, Math.toRadians(-90));
     public static Pose RED_CUBE_START = new Pose(112, 128, Math.toRadians(-90));
@@ -38,14 +37,8 @@ public class Globals {
 
     public static double POWER_RAMP_PER_SEC = 4.2;
 
-    public static final double TURRET_OFFSET_X = 1.1674169;  // forward from center
-    public static final double TURRET_OFFSET_Y = 2.9559;  // left from center
-    public static final double BARREL_LENGTH = 6.0;
-
     public static final double VISION_MAX_VEL_TELE = 2;
     public static final double VISION_MAX_VEL_AUTO = 8;
-
-    public static double k = -0.00007;
 
     public static double KICKER1_RESET = 0.757;
     public static double KICKER1_KICK = 0.92;
@@ -63,7 +56,7 @@ public class Globals {
     public static double TURRET_BLUE_FAR_READ = 0.37;
     public static double TURRET_RED_FAR_READ = 0.39;
 
-    public static double CLOSE_TURRET_OFFSET = -0.01;
+    public static double CLOSE_TURRET_OFFSET = 0.01;
     public static double FAR_TURRET_OFFSET = 0.015;
 
     public static double MIN_TURRET = 0;
