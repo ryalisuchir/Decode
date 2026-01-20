@@ -8,9 +8,9 @@ import org.firstinspires.ftc.teamcode.common.utility.Robot;
 
 public class IntakeCmd extends CommandBase {
 
-    private long startTime;
     private final Robot r;
     private final double timer;
+    private long startTime;
 
     public IntakeCmd(Robot r, double timer) {
         this.r = r;

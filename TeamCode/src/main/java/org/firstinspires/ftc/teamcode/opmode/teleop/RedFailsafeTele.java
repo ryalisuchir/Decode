@@ -44,6 +44,7 @@ public class RedFailsafeTele extends CommandOpMode {
         r = new Robot(hardwareMap, Globals.RED_CUBE_START, Globals.Side.RED, false);
         r.dt.startDrive();
         r.shooter.setCustomDistance(99.80403458213259, 99.80403458213254);
+        Globals.turretState = Globals.TurretState.FAILED;
         ahnaf = gamepad1;
         swetha = gamepad2;
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
@@ -199,6 +200,6 @@ public class RedFailsafeTele extends CommandOpMode {
             threeBallRumbleLatched = false;
         }
 
-        r.noTurretLoop(r);
+        r.loop(r);
     }
 }

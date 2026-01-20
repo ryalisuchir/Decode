@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.common.commandbase.commands.teleopspecific;
+package org.firstinspires.ftc.teamcode.common.commandbase.commands;
 
 import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.InstantCommand;
@@ -14,9 +14,9 @@ import org.firstinspires.ftc.teamcode.common.utility.Robot;
 import java.util.ArrayList;
 import java.util.List;
 
-public class KickOrderTCmd extends SequentialCommandGroup {
+public class KickOrderAFarCmd extends SequentialCommandGroup {
 
-    public KickOrderTCmd(Robot r) {
+    public KickOrderAFarCmd(Robot r) {
         List<Integer> firingOrder = computeFiringOrder();
 
         if (firingOrder.isEmpty()) {
@@ -26,8 +26,7 @@ public class KickOrderTCmd extends SequentialCommandGroup {
 
         List<Command> sequence = new ArrayList<>();
 
-        sequence.add(
-                new ParallelCommandGroup(new InstantCommand(() -> {
+        sequence.add(new ParallelCommandGroup(new InstantCommand(() -> {
             r.turret.applyVisionCorrectionOnce();
         }), new InstantCommand(() -> r.spinner.transferStart()), r.shooter.startShooter()));
 
@@ -36,13 +35,13 @@ public class KickOrderTCmd extends SequentialCommandGroup {
             sequence.add(kickCommand(r.kicker, slot));
         }
 
-        sequence.add(new WaitCommand(Globals.KICK_WAIT_AUTO));
+        sequence.add(new WaitCommand(Globals.KICK_WAIT_AUTO+80));
 
         addCommands(sequence.toArray(new Command[0]));
     }
 
     private Command kickCommand(Kicker kicker, int slot) {
-        return new SequentialCommandGroup(new InstantCommand(() -> Globals.shooterKicking = true), KickCommands.kickOnce(kicker, slot), new WaitCommand(Globals.KICK_WAIT_AUTO));
+        return new SequentialCommandGroup(new InstantCommand(() -> Globals.shooterKicking = true), KickCommands.kickOnce(kicker, slot), new WaitCommand(Globals.KICK_WAIT_AUTO + 80));
     }
 
     private List<Integer> computeFiringOrder() {

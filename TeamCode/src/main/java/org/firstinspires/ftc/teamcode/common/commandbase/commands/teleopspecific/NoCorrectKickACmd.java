@@ -14,9 +14,9 @@ import org.firstinspires.ftc.teamcode.common.utility.Robot;
 import java.util.ArrayList;
 import java.util.List;
 
-public class KickOrderTCmd extends SequentialCommandGroup {
+public class NoCorrectKickACmd extends SequentialCommandGroup {
 
-    public KickOrderTCmd(Robot r) {
+    public NoCorrectKickACmd(Robot r) {
         List<Integer> firingOrder = computeFiringOrder();
 
         if (firingOrder.isEmpty()) {
@@ -26,9 +26,7 @@ public class KickOrderTCmd extends SequentialCommandGroup {
 
         List<Command> sequence = new ArrayList<>();
 
-        sequence.add(
-                new ParallelCommandGroup(new InstantCommand(() -> {
-            r.turret.applyVisionCorrectionOnce();
+        sequence.add(new ParallelCommandGroup(new InstantCommand(() -> {
         }), new InstantCommand(() -> r.spinner.transferStart()), r.shooter.startShooter()));
 
         for (int i = 0; i < firingOrder.size(); i++) {

@@ -199,6 +199,6 @@ public class BlueFailsafeTele extends CommandOpMode {
             threeBallRumbleLatched = false;
         }
 
-        r.noTurretLoop(r);
+        r.loop(r);
     }
 }

@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode.common.commandbase.commands;
 
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
+import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
+import com.seattlesolvers.solverslib.command.WaitCommand;
 
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.utility.KickCommands;
 import org.firstinspires.ftc.teamcode.common.utility.Globals;
@@ -15,7 +17,7 @@ public class ResetShooterCmd extends ParallelCommandGroup {
                             new InstantCommand(() -> Globals.shooterKicking = false),
                             r.turret.reset(),
                             r.shooter.stopShooter(),
-                            i ? new IntakeCmd(r, x) : new InstantCommand(() -> r.spinner.transferStop())
+                            i ? new IntakeCmd(r, x) : new SequentialCommandGroup(new WaitCommand(800), new InstantCommand(() -> r.spinner.transferStop()))
                     )
             );
         }

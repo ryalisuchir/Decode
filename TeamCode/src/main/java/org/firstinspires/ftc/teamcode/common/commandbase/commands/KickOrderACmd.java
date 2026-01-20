@@ -6,7 +6,6 @@ import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
 
-import org.firstinspires.ftc.teamcode.common.commandbase.commands.ResetShooterCmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.utility.KickCommands;
 import org.firstinspires.ftc.teamcode.common.commandbase.subsystems.Kicker;
 import org.firstinspires.ftc.teamcode.common.utility.Globals;
@@ -27,13 +26,9 @@ public class KickOrderACmd extends SequentialCommandGroup {
 
         List<Command> sequence = new ArrayList<>();
 
-        sequence.add(new ParallelCommandGroup(
-                new InstantCommand(() -> {
-                    r.turret.applyVisionCorrectionOnce();
-                }),
-                new InstantCommand(() -> r.spinner.transferStart()),
-                r.shooter.startShooter()
-        ));
+        sequence.add(new ParallelCommandGroup(new InstantCommand(() -> {
+            r.turret.applyVisionCorrectionOnce();
+        }), new InstantCommand(() -> r.spinner.transferStart()), r.shooter.startShooter()));
 
         for (int i = 0; i < firingOrder.size(); i++) {
             int slot = firingOrder.get(i);
@@ -46,11 +41,7 @@ public class KickOrderACmd extends SequentialCommandGroup {
     }
 
     private Command kickCommand(Kicker kicker, int slot) {
-        return new SequentialCommandGroup(
-                new InstantCommand(() -> Globals.shooterKicking = true),
-                KickCommands.kickOnce(kicker, slot),
-                new WaitCommand(Globals.KICK_WAIT_AUTO)
-        );
+        return new SequentialCommandGroup(new InstantCommand(() -> Globals.shooterKicking = true), KickCommands.kickOnce(kicker, slot), new WaitCommand(Globals.KICK_WAIT_AUTO));
     }
 
     private List<Integer> computeFiringOrder() {
@@ -90,19 +81,35 @@ public class KickOrderACmd extends SequentialCommandGroup {
     private char toChar(Globals.BallColor color) {
         if (color == null) return 'N';
         switch (color) {
-            case P: return 'P';
-            case G: return 'G';
-            default: return 'N';
+            case P:
+                return 'P';
+            case G:
+                return 'G';
+            default:
+                return 'N';
         }
     }
 
     private List<Character> getTargetColorSequence() {
         List<Character> seq = new ArrayList<>();
         switch (Globals.obeliskOptions) {
-            case PPG: seq.add('P'); seq.add('P'); seq.add('G'); break;
-            case PGP: seq.add('P'); seq.add('G'); seq.add('P'); break;
-            case GPP: seq.add('G'); seq.add('P'); seq.add('P'); break;
-            default: break;
+            case PPG:
+                seq.add('P');
+                seq.add('P');
+                seq.add('G');
+                break;
+            case PGP:
+                seq.add('P');
+                seq.add('G');
+                seq.add('P');
+                break;
+            case GPP:
+                seq.add('G');
+                seq.add('P');
+                seq.add('P');
+                break;
+            default:
+                break;
         }
         return seq;
     }

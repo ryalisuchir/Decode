@@ -9,30 +9,32 @@ import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
+
+import org.firstinspires.ftc.teamcode.common.commandbase.commands.teleopspecific.NoCorrectKickACmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.utility.FollowPathCmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.inits.CloseInitCmd;
-import org.firstinspires.ftc.teamcode.common.commandbase.commands.KickOrderACmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.ResetShooterAndReadCmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.ResetShooterCmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.utility.DeferredCommand;
 import org.firstinspires.ftc.teamcode.common.utility.Globals;
 import org.firstinspires.ftc.teamcode.common.utility.Robot;
-import org.firstinspires.ftc.teamcode.opmode.auto.red.paths.R9ClosePaths;
+import org.firstinspires.ftc.teamcode.opmode.auto.paths.reds.RedClosePath9;
 
 @Autonomous
 public class RClose9 extends OpMode {
     Robot r;
-    R9ClosePaths p;
+    RedClosePath9 p;
     boolean read = false;
 
     @Override
     public void init() {
         CommandScheduler.getInstance().reset();
         r = new Robot(hardwareMap, Globals.RED_CUBE_START, Globals.Side.RED, true);
-        p = new R9ClosePaths(r);
-        r.shooter.setCustomDistance(p.shoot0Pos.getX(), p.shoot1Pos.getY());
+        p = new RedClosePath9(r);
+        r.shooter.setCustomDistance(p.shootRegularPos.getX(), p.shootRegularPos.getY()+5);
         CommandScheduler.getInstance().schedule(new CloseInitCmd(r));
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
+
     }
 
     public void init_loop() {
@@ -49,29 +51,43 @@ public class RClose9 extends OpMode {
                 new SequentialCommandGroup(
                         new ParallelCommandGroup(
                                 new FollowPathCmd(r, p.next()),
-                                new InstantCommand(() -> new ResetShooterAndReadCmd(r, false, 0, Globals.Side.RED))
+                                new InstantCommand(() -> {
+                                    Globals.turretState = Globals.TurretState.RED_CLOSE_GOAL;
+                                    r.shooter.setCustomDistance(p.shootRegularPos.getX(), p.shootRegularPos.getY()+5);
+                                }),
+                                new SequentialCommandGroup(
+                                        new WaitCommand(2800),
+                                        new NoCorrectKickACmd(r)
+                                )
                         ),
-                        new WaitCommand(600),
-                        new InstantCommand(() -> Globals.turretState = Globals.TurretState.FOLLOWING),
-                        new WaitCommand(1000),
-                        new DeferredCommand(() -> new KickOrderACmd(r)),
                         new ParallelCommandGroup(
-                                new ResetShooterCmd(r, true, 4),
-                                new FollowPathCmd(r, p.next())
+                                new DeferredCommand(() -> new ResetShooterAndReadCmd(r, true, 5, Globals.Side.RED)),
+                                new FollowPathCmd(r, p.next()),
+                                new SequentialCommandGroup(
+                                        new WaitCommand(1300),
+                                        new InstantCommand(() -> {
+                                            Globals.turretState = Globals.TurretState.RED_CLOSE_GOAL;
+                                            r.shooter.setCustomDistance(p.shootRegularPos.getX(), p.shootRegularPos.getY()+5);
+                                        })
+                                )
                         ),
                         new WaitCommand(1000),
-                        new DeferredCommand(() -> new KickOrderACmd(r)),
-                        new WaitCommand(100),
+                        new NoCorrectKickACmd(r),
+                        new WaitCommand(200),
                         new ParallelCommandGroup(
                                 new FollowPathCmd(r, p.next()),
-                                new ResetShooterCmd(r, true, 4)
+                                new ResetShooterCmd(r, true, 3.5)
                         ),
-                        new WaitCommand(2000),
-                        new DeferredCommand(() -> new KickOrderACmd(r)),
-                        new WaitCommand(100),
+                        new InstantCommand(() -> {
+                            Globals.turretState = Globals.TurretState.RED_CLOSE_GOAL;
+                            r.shooter.setCustomDistance(p.shootRegularPos.getX(), p.shootRegularPos.getY()+5);
+                        }),
+                        new WaitCommand(1000),
+                        new NoCorrectKickACmd(r),
+                        new WaitCommand(200),
                         new ParallelCommandGroup(
                                 new FollowPathCmd(r, p.next()),
-                                new ResetShooterCmd(r, false, 0)
+                                new ResetShooterCmd(r, true, 0)
                         )
                 )
         );

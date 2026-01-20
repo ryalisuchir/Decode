@@ -29,7 +29,7 @@ public class TurretTuner extends CommandOpMode {
 
     @Override
     public void initialize() {
-        r = new Robot(hardwareMap, Globals.RED_CUBE_START, Globals.Side.RED, true);
+        r = new Robot(hardwareMap, Globals.BLUE_CUBE_START, Globals.Side.BLUE, true);
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         r.initLoop(r);
         r.dt.startDrive();

@@ -6,7 +6,6 @@ import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
 
-import org.firstinspires.ftc.teamcode.common.commandbase.commands.ResetShooterCmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.utility.KickCommands;
 import org.firstinspires.ftc.teamcode.common.commandbase.subsystems.Kicker;
 import org.firstinspires.ftc.teamcode.common.utility.Globals;
@@ -49,7 +48,7 @@ public class FarKickCmd extends SequentialCommandGroup {
         return new SequentialCommandGroup(
                 new InstantCommand(() -> Globals.shooterKicking = true),
                 KickCommands.kickOnce(kicker, slot),
-                new WaitCommand(Globals.KICK_WAIT_AUTO*3)
+                new WaitCommand(Globals.KICK_WAIT_AUTO * 3)
         );
     }
 
@@ -90,19 +89,35 @@ public class FarKickCmd extends SequentialCommandGroup {
     private char toChar(Globals.BallColor color) {
         if (color == null) return 'N';
         switch (color) {
-            case P: return 'P';
-            case G: return 'G';
-            default: return 'N';
+            case P:
+                return 'P';
+            case G:
+                return 'G';
+            default:
+                return 'N';
         }
     }
 
     private List<Character> getTargetColorSequence() {
         List<Character> seq = new ArrayList<>();
         switch (Globals.obeliskOptions) {
-            case PPG: seq.add('P'); seq.add('P'); seq.add('G'); break;
-            case PGP: seq.add('P'); seq.add('G'); seq.add('P'); break;
-            case GPP: seq.add('G'); seq.add('P'); seq.add('P'); break;
-            default: break;
+            case PPG:
+                seq.add('P');
+                seq.add('P');
+                seq.add('G');
+                break;
+            case PGP:
+                seq.add('P');
+                seq.add('G');
+                seq.add('P');
+                break;
+            case GPP:
+                seq.add('G');
+                seq.add('P');
+                seq.add('P');
+                break;
+            default:
+                break;
         }
         return seq;
     }

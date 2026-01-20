@@ -22,13 +22,8 @@ public class ShooterLUT {
 //    dist_data = np.array([51, 71, 95, 116, 150, 163, 176, 195])
 
     public ShooterParams getShooterValue(double dist) {
-        double baseHood =
-                -2.0475e-9 * Math.pow(dist, 4)
-                        + 1.0905e-6 * Math.pow(dist, 3)
-                        - 2.1304e-4 * Math.pow(dist, 2)
-                        + 0.0187549 * dist
-                        + 0.23641;
-        double baseVel = 0.00095178*Math.pow(dist, 3)-0.302017*Math.pow(dist, 2)+35.36246*dist-69.46824;
+        double baseHood = -2.0475e-9 * Math.pow(dist, 4) + 1.0905e-6 * Math.pow(dist, 3) - 2.1304e-4 * Math.pow(dist, 2) + 0.0187549 * dist + 0.23641;
+        double baseVel = 0.00095178 * Math.pow(dist, 3) - 0.302017 * Math.pow(dist, 2) + 35.36246 * dist - 69.46824;
 
         return new ShooterParams(baseHood, baseVel);
     }

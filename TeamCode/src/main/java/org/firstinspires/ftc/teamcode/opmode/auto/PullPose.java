@@ -8,14 +8,14 @@ import com.seattlesolvers.solverslib.command.CommandScheduler;
 import org.firstinspires.ftc.teamcode.common.utility.Globals;
 import org.firstinspires.ftc.teamcode.common.utility.Robot;
 
-@Autonomous
+//@Autonomous
 public class PullPose extends OpMode {
     Robot r;
 
     @Override
     public void init() {
         CommandScheduler.getInstance().reset();
-        r = new Robot(hardwareMap, Globals.RED_CUBE_START, Globals.Side.RED, true);
+        r = new Robot(hardwareMap, Globals.BLUE_CUBE_START, Globals.Side.BLUE, true);
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
     }
 

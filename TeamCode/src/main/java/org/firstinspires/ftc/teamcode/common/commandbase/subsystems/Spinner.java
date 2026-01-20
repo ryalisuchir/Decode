@@ -68,7 +68,6 @@ public class Spinner {
 
     public SequentialCommandGroup intakeOut() {
         Globals.intakeState = Globals.IntakeState.STOPPED;
-
         return new SequentialCommandGroup(
                 new InstantCommand(() -> setIntakeTarget(-0.4)),
                 new WaitCommand(600),
@@ -161,7 +160,7 @@ public class Spinner {
         if (oneBallDetected()) {
             Globals.shooterState = Globals.ShooterState.SHOOTING;
 
-            if (Globals.match == Globals.Match.AUTO && (Globals.turretState != Globals.TurretState.BLUE_CLOSE_OBELISK && Globals.turretState != Globals.TurretState.RED_CLOSE_OBELISK)) {
+            if (Globals.match == Globals.Match.AUTO && (Globals.turretState != Globals.TurretState.BLUE_CLOSE_OBELISK && Globals.turretState != Globals.TurretState.RED_CLOSE_OBELISK && Globals.turretState != Globals.TurretState.RED_FAR_GOAL && Globals.turretState != Globals.TurretState.RED_FAR_GOAL_TELE && Globals.turretState != Globals.TurretState.BLUE_CLOSE_GOAL && Globals.turretState != Globals.TurretState.BLUE_CLOSE_DIFF_GOAL && Globals.turretState != Globals.TurretState.RED_CLOSE_GOAL && Globals.turretState != Globals.TurretState.RED_CLOSE_DIFF_GOAL && Globals.turretState != Globals.TurretState.BLUE_FAR_GOAL)) {
                 Globals.turretState = Globals.TurretState.FOLLOWING;
             }
         }

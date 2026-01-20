@@ -184,7 +184,7 @@ public class Robot {
 
         kicker = new Kicker(k1, k2, k3);
         spinner = new Spinner(i, t, g);
-        shooter = new Shooter(s1, s2, r, dt.getFollower(), gX, gY, spinner);
+        shooter = new Shooter(s1, s2, r, dt.getFollower(), gX, gY);
         turret = new Turret(s, t1, t2, dt.getFollower(), gX, gY);
     }
 

@@ -19,6 +19,12 @@ public class Kicker extends SubsystemBase {
         resetAll();
     }
 
+    public void kickMany(int... slots) {
+        for (int s : slots) kick(s);
+    }
+
+    public void resetAll() { resetMany(1,2,3); }
+
     public void kick(int slot) {
         switch (slot) {
             case 1:
@@ -53,16 +59,7 @@ public class Kicker extends SubsystemBase {
         }
     }
 
-
-    public void kickMany(int... slots) {
-        for (int s : slots) kick(s);
-    }
-
     public void resetMany(int... slots) {
         for (int s : slots) reset(s);
-    }
-
-    public void resetAll() {
-        resetMany(1,2,3);
     }
 }

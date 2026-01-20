@@ -2,18 +2,27 @@ package org.firstinspires.ftc.teamcode.opmode.teleop;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.pedropathing.geometry.BezierLine;
+import com.pedropathing.geometry.Pose;
+import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
+import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.UninterruptibleCommand;
+import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.command.button.Trigger;
 
+import org.firstinspires.ftc.teamcode.common.commandbase.commands.KickOrderACmd;
+import org.firstinspires.ftc.teamcode.common.commandbase.commands.ResetShooterCmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.teleopspecific.KickOneGreenTCmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.teleopspecific.KickOnePurpleTCmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.teleopspecific.KickOrderTCmd;
+import org.firstinspires.ftc.teamcode.common.commandbase.commands.teleopspecific.Reset;
+import org.firstinspires.ftc.teamcode.common.commandbase.commands.utility.FollowPathCmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.utility.KickCommands;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.utility.RapidKickCommands;
 import org.firstinspires.ftc.teamcode.common.utility.Globals;
@@ -24,6 +33,7 @@ public class Blue extends CommandOpMode {
 
     Robot r;
     private boolean hasStarted = false;
+    private final boolean swethaCrossToggle = false;
     private boolean threeBallRumbleLatched = false;
     Gamepad ahnaf, swetha;
     Trigger intakeTrigger;
@@ -39,9 +49,22 @@ public class Blue extends CommandOpMode {
                 Math.abs(gp.right_stick_x) > 0.05;
     }
 
+
+    public PathChain intakeHpAndShoot(Pose currPos, Pose shootFarPos) {
+        return r.dt.getFollower().pathBuilder()
+                .addPath(
+                        new BezierLine(
+                                currPos,
+                                shootFarPos.mirror()
+                        )
+                ).setLinearHeadingInterpolation(currPos.getHeading(), shootFarPos.mirror().getHeading())
+                .build();
+    }
+
     @Override
     public void initialize() {
-        r = new Robot(hardwareMap, Globals.BLUE_CUBE_START, Globals.Side.BLUE, false);
+        r = new Robot(hardwareMap, Globals.BLUE_FAR_START, Globals.Side.BLUE, false);
+
         r.dt.startDrive();
         ahnaf = gamepad1;
         swetha = gamepad2;
@@ -119,6 +142,24 @@ public class Blue extends CommandOpMode {
         telemetry.addData("Transfer State: ", Globals.transferState);
 
         telemetry.update();
+
+        if (ahnaf.rightBumperWasPressed()) {
+            Pose shootFarPos = new Pose(92, 17, Math.toRadians(0));
+            Pose currPos = r.dt.getPose();
+
+            r.shooter.setCustomDistance(shootFarPos.getX()-11, shootFarPos.getY()-11);
+            Globals.turretState = Globals.TurretState.BLUE_FAR_GOAL;
+
+            schedule(
+                    new SequentialCommandGroup(
+                            new FollowPathCmd(r, intakeHpAndShoot(currPos, shootFarPos)),
+                            new WaitCommand(100),
+                            new KickOrderACmd(r),
+                            new Reset(r),
+                            new InstantCommand(() -> r.dt.startDrive())
+                    )
+            );
+        }
 
         if (ahnaf.leftBumperWasPressed()) {
             schedule(

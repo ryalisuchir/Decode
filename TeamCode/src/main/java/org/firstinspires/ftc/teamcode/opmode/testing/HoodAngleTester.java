@@ -14,7 +14,7 @@ import org.firstinspires.ftc.teamcode.common.utility.Globals;
 import org.firstinspires.ftc.teamcode.common.utility.Robot;
 import org.firstinspires.ftc.teamcode.common.utility.functions.vision.Vision;
 
-@Autonomous
+//@Autonomous
 @Config
 public class HoodAngleTester extends OpMode {
     Robot robot;
@@ -77,7 +77,7 @@ public class HoodAngleTester extends OpMode {
         telemetry.addData("tx to Goal:", Vision.getTx());
         telemetry.addData("Distance to goal (pp): ", robot.dt.getGoalDistance());
         telemetry.addData("Distance to goal (ll): ", Vision.distanceFromTag());
-        telemetry.addData("Fiducial: ", robot.l.getLatestResult().getFiducialResults());
+        telemetry.addData("Fiducial: ", Robot.l.getLatestResult().getFiducialResults());
         telemetry.addData("Shooter 1 Motor Velocity:", robot.s1.getCorrectedVelocity());
         telemetry.addData("Shooter 2 Motor Velocity:", robot.s2.getCorrectedVelocity());
         telemetry.addData("Shooter 1 Motor RPM: ", robot.s1.getCorrectedVelocity() / 28 * 60);

@@ -14,6 +14,13 @@ public class FollowPathCmd extends CommandBase {
     private double maxPower = 1;
     private double completionThreshold = 0.99;
 
+    private boolean enableStallDetection = false;
+    private double minDeltaT = 0.02;
+    private long stallTimeoutMs = 2000;
+
+    private double lastT;
+    private long lastProgressTime;
+
     public FollowPathCmd(Robot r, PathChain pathChain) {
         this.follower = r.dt.getFollower();
         this.path = pathChain;
@@ -29,6 +36,13 @@ public class FollowPathCmd extends CommandBase {
         this.follower = r.dt.getFollower();
         this.path = pathChain;
         this.holdEnd = holdEnd;
+    }
+
+    public FollowPathCmd withStallTimeout(double minDeltaT, long timeoutMs) {
+        this.enableStallDetection = true;
+        this.minDeltaT = minDeltaT;
+        this.stallTimeoutMs = timeoutMs;
+        return this;
     }
 
     public FollowPathCmd(Robot r, PathChain pathChain, boolean holdEnd, double maxPower) {
@@ -73,15 +87,44 @@ public class FollowPathCmd extends CommandBase {
     public void initialize() {
         follower.setMaxPower(this.maxPower);
         follower.followPath(path, holdEnd);
+
+        lastT = follower.getCurrentTValue();
+        lastProgressTime = System.currentTimeMillis();
+    }
+
+    @Override
+    public void execute() {
+        if (!enableStallDetection) return;
+
+        double currentT = follower.getCurrentTValue();
+        long now = System.currentTimeMillis();
+
+        if (currentT - lastT > minDeltaT) {
+            lastT = currentT;
+            lastProgressTime = now;
+        }
     }
 
     @Override
     public boolean isFinished() {
-        return follower.atParametricEnd();
+        if (follower.getCurrentTValue() >= completionThreshold) {
+            return true;
+        }
+
+        // stall condition
+        if (enableStallDetection) {
+            long now = System.currentTimeMillis();
+            if (now - lastProgressTime > stallTimeoutMs) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     @Override
     public void end(boolean interrupted) {
         follower.setMaxPower(1);
+        follower.breakFollowing();
     }
 }

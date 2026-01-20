@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.opmode.auto.blue;
+package org.firstinspires.ftc.teamcode.opmode.auto.red;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
@@ -18,31 +18,33 @@ import org.firstinspires.ftc.teamcode.common.commandbase.commands.inits.CloseIni
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.ResetShooterAndReadCmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.ResetShooterCmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.utility.DeferredCommand;
+import org.firstinspires.ftc.teamcode.common.commandbase.commands.utility.KickCommands;
+import org.firstinspires.ftc.teamcode.common.commandbase.commands.utility.RapidKickCommands;
 import org.firstinspires.ftc.teamcode.common.utility.Globals;
 import org.firstinspires.ftc.teamcode.common.utility.Robot;
-import org.firstinspires.ftc.teamcode.opmode.auto.paths.blues.BlueClosePath12;
-import org.firstinspires.ftc.teamcode.opmode.auto.paths.blues.BlueClosePath15;
+import org.firstinspires.ftc.teamcode.opmode.auto.paths.reds.RedClosePath15;
 
 @Autonomous
-public class BClose12 extends OpMode {
+public class RClose15 extends OpMode {
     Robot r;
-    BlueClosePath12 p;
+    RedClosePath15 p;
     boolean read = false;
 
     @Override
     public void init() {
         CommandScheduler.getInstance().reset();
-        r = new Robot(hardwareMap, Globals.BLUE_CUBE_START, Globals.Side.BLUE, true);
-        p = new BlueClosePath12(r);
-        r.shooter.setCustomDistance(p.shootRegularPos.getX(), p.shootRegularPos.getY());
+        r = new Robot(hardwareMap, Globals.RED_CUBE_START, Globals.Side.RED, true);
+        p = new RedClosePath15(r);
+        r.shooter.setCustomDistance(p.shootRegularPos.getX(), p.shootRegularPos.getY()+5);
         CommandScheduler.getInstance().schedule(new CloseInitCmd(r));
+        Globals.turretState = Globals.TurretState.RED_CLOSE_GOAL;
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
     }
 
     public void init_loop() {
         telemetry.addLine("Created all subsystems.");
-        telemetry.addData("Initialized:", "12 Ball Auto (Blue)");
+        telemetry.addData("Initialized:", "15 Ball Auto (Red)");
         telemetry.addData("Obelisk Reading:", Globals.obeliskOptions);
         r.initLoop(r);
         CommandScheduler.getInstance().run();
@@ -55,11 +57,11 @@ public class BClose12 extends OpMode {
                         new ParallelCommandGroup(
                                 new FollowPathCmd(r, p.next()),
                                 new InstantCommand(() -> {
-                                    Globals.turretState = Globals.TurretState.BLUE_CLOSE_GOAL;
-                                    r.shooter.setCustomDistance(p.shootRegularPos.getX()-5, p.shootRegularPos.getY()+5);
+                                    Globals.turretState = Globals.TurretState.RED_CLOSE_GOAL;
+                                    r.shooter.setCustomDistance(p.shootRegularPos.getX(), p.shootRegularPos.getY()+5);
                                 }),
                                 new SequentialCommandGroup(
-                                        new WaitCommand(2600),
+                                        new WaitCommand(2500),
                                         new NoCorrectKickACmd(r)
                                 )
                         ),
@@ -69,38 +71,68 @@ public class BClose12 extends OpMode {
                                 new SequentialCommandGroup(
                                         new WaitCommand(1300),
                                         new InstantCommand(() -> {
-                                            Globals.turretState = Globals.TurretState.BLUE_CLOSE_GOAL;
-                                            r.shooter.setCustomDistance(p.shootRegularPos.getX()-5, p.shootRegularPos.getY()+5);
+                                            Globals.turretState = Globals.TurretState.RED_CLOSE_GOAL;
+                                            r.shooter.setCustomDistance(p.shootRegularPos.getX(), p.shootRegularPos.getY()+5);
                                         })
                                 )
                         ),
                         new WaitCommand(800),
                         new NoCorrectKickACmd(r),
-                        new WaitCommand(200),
+                        new ParallelCommandGroup(
+                                new SequentialCommandGroup(
+                                        new DeferredCommand(() -> new ResetShooterCmd(r, true, 6)),
+                                        new InstantCommand(() -> {
+                                            Globals.turretState = Globals.TurretState.RED_CLOSE_GOAL;
+                                            r.shooter.setCustomDistance(p.shootRegularPos.getX(), p.shootRegularPos.getY()+5);
+                                        })
+                                ),
+                                new FollowPathCmd(r, p.next()).withStallTimeout(0.04, 2000)
+                        ),
+                        new ParallelRaceGroup(
+                                new WaitUntilCommand(() -> r.spinner.threeBallsDetected()),
+                                new WaitCommand(100)
+                        ),
+                        new FollowPathCmd(r, p.next()),
+                        new WaitCommand(800),
+                        new NoCorrectKickACmd(r),
+//                        new ParallelCommandGroup(
+//                                new SequentialCommandGroup(
+//                                        new DeferredCommand(() -> new ResetShooterCmd(r, true, 6)),
+//                                        new InstantCommand(() -> {
+//                                            Globals.turretState = Globals.TurretState.BLUE_CLOSE_GOAL;
+//                                            r.shooter.setCustomDistance(p.shootRegularPos.getX()-5, p.shootRegularPos.getY()+5);
+//                                        })
+//                                ),
+//                                new FollowPathCmd(r, p.next())
+//                        ),
+//                        new ParallelRaceGroup(
+//                                new WaitUntilCommand(() -> r.spinner.threeBallsDetected()),
+//                                new WaitCommand(100)
+//                        ),
+//                        new FollowPathCmd(r, p.next()),
+//                        new NoCorrectKickACmd(r),
+                        //finished gate sequences, intake far
                         new ParallelCommandGroup(
                                 new FollowPathCmd(r, p.next()),
                                 new ResetShooterCmd(r, true, 3.5)
                         ),
                         new InstantCommand(() -> {
-                            Globals.turretState = Globals.TurretState.BLUE_CLOSE_GOAL;
-                            r.shooter.setCustomDistance(p.shootRegularPos.getX()-5, p.shootRegularPos.getY()+5);
+                            Globals.turretState = Globals.TurretState.RED_CLOSE_GOAL;
+                            r.shooter.setCustomDistance(p.shootRegularPos.getX(), p.shootRegularPos.getY()+5);
                         }),
                         new WaitCommand(800),
                         new NoCorrectKickACmd(r),
-                        new WaitCommand(200),
                         new InstantCommand(() -> r.shooter.setCustomDistance(p.lastShootPos.getX(), p.lastShootPos.getY())),
                         new ParallelCommandGroup(
                                 new FollowPathCmd(r, p.next()),
                                 new SequentialCommandGroup(
                                         new ResetShooterCmd(r, true, 6.5),
-                                        new InstantCommand(() -> Globals.turretState = Globals.TurretState.BLUE_CLOSE_DIFF_GOAL)
+                                        new InstantCommand(() -> Globals.turretState = Globals.TurretState.RED_CLOSE_DIFF_GOAL)
                                 )
                         ),
                         new WaitCommand(800),
-                        new NoCorrectKickACmd(r),
-                        new WaitCommand(200)
-                )
-        );
+                        new NoCorrectKickACmd(r)
+        ));
     }
 
     @Override

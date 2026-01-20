@@ -14,7 +14,7 @@ public final class Vision {
 
     private static Limelight3A limelight;
     private static final int distance = 0, regular = 1;
-    private static int pipeline = regular;
+    private static final int pipeline = regular;
 
     private Vision() {}
 

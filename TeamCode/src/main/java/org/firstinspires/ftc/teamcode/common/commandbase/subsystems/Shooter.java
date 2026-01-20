@@ -6,48 +6,81 @@ import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 import com.seattlesolvers.solverslib.geometry.Vector2d;
 import com.seattlesolvers.solverslib.hardware.motors.Motor;
+
 import org.firstinspires.ftc.teamcode.common.utility.Globals;
 import org.firstinspires.ftc.teamcode.common.utility.functions.luts.ShooterParams;
 import org.firstinspires.ftc.teamcode.common.utility.shooter.ShooterLUT;
 
 public class Shooter extends SubsystemBase {
 
-    private final ShooterLUT closeShooterLUT = new ShooterLUT();
-
     public static double kV = 0.00045;
     public static double kS = 0.02;
     public static double kP = 0.0013;
+
     public boolean reached = false;
 
-    private double targetVelocity = 0;
-    private double lastShooterPower = -999;
-    Spinner r;
+    private double targetVelocity = 0.0;
+    private final double lastTargetVelocity = 0.0;
+    private double lastShooterPower = -999.0;
 
     private final Motor shooterMotor1, shooterMotor2;
     private final ServoImplEx hood;
     private final Follower follower;
-    private Vector2d customPosition = null;
 
     private final double gX, gY;
+    private Vector2d customPosition = null;
 
-    public Shooter(Motor shooterMotor1, Motor shooterMotor2,
-                   ServoImplEx hood, Follower follower,
-                   double gX, double gY, Spinner r) {
+    private final ShooterLUT closeShooterLUT = new ShooterLUT();
+
+    /* ================= CONSTRUCTOR ================= */
+
+    public Shooter(
+            Motor shooterMotor1,
+            Motor shooterMotor2,
+            ServoImplEx hood,
+            Follower follower,
+            double gX,
+            double gY
+    ) {
         this.shooterMotor1 = shooterMotor1;
         this.shooterMotor2 = shooterMotor2;
         this.hood = hood;
         this.follower = follower;
         this.gX = gX;
         this.gY = gY;
-        this.r = r;
     }
 
     public InstantCommand startShooter() {
         return new InstantCommand(() -> {
             Globals.shooterState = Globals.ShooterState.SHOOTING;
-            if (Globals.match == Globals.Match.AUTO && Globals.turretState != Globals.TurretState.BLUE_CLOSE_OBELISK && Globals.turretState != Globals.TurretState.RED_CLOSE_OBELISK) {
+            if (Globals.match == Globals.Match.AUTO &&
+                    Globals.turretState != Globals.TurretState.BLUE_CLOSE_OBELISK &&
+                    Globals.turretState != Globals.TurretState.RED_CLOSE_OBELISK &&
+                    Globals.turretState != Globals.TurretState.RED_FAR_GOAL &&
+            Globals.turretState != Globals.TurretState.RED_CLOSE_DIFF_GOAL &&
+                    Globals.turretState != Globals.TurretState.RED_CLOSE_GOAL &&
+                    Globals.turretState != Globals.TurretState.BLUE_CLOSE_DIFF_GOAL &&
+                    Globals.turretState != Globals.TurretState.BLUE_CLOSE_GOAL &&
+                    Globals.turretState != Globals.TurretState.BLUE_FAR_GOAL
+            ) {
                 Globals.turretState = Globals.TurretState.FOLLOWING;
             }
+        });
+    }
+
+    public InstantCommand stopShooter() {
+        return new InstantCommand(() -> {
+            Globals.shooterState = Globals.ShooterState.STOPPED;
+            Globals.turretState = Globals.TurretState.RESET;
+            targetVelocity = 0;
+        });
+    }
+
+    public InstantCommand stopShooterFollow() {
+        return new InstantCommand(() -> {
+            Globals.shooterState = Globals.ShooterState.STOPPED;
+            Globals.turretState = Globals.TurretState.BLUE_CLOSE_OBELISK;
+            targetVelocity = 0;
         });
     }
 
@@ -59,31 +92,17 @@ public class Shooter extends SubsystemBase {
         this.customPosition = null;
     }
 
-    public InstantCommand stopShooter() {
-        return new InstantCommand(() -> {
-            Globals.shooterState = Globals.ShooterState.STOPPED;
-            Globals.turretState = Globals.TurretState.RESET;
-        });
-    }
-
-    public InstantCommand stopShooterFollow() {
-        return new InstantCommand(() -> {
-            Globals.shooterState = Globals.ShooterState.STOPPED;
-            Globals.turretState = Globals.TurretState.BLUE_CLOSE_OBELISK;
-        });
-    }
-
     public void loop() {
+
         reached = shooterIsSpunUp();
 
-        if (Globals.shooterState != Globals.ShooterState.SHOOTING && Globals.match != Globals.Match.AUTO) {
-            shooterMotor1.set(Globals.MIN_SHOOTER_POWER);
-            shooterMotor2.set(Globals.MIN_SHOOTER_POWER);
+        if (Globals.shooterState != Globals.ShooterState.SHOOTING &&
+                Globals.match != Globals.Match.AUTO) {
+            setShooterPower(Globals.MIN_SHOOTER_POWER);
             return;
         }
 
-        double x;
-        double y;
+        double x, y;
         if (customPosition != null) {
             x = customPosition.getX() - gX;
             y = customPosition.getY() - gY;
@@ -92,25 +111,49 @@ public class Shooter extends SubsystemBase {
             y = follower.getPose().getY() - gY;
         }
 
-        ShooterParams params = closeShooterLUT.getShooterValue(Math.hypot(x,y));
+        double distance = Math.hypot(x, y);
 
-        double hoodPos = clamp(params.hoodPos,
-                Globals.HOOD_LOWERED,
-                Globals.HOOD_MAX);
+        ShooterParams params = closeShooterLUT.getShooterValue(distance);
 
-        hood.setPosition(hoodPos);
+        hood.setPosition(
+                clamp(params.hoodPos, Globals.HOOD_LOWERED, Globals.HOOD_MAX)
+        );
 
         targetVelocity = params.shooterVel;
 
-        double currentVel = -shooterMotor2.getCorrectedVelocity();
+        double currentVelocity = -shooterMotor2.getCorrectedVelocity();
+        double error = targetVelocity - currentVelocity;
+
+        double feedforward = 0.0;
+        if (Math.abs(targetVelocity) > 1e-6) {
+            feedforward = kV * targetVelocity;
+            if (error > 0) {
+                feedforward += kS;
+            }
+        }
+
+        double feedback = kP * error;
 
         double power = clamp(
-                feedforward(targetVelocity) +
-                        feedback(targetVelocity, currentVel),
-                0, 1
+                feedforward + feedback,
+                -1.0,
+                1.0
         );
 
-        setShooterPowerOnce(power);
+        setShooterPower(power);
+    }
+
+    private void setShooterPower(double power) {
+
+        boolean decelerating = (-shooterMotor2.getCorrectedVelocity() > targetVelocity);
+
+        double threshold = decelerating ? 0.005 : 0.02;
+
+        if (Math.abs(power - lastShooterPower) > threshold) {
+            shooterMotor1.set(power);
+            shooterMotor2.set(power);
+            lastShooterPower = power;
+        }
     }
 
     public boolean shooterIsSpunUp() {
@@ -120,32 +163,15 @@ public class Shooter extends SubsystemBase {
     }
 
     public double getShooterVelocity() {
-        return shooterMotor2.getCorrectedVelocity();
+        return -shooterMotor2.getCorrectedVelocity();
     }
 
     public double getShooterRPM() {
-        return shooterMotor2.getCorrectedVelocity() / 28 * 60;
+        return getShooterVelocity() / 28.0 * 60.0;
     }
 
     public double getShooterPower() {
         return shooterMotor2.get();
-    }
-
-    private void setShooterPowerOnce(double power) {
-        if (Math.abs(power - lastShooterPower) > 0.02) {
-            shooterMotor1.set(power);
-            shooterMotor2.set(power);
-            lastShooterPower = power;
-        }
-    }
-
-    private double feedforward(double targetVel) {
-        if (Math.abs(targetVel) < 1e-6) return 0;
-        return kS * Math.signum(targetVel) + kV * targetVel;
-    }
-
-    private double feedback(double targetVel, double currentVel) {
-        return kP * (targetVel - currentVel);
     }
 
     private double clamp(double v, double min, double max) {

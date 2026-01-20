@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.common.commandbase.subsystems;
 
 import com.pedropathing.follower.Follower;
+import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 import com.seattlesolvers.solverslib.command.InstantCommand;
@@ -21,6 +22,9 @@ public class Turret {
     private final Follower follower;
     private final Globals.Side side;
     public double goalX, goalY;
+
+    public Pose customPose = null;
+
     Limelight3A ll;
 
     private double lastSetPosition = -999;
@@ -56,6 +60,12 @@ public class Turret {
 
         double tx = Vision.getTx();
         visionOffset = Vision.txToServoPos(tx);
+//        if (Math.abs(tx) < 1.3 && follower.getPose().getY() > 60 && Globals.match != Globals.Match.AUTO) {
+//            visionOffset = 0;
+//        } else {
+//            visionOffset = Vision.txToServoPos(tx);
+//        }
+
         visionLocked = true;
     }
 
@@ -75,7 +85,8 @@ public class Turret {
 
     public InstantCommand reset() {
         clearVisionCorrection();
-        return new InstantCommand(() ->setPositionOnce(Globals.TURRET_RESET));
+        customPose = null;
+        return new InstantCommand(() -> setPositionOnce(Globals.TURRET_RESET));
     }
 
     public InstantCommand initClose() {
@@ -94,11 +105,13 @@ public class Turret {
     }
 
     public InstantCommand blueObeliskRead() {
+        customPose = null;
         Globals.turretState = Globals.TurretState.BLUE_CLOSE_OBELISK;
         return new InstantCommand(() -> setFixedPosition(Globals.TURRET_BLUE_CLOSE_READ));
     }
 
     public InstantCommand redObeliskRead() {
+        customPose = null;
         Globals.turretState = Globals.TurretState.RED_CLOSE_OBELISK;
         return new InstantCommand(() -> setFixedPosition(Globals.TURRET_RED_CLOSE_READ));
     }
@@ -108,11 +121,20 @@ public class Turret {
     }
 
     public void followGoal() {
-        double turretAngle = getTurretAngleToGoal(
-                follower.getPose().getX(),
-                follower.getPose().getY(),
-                follower.getPose().getHeading()
-        );
+        double turretAngle;
+        if (customPose != null) {
+            turretAngle = getTurretAngleToGoal(
+                    customPose.getX(),
+                    customPose.getY(),
+                    customPose.getHeading()
+            );
+        } else {
+            turretAngle = getTurretAngleToGoal(
+                    follower.getPose().getX(),
+                    follower.getPose().getY(),
+                    follower.getPose().getHeading()
+            );
+        }
 
         boolean isFar = follower.getPose().getY() < 50;
         boolean isClose = follower.getPose().getY() > 132;
@@ -131,7 +153,7 @@ public class Turret {
         }
 
         if (side == Globals.Side.BLUE && isClose) {
-            if (visionOffset!=0) servoPosition -= Globals.CLOSE_TURRET_OFFSET;
+            if (visionOffset!=0) servoPosition += Globals.CLOSE_TURRET_OFFSET;
         }
 
         if (side == Globals.Side.RED && isFar) {
@@ -139,7 +161,7 @@ public class Turret {
         }
 
         if (side == Globals.Side.BLUE && isFar) {
-            if (visionOffset !=0) servoPosition +=Globals.FAR_TURRET_OFFSET;
+            if (visionOffset !=0) servoPosition -= 0;
         }
 
         setFixedPosition(servoPosition);
@@ -176,6 +198,35 @@ public class Turret {
         if (Globals.turretState == Globals.TurretState.FOLLOWING) {
             followGoal();
         }
+
+        if (Globals.turretState == Globals.TurretState.RED_FAR_GOAL) {
+            setFixedPosition(0.595);
+        }
+
+        if (Globals.turretState == Globals.TurretState.BLUE_FAR_GOAL) {
+            setFixedPosition(0.175);
+        }
+
+        if (Globals.turretState == Globals.TurretState.RED_CLOSE_GOAL) {
+            setFixedPosition(0.525);
+        }
+
+        if (Globals.turretState == Globals.TurretState.RED_CLOSE_DIFF_GOAL) {
+            setFixedPosition(0.66);
+        }
+
+        if (Globals.turretState == Globals.TurretState.BLUE_CLOSE_GOAL) {
+            setFixedPosition(0.213);
+        }
+
+        if (Globals.turretState == Globals.TurretState.BLUE_CLOSE_DIFF_GOAL) {
+            setFixedPosition(0.12);
+        }
+
+        if (Globals.turretState == Globals.TurretState.RED_FAR_GOAL_TELE) {
+            setFixedPosition(0.56);
+        }
+
         if (Globals.turretState == Globals.TurretState.BLUE_CLOSE_OBELISK || Globals.turretState == Globals.TurretState.RED_CLOSE_OBELISK) {
             followObelisk();
         }

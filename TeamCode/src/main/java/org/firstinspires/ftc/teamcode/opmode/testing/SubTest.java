@@ -2,27 +2,38 @@ package org.firstinspires.ftc.teamcode.opmode.testing;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.pedropathing.geometry.BezierLine;
+import com.pedropathing.geometry.Pose;
+import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
+import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.UninterruptibleCommand;
+import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.command.button.Trigger;
 
+import org.firstinspires.ftc.teamcode.common.commandbase.commands.KickOrderACmd;
+import org.firstinspires.ftc.teamcode.common.commandbase.commands.ResetShooterCmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.teleopspecific.KickOneGreenTCmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.teleopspecific.KickOnePurpleTCmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.teleopspecific.KickOrderTCmd;
+import org.firstinspires.ftc.teamcode.common.commandbase.commands.teleopspecific.Reset;
+import org.firstinspires.ftc.teamcode.common.commandbase.commands.utility.FollowPathCmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.utility.KickCommands;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.utility.RapidKickCommands;
 import org.firstinspires.ftc.teamcode.common.utility.Globals;
 import org.firstinspires.ftc.teamcode.common.utility.Robot;
+import org.firstinspires.ftc.teamcode.common.utility.functions.vision.Vision;
 
 @TeleOp
 public class SubTest extends CommandOpMode {
 
     Robot r;
+    private final boolean selfDriving = false;
     private boolean hasStarted = false;
     private boolean threeBallRumbleLatched = false;
     Gamepad ahnaf, swetha;
@@ -41,7 +52,7 @@ public class SubTest extends CommandOpMode {
 
     @Override
     public void initialize() {
-        r = new Robot(hardwareMap, Globals.RED_CUBE_START, Globals.Side.RED, true);
+        r = new Robot(hardwareMap, Globals.BLUE_CUBE_START, Globals.Side.BLUE, true);
 
         r.dt.startDrive();
         ahnaf = gamepad1;
@@ -76,10 +87,40 @@ public class SubTest extends CommandOpMode {
                 );
     }
 
+    public PathChain intakeHpAndShoot(Pose currPos, Pose shootFarPos) {
+        return r.dt.getFollower().pathBuilder()
+                .addPath(
+                        new BezierLine(
+                                currPos,
+                                shootFarPos
+                        )
+                ).setLinearHeadingInterpolation(currPos.getHeading(), shootFarPos.getHeading())
+                .build();
+    }
 
     @Override
     public void run() {
-        r.dt.drive(gamepad1);
+
+            r.dt.drive(gamepad1);
+
+        if (ahnaf.rightBumperWasPressed()) {
+            Pose shootFarPos = new Pose(72, 20, Math.toRadians(0));
+            Pose currPos = r.dt.getPose();
+
+            r.shooter.setCustomDistance(shootFarPos.getX()-5, shootFarPos.getY()-5);
+            Globals.turretState = Globals.TurretState.RED_FAR_GOAL_TELE;
+
+            schedule(
+                    new SequentialCommandGroup(
+                            new FollowPathCmd(r, intakeHpAndShoot(currPos, shootFarPos)),
+                            new WaitCommand(100),
+                            new KickOrderACmd(r),
+                            new Reset(r),
+                            new InstantCommand(() -> r.dt.startDrive())
+                    )
+            );
+        }
+
         r.dt.loop();
 
         if (!hasStarted) {
@@ -94,6 +135,8 @@ public class SubTest extends CommandOpMode {
             }
         }
 
+        telemetry.addData("Turret Status, ", Globals.turretState);
+
 
         long now = System.nanoTime();
 
@@ -103,6 +146,7 @@ public class SubTest extends CommandOpMode {
         }
 
         lastLoopTimeNs = now;
+        telemetry.addData("tx: ", Vision.getTx());
         telemetry.addData("Shooter Power: ", r.shooter.getShooterPower());
         telemetry.addData("Shooter Velocity: ", r.shooter.getShooterVelocity());
 

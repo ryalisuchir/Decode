@@ -47,7 +47,13 @@ public class RapidKickCommands {
         for (int i = 0; i < slots.length; i++) {
             group.addCommands(kickAndReset(robot, slots[i]));
         }
-        group.addCommands(new ParallelCommandGroup(new InstantCommand(() -> Globals.shooterKicking = false)), new ResetShooterCmd(robot, false, 0));
+        group.addCommands(
+                new SequentialCommandGroup(
+                new WaitCommand(100),
+                new ParallelCommandGroup(
+                    new InstantCommand(() -> Globals.shooterKicking = false)),
+                    new ResetShooterCmd(robot, false, 0)
+                ));
         return group;
     }
 
