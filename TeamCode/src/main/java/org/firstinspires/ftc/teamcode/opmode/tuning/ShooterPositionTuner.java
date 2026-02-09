@@ -4,49 +4,62 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.Gamepad;
+
+import org.firstinspires.ftc.teamcode.common.commandbase.commands.utility.KickCommands;
+import org.firstinspires.ftc.teamcode.common.commandbase.commands.utility.RapidKickCommands;
+import org.firstinspires.ftc.teamcode.common.utility.G;
+import org.firstinspires.ftc.teamcode.common.utility.Halo;
+
+import com.seattlesolvers.solverslib.command.Command;
+import com.seattlesolvers.solverslib.command.CommandBase;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
+import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
+import com.seattlesolvers.solverslib.command.SubsystemBase;
 import com.seattlesolvers.solverslib.command.UninterruptibleCommand;
+import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.command.button.Trigger;
-
-import org.firstinspires.ftc.teamcode.common.commandbase.commands.utility.KickCommands;
-import org.firstinspires.ftc.teamcode.common.utility.Globals;
-import org.firstinspires.ftc.teamcode.common.utility.Robot;
-import org.firstinspires.ftc.teamcode.common.utility.shooter.ShooterLUT;
+import com.seattlesolvers.solverslib.controller.PIDFController;
+import com.seattlesolvers.solverslib.geometry.Vector2d;
+import com.seattlesolvers.solverslib.hardware.motors.Motor;
+import com.seattlesolvers.solverslib.hardware.servos.ServoEx;
 
 @TeleOp
 @Config
 public class ShooterPositionTuner extends CommandOpMode {
 
-    Robot r;
-    private final boolean threeBallRumbleLatched = false;
-    Gamepad ahnaf;
+    Halo r;
     Trigger intakeTrigger;
-    private long lastLoopTimeNs = 0;
-    private double loopTimeMs = 0;
-    private double loopHz = 0;
 
-    public static double hoodPosition = Globals.HOOD_MAX;
-    public double kV = 0.00045;
-    public double kS = 0.02;
-    public double kP = 0.0012;
-    public static double targetVelocity = 0;
-    ShooterLUT shooterLUT = new ShooterLUT();
+    public static double turretPosition = G.TURRET_RESET;
+
+    public static double hoodPosition = G.HOOD_MAX;
+    public static double P = 0.001;
+    public static double I = 0.001;
+    public static double D = 0.000;
+    public static double F = 0.0004;
+
+    public static double TARGET_VEL = 0.0;
+    public static double POS_TOLERANCE = 0;
+
+    private static final PIDFController launcherPIDF = new PIDFController(P, I, D, F);
 
     @Override
     public void initialize() {
+        launcherPIDF.setTolerance(POS_TOLERANCE, 0);
+        r = new Halo(hardwareMap, G.RED_CUBE_START, G.Side.RED, true);
 
-        r = new Robot(hardwareMap, Globals.RED_CUBE_START, Globals.Side.RED, true);
         r.initLoop(r);
         r.dt.startDrive();
-        ahnaf = gamepad1;
+
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
+
         intakeTrigger = new Trigger(
-                () -> ahnaf.right_trigger > 0.1 && !r.spinner.threeBallsDetected()
+                () -> gamepad1.right_trigger > 0.1 && !r.spinner.threeBallsDetected()
         );
+
         intakeTrigger
                 .whileActiveContinuous(
                         new ParallelCommandGroup(
@@ -74,26 +87,9 @@ public class ShooterPositionTuner extends CommandOpMode {
 
     @Override
     public void run() {
-        long now = System.nanoTime();
-
-        if (lastLoopTimeNs != 0) {
-            loopTimeMs = (now - lastLoopTimeNs) / 1_000_000.0;
-            loopHz = 1000.0 / loopTimeMs;
-        }
-
-        lastLoopTimeNs = now;
-
-        telemetry.update();
-        if (gamepad1.crossWasPressed()) {
-            CommandScheduler.getInstance().schedule(new InstantCommand(() -> {
-                r.turret.applyVisionCorrectionOnce();
-            }));
-        }
-
         if (gamepad1.circleWasPressed()) {
-            CommandScheduler.getInstance().schedule(new InstantCommand(() -> {
-                r.turret.clearVisionCorrection();
-            }));
+            telemetry.addLine("Circle!!");
+            CommandScheduler.getInstance().schedule(RapidKickCommands.kickAndResetMany(r, 2, 3, 1));
         }
 
         if (gamepad1.dpadLeftWasPressed()) {
@@ -112,49 +108,39 @@ public class ShooterPositionTuner extends CommandOpMode {
             );
         }
 
-        double currentVel = -r.s2.getCorrectedVelocity();
+        double currentVel = r.s1.getCorrectedVelocity();
 
-        double ff = feedforward(targetVelocity);
-        double fb = feedback(targetVelocity, currentVel);
+        launcherPIDF.setPIDF(P, I, D, F);
 
-        double power = ff + fb;
-        power = clamp(power, 0, 1);
+        launcherPIDF.setTolerance(POS_TOLERANCE, 0);
+        launcherPIDF.setSetPoint(TARGET_VEL);
 
-        // Apply to both shooter motors
+        double power = launcherPIDF.calculate(currentVel, TARGET_VEL);
+
         r.s1.set(power);
         r.s2.set(power);
 
-        r.noOuttakeLoop(r);
-
-        if (hoodPosition < Globals.HOOD_LOWERED) hoodPosition = Globals.HOOD_LOWERED;
-        if (hoodPosition > Globals.HOOD_MAX) hoodPosition = Globals.HOOD_MAX;
+        if (hoodPosition < G.HOOD_LOWERED) hoodPosition = G.HOOD_LOWERED;
+        if (hoodPosition > G.HOOD_MAX) hoodPosition = G.HOOD_MAX;
 
         r.r.setPosition(hoodPosition);
         r.turret.followGoal();
         r.dt.drive(gamepad1);
 
+//        r.t1.setPosition(turretPosition);
+//        r.t2.setPosition(turretPosition);
+
         telemetry.addData("Distance: ", r.dt.getGoalDistance());
-        telemetry.addData("X: ", r.dt.getPose().getX());
-        telemetry.addData("Y: ", r.dt.getPose().getY());
-        telemetry.addData("Angle: ", r.dt.getPose().getHeading());
-        telemetry.addData("Current Velocity: ", r.s2.getCorrectedVelocity());
-        telemetry.addData("Shooter 1 Motor RPM: ", r.s1.getCorrectedVelocity() / 28 * 60);
-        telemetry.addData("Shooter 2 Motor RPM: ", r.s2.getCorrectedVelocity() / 28 * 60);
+        telemetry.addData("Pose: ", r.dt.getPose());
+        telemetry.addData("Shooter Velocity: ", r.s1.getCorrectedVelocity());
+        telemetry.addData("Shooter Motor RPM: ", r.s1.getCorrectedVelocity() / 28 * 60);
         telemetry.addData("Hood Value: ", r.r.getPosition());
+        telemetry.addData("Section 1: ", G.ballColors[0]);
+        telemetry.addData("Section 2: ", G.ballColors[1]);
+        telemetry.addData("Section 3: ", G.ballColors[2]);
+        telemetry.addData("Three Detected:", r.spinner.threeBallsDetected());
         telemetry.update();
-    }
-    private double feedforward(double targetVel) {
-        if (Math.abs(targetVel) < 1e-6) return 0;
-        double sign = Math.signum(targetVel);
-        return kS * sign + kV * targetVel;
-    }
 
-    private double feedback(double targetVel, double currentVel) {
-        double error = targetVel - currentVel;
-        return kP * error;
-    }
-
-    private double clamp(double v, double min, double max) {
-        return Math.max(min, Math.min(max, v));
+        r.noOuttakeLoop(r);
     }
 }

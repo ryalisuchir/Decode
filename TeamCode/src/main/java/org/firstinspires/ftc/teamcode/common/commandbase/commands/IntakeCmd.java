@@ -3,16 +3,15 @@ package org.firstinspires.ftc.teamcode.common.commandbase.commands;
 import com.seattlesolvers.solverslib.command.CommandBase;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
 
-import org.firstinspires.ftc.teamcode.common.utility.Globals;
-import org.firstinspires.ftc.teamcode.common.utility.Robot;
+import org.firstinspires.ftc.teamcode.common.utility.Halo;
 
 public class IntakeCmd extends CommandBase {
 
-    private final Robot r;
+    private final Halo r;
     private final double timer;
     private long startTime;
 
-    public IntakeCmd(Robot r, double timer) {
+    public IntakeCmd(Halo r, double timer) {
         this.r = r;
         this.timer = timer * 1000; //input is seconds, this converts it to ms
     }

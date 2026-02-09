@@ -3,25 +3,25 @@ package org.firstinspires.ftc.teamcode.opmode.testing;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
-import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.teamcode.common.utility.Globals;
-import org.firstinspires.ftc.teamcode.common.utility.Robot;
+import org.firstinspires.ftc.teamcode.common.utility.G;
+import org.firstinspires.ftc.teamcode.common.utility.Halo;
 import org.firstinspires.ftc.teamcode.common.utility.functions.vision.Vision;
+import org.firstinspires.ftc.teamcode.common.utility.peacock.geometry.Pose;
 
 @Autonomous
 @Config
 public class MasterChecker extends OpMode {
-    Robot robot;
-    public static double kicker1 = Globals.KICKER1_RESET;
-    public static double kicker2 = Globals.KICKER2_RESET;
-    public static double kicker3 = Globals.KICKER3_RESET;
-    public static double turret = Globals.TURRET_RESET;
-    public static double hood = Globals.HOOD_MAX;
-    public static double gate = Globals.GATE_OPEN;
+    Halo robot;
+    public static double kicker1 = G.KICKER1_RESET;
+    public static double kicker2 = G.KICKER2_RESET;
+    public static double kicker3 = G.KICKER3_RESET;
+    public static double turret = G.TURRET_RESET;
+    public static double hood = G.HOOD_MAX;
+    public static double gate = G.GATE_OPEN;
 
     public static double shooterSpeed = 0;
     public static double intakeSpeed = 0;
@@ -34,7 +34,7 @@ public class MasterChecker extends OpMode {
 
     @Override
     public void init() {
-        robot = new Robot(hardwareMap, Globals.RED_CUBE_START, Globals.Side.RED, true);
+        robot = new Halo(hardwareMap, G.RED_CUBE_START, G.Side.RED, true);
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         telemetry.addLine("Reset all encoders.");
         telemetry.update();
@@ -70,13 +70,13 @@ public class MasterChecker extends OpMode {
         telemetry.addData("tx to Goal:", Vision.getTx());
         telemetry.addData("Distance to goal (pp): ", robot.dt.getGoalDistance());
         telemetry.addData("Distance to goal (ll): ", Vision.distanceFromTag());
-        telemetry.addData("Fiducial: ", Robot.l.getLatestResult().getFiducialResults());
+        telemetry.addData("Fiducial: ", Halo.l.getLatestResult().getFiducialResults());
         telemetry.addData("Shooter 1 Motor Velocity:", robot.s1.getCorrectedVelocity());
         telemetry.addData("Shooter 2 Motor Velocity:", robot.s2.getCorrectedVelocity());
         telemetry.addData("Shooter 1 Motor RPM: ", robot.s1.getCorrectedVelocity() / 28 * 60);
         telemetry.addData("Shooter 2 Motor RPM: ", robot.s2.getCorrectedVelocity() / 28 * 60);
         telemetry.addData("Transfer Velocity: ", robot.t.getVelocity(AngleUnit.DEGREES));
-        telemetry.addData("Obelisk:", Globals.obeliskOptions);
+        telemetry.addData("Obelisk:", G.obeliskOptions);
         telemetry.addData("Pinpoint x:", fpose.getX());
         telemetry.addData("Pinpoint y:", fpose.getY());
         telemetry.addData("Pinpoint heading:", Math.toDegrees(fpose.getHeading()));
@@ -93,8 +93,8 @@ public class MasterChecker extends OpMode {
             double robotY,
             double robotHeadingRadians
     ) {
-        double dx = Globals.RED_CASTLE.getX() - robotX;
-        double dy = Globals.RED_CASTLE.getY() - robotY;
+        double dx = G.RED_CASTLE.getX() - robotX;
+        double dy = G.RED_CASTLE.getY() - robotY;
         double angleToGoal = Math.atan2(dy, dx);
 
         double turretAngle = angleToGoal - robotHeadingRadians;

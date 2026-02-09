@@ -7,8 +7,9 @@ import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
+import com.seattlesolvers.solverslib.controller.PIDFController;
 
-import org.firstinspires.ftc.teamcode.common.utility.Globals;
+import org.firstinspires.ftc.teamcode.common.utility.G;
 
 public class Spinner {
     private final DcMotorEx i, t;
@@ -16,6 +17,16 @@ public class Spinner {
 
     private double intakeTargetPower = 0.0;
     private double currentIntakePower = 0.0;
+
+    public static double P = 0.001;
+    public static double I = 0;
+    public static double D = 0.000;
+    public static double F = 0.00055;
+
+    public static double TARGET_VEL = 0.0;
+    public static double POS_TOLERANCE = 0;
+
+    private static final PIDFController launcherPIDF = new PIDFController(P, I, D, F);
 
     private double transferTargetPower = 0.0;
     private long lastUpdateTimeNs = 0;
@@ -26,50 +37,55 @@ public class Spinner {
         this.i = i;
         this.t = t;
         this.g = g;
+        launcherPIDF.setTolerance(POS_TOLERANCE, 0);
     }
 
     public void transferStart() {
-        Globals.transferState = Globals.TransferState.TRANSFERRING;
-        setTransferTarget(Globals.MAX_TRANSFER_POWER);
+        G.transferState = G.TransferState.TRANSFERRING;
+        setTransferTarget(G.TRANSFER_VEL);
     }
 
     public void transferStop() {
-        Globals.transferState = Globals.TransferState.STOPPED;
+        G.transferState = G.TransferState.STOPPED;
         setTransferTarget(0);
     }
 
     public void openGate() {
-        if (Math.abs(Globals.GATE_OPEN - g.getPosition()) < 0.05) return;
+        if (Math.abs(G.GATE_OPEN - g.getPosition()) < 0.05) return;
 
-        g.setPosition(Globals.GATE_OPEN);
+        g.setPosition(G.GATE_OPEN);
     }
 
     public void closeGate() {
-        g.setPosition(Globals.GATE_CLOSED);
+        g.setPosition(G.GATE_CLOSED);
     }
 
     private void setIntakeTarget(double power) {
         intakeTargetPower = power;
     }
 
-    private void setTransferTarget(double power) {
-        if (Math.abs(power - t.getPower()) < 0.05) return;
-
-        transferTargetPower = power;
+    private void setTransferTarget(double velocity) {
+        TARGET_VEL = velocity;
     }
 
     public void intakeIn() {
-        Globals.intakeState = Globals.IntakeState.INTAKING;
-        Globals.transferState = Globals.TransferState.INTAKING;
+        G.intakeState = G.IntakeState.INTAKING;
+        G.transferState = G.TransferState.INTAKING;
 
-        setIntakeTarget(Globals.MAX_INTAKING_POWER);
-        setTransferTarget(Globals.TRANSFER_INTAKING);
+        setIntakeTarget(G.MAX_INTAKING_POWER);
+        setTransferTarget(G.TRANSFER_INTAKE_VEL);
     }
 
     public SequentialCommandGroup intakeOut() {
-        Globals.intakeState = Globals.IntakeState.STOPPED;
+        G.intakeState = G.IntakeState.STOPPED;
         return new SequentialCommandGroup(
-                new InstantCommand(() -> setIntakeTarget(-0.4)),
+                new ParallelCommandGroup(
+                        new InstantCommand(() -> setIntakeTarget(-0.7)),
+                        new SequentialCommandGroup(
+                                new WaitCommand(300),
+                                new InstantCommand(this::closeGate)
+                        )
+                ),
                 new WaitCommand(600),
                 new InstantCommand(this::intakeStop)
         );
@@ -77,7 +93,7 @@ public class Spinner {
 
     public void intakeStop() {
         setIntakeTarget(0);
-        Globals.intakeState = Globals.IntakeState.STOPPED;
+        G.intakeState = G.IntakeState.STOPPED;
         closeGate();
     }
 
@@ -95,17 +111,17 @@ public class Spinner {
 
     public ParallelCommandGroup stop() {
         long wait;
-        if (Globals.match == Globals.Match.AUTO) {
-            wait = Globals.GATE_WAIT_AUTO;
+        if (G.match == G.Match.AUTO) {
+            wait = G.GATE_WAIT_AUTO;
         } else {
-            wait = Globals.GATE_WAIT_TELE;
+            wait = G.GATE_WAIT_TELE;
         }
 
         if (!threeBallsDetected()) {
             return new ParallelCommandGroup(new SequentialCommandGroup(new InstantCommand(() -> setIntakeTarget(-0.6)), new WaitCommand(wait), new InstantCommand(() -> {
                 setIntakeTarget(0);
-                Globals.intakeState = Globals.IntakeState.STOPPED;
-                g.setPosition(Globals.GATE_OPEN);
+                G.intakeState = G.IntakeState.STOPPED;
+                g.setPosition(G.GATE_OPEN);
             })), new InstantCommand(this::transferStop));
         } else {
             return transfer();
@@ -113,15 +129,15 @@ public class Spinner {
     }
 
     public boolean threeBallsDetected() {
-        return Globals.ballColors[0] != Globals.BallColor.NONE && Globals.ballColors[1] != Globals.BallColor.NONE && Globals.ballColors[2] != Globals.BallColor.NONE;
+        return G.ballColors[0] != G.BallColor.NONE && G.ballColors[1] != G.BallColor.NONE && G.ballColors[2] != G.BallColor.NONE;
     }
 
     public boolean oneBallDetected() {
-        return Globals.ballColors[0] != Globals.BallColor.NONE || Globals.ballColors[1] != Globals.BallColor.NONE || Globals.ballColors[2] != Globals.BallColor.NONE;
+        return G.ballColors[0] != G.BallColor.NONE || G.ballColors[1] != G.BallColor.NONE || G.ballColors[2] != G.BallColor.NONE;
     }
 
     public ParallelCommandGroup toggleIn() {
-        if (Globals.intakeState != Globals.IntakeState.INTAKING) {
+        if (G.intakeState != G.IntakeState.INTAKING) {
             return intake();
         } else if (threeBallsDetected()) {
             return transfer();
@@ -145,7 +161,7 @@ public class Spinner {
         if (Math.abs(delta) <= 0.05) {
             currentIntakePower = intakeTargetPower;
         } else {
-            double maxDelta = Globals.POWER_RAMP_PER_SEC * dt;
+            double maxDelta = G.POWER_RAMP_PER_SEC * dt;
 
             if (Math.abs(delta) > maxDelta) {
                 currentIntakePower += Math.signum(delta) * maxDelta;
@@ -155,24 +171,39 @@ public class Spinner {
         }
 
         i.setPower(currentIntakePower);
-        t.setPower(transferTargetPower);
+
+        double currentVel = t.getVelocity();
+
+        launcherPIDF.setPIDF(P, I, D, F);
+
+        launcherPIDF.setTolerance(POS_TOLERANCE, 0);
+        launcherPIDF.setSetPoint(TARGET_VEL);
+
+        double power = launcherPIDF.calculate(currentVel, TARGET_VEL);
+
+        t.setPower(power);
 
         if (oneBallDetected()) {
-            Globals.shooterState = Globals.ShooterState.SHOOTING;
+            G.shooterState = G.ShooterState.SHOOTING;
 
-            if (Globals.match == Globals.Match.AUTO && (Globals.turretState != Globals.TurretState.BLUE_CLOSE_OBELISK && Globals.turretState != Globals.TurretState.RED_CLOSE_OBELISK && Globals.turretState != Globals.TurretState.RED_FAR_GOAL && Globals.turretState != Globals.TurretState.RED_FAR_GOAL_TELE && Globals.turretState != Globals.TurretState.BLUE_CLOSE_GOAL && Globals.turretState != Globals.TurretState.BLUE_CLOSE_DIFF_GOAL && Globals.turretState != Globals.TurretState.RED_CLOSE_GOAL && Globals.turretState != Globals.TurretState.RED_CLOSE_DIFF_GOAL && Globals.turretState != Globals.TurretState.BLUE_FAR_GOAL)) {
-                Globals.turretState = Globals.TurretState.FOLLOWING;
+            if (G.match == G.Match.AUTO && (G.turretState != G.TurretState.BLUE_CLOSE_OBELISK && G.turretState != G.TurretState.RED_CLOSE_OBELISK && G.turretState != G.TurretState.RED_FAR_GOAL && G.turretState != G.TurretState.RED_FAR_GOAL_TELE && G.turretState != G.TurretState.BLUE_CLOSE_GOAL && G.turretState != G.TurretState.BLUE_CLOSE_DIFF_GOAL && G.turretState != G.TurretState.RED_CLOSE_GOAL && G.turretState != G.TurretState.RED_CLOSE_DIFF_GOAL && G.turretState != G.TurretState.BLUE_FAR_GOAL)) {
+                G.turretState = G.TurretState.FOLLOWING;
             }
         }
 
-        if (Globals.intakeState == Globals.IntakeState.INTAKING
+        if (G.intakeState == G.IntakeState.INTAKING
                 && threeBallsDetected()
                 && !autoTransferTriggered) {
             autoTransferTriggered = true;
             CommandScheduler.getInstance().schedule(transfer());
         }
 
-        if (Globals.intakeState != Globals.IntakeState.INTAKING) {
+        if (G.intakeState == G.IntakeState.STOPPED //new code for bug prevention in tele
+                && threeBallsDetected() && Math.abs(t.getPower()) < 0.1) {
+            CommandScheduler.getInstance().schedule(transfer());
+        }
+
+        if (G.intakeState != G.IntakeState.INTAKING) {
             autoTransferTriggered = false;
         }
     }

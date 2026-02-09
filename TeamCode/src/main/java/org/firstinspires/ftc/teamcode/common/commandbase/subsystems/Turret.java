@@ -1,268 +1,211 @@
 package org.firstinspires.ftc.teamcode.common.commandbase.subsystems;
 
-import com.pedropathing.follower.Follower;
-import com.pedropathing.geometry.Pose;
-import com.qualcomm.hardware.limelightvision.Limelight3A;
+
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 
-import org.firstinspires.ftc.teamcode.common.utility.functions.vision.Vision;
+import org.firstinspires.ftc.teamcode.common.utility.G;
+import org.firstinspires.ftc.teamcode.common.utility.functions.TurretMath;
+import org.firstinspires.ftc.teamcode.common.utility.functions.luts.TimeOfFlightLUT;
+import org.firstinspires.ftc.teamcode.common.utility.peacock.follower.Follower;
 import org.firstinspires.ftc.teamcode.common.utility.turret.BlueTurretLUT;
 import org.firstinspires.ftc.teamcode.common.utility.turret.RedTurretLUT;
-import org.firstinspires.ftc.teamcode.common.utility.Globals;
 
 public class Turret {
     private final ServoImplEx turret1, turret2;
     private final BlueTurretLUT blueTurretLUT = new BlueTurretLUT();
     private final RedTurretLUT redTurretLUT = new RedTurretLUT();
+    private final TimeOfFlightLUT timeOfFlightLUT = new TimeOfFlightLUT();
 
-    public double visionOffset = 0.0;
-    private boolean visionLocked = false;
+    public static double xVel, yVel;
+    private double lastPos = -1;
 
     private final Follower follower;
-    private final Globals.Side side;
-    public double goalX, goalY;
-
-    public Pose customPose = null;
-
-    Limelight3A ll;
-
-    private double lastSetPosition = -999;
+    private final G.Side side;
+    private final TurretMath.CornerGoal cornerGoal;
+    public static double virtualGoalX, virtualGoalY;
+    public double originalGoalX, originalGoalY;
 
     public Turret(
-            Globals.Side side,
+            G.Side side,
             ServoImplEx turret1,
             ServoImplEx turret2,
-            Follower follower,
-            double goalX,
-            double goalY
+            Follower follower
     ) {
         this.side = side;
         this.turret1 = turret1;
         this.turret2 = turret2;
         this.follower = follower;
-        this.goalX = goalX;
-        this.goalY = goalY;
+        this.cornerGoal = (side == G.Side.BLUE)
+                ? TurretMath.CornerGoal.LEFT_BLUE
+                : TurretMath.CornerGoal.RIGHT_RED;
+
+        double[] g = TurretMath.getCornerGoalCenter(cornerGoal);
+        this.virtualGoalX = g[0];
+        this.virtualGoalY = g[1];
+        this.originalGoalX = g[0];
+        this.originalGoalY = g[1];
     }
 
-    private void setPositionOnce(double pos) {
-        if (Math.abs(pos - lastSetPosition) > 0.00001) {
+    public void setPositionOnce(double pos) {
+        if (Math.abs(pos - lastPos) > 0.001) {
             turret1.setPosition(pos);
             turret2.setPosition(pos);
-            lastSetPosition = pos;
+            lastPos = pos;
         }
     }
 
-    public void applyVisionCorrectionOnce() {
-        if (visionLocked) return;
-        if (!Vision.hasCorrectFiducial()) return;
-        if (!robotIsStable()) return;
-
-        double tx = Vision.getTx();
-        visionOffset = Vision.txToServoPos(tx);
-//        if (Math.abs(tx) < 1.3 && follower.getPose().getY() > 60 && Globals.match != Globals.Match.AUTO) {
-//            visionOffset = 0;
-//        } else {
-//            visionOffset = Vision.txToServoPos(tx);
-//        }
-
-        visionLocked = true;
+    public InstantCommand clearCustom() {
+        return new InstantCommand(() -> G.turretState = G.TurretState.FOLLOWING);
     }
 
-    public void applyVisionCorrection() {
-        if (!Vision.hasCorrectFiducial()) return;
-        if (!robotIsStable()) return;
-
-        double tx = Vision.getTx();
-        visionOffset = Vision.txToServoPos(tx);
-        visionLocked = true;
+    public InstantCommand customRedFar() {
+        G.turretState = G.TurretState.SET_POSITION;
+        return new InstantCommand(() -> {
+            setPositionOnce(0.595);
+        });
     }
 
-    public void clearVisionCorrection() {
-        visionOffset = 0.0;
-        visionLocked = false;
+    public void tiltPosition() {
+        G.turretState = G.TurretState.SET_POSITION;
+        setPositionOnce(1);
     }
+
+    public InstantCommand customblueFar() {
+        G.turretState = G.TurretState.SET_POSITION;
+        return new InstantCommand(() -> {
+            setPositionOnce(0.175);
+        });
+    }
+
+    public InstantCommand customRedClose() {
+        G.turretState = G.TurretState.SET_POSITION;
+        return new InstantCommand(() -> {
+            setPositionOnce(0.525);
+        });
+    }
+
+    public InstantCommand customRedCloser() {
+        G.turretState = G.TurretState.SET_POSITION;
+        return new InstantCommand(() -> {
+            setPositionOnce(0.66);
+        });
+    }
+
+    public InstantCommand customBlueClose() {
+        G.turretState = G.TurretState.SET_POSITION;
+        return new InstantCommand(() -> {
+            setPositionOnce(0.213);
+        });
+    }
+
+    public InstantCommand customBlueCloser() {
+        G.turretState = G.TurretState.SET_POSITION;
+        return new InstantCommand(() -> {
+            setPositionOnce(0.12);
+        });
+    }
+
 
     public InstantCommand reset() {
-        clearVisionCorrection();
-        customPose = null;
-        return new InstantCommand(() -> setPositionOnce(Globals.TURRET_RESET));
+        return new InstantCommand(() -> setPositionOnce(G.TURRET_RESET));
     }
 
     public InstantCommand initClose() {
-        clearVisionCorrection();
-        return new InstantCommand(() ->setPositionOnce(Globals.TURRET_RESET));
+        return new InstantCommand(() -> setPositionOnce(G.TURRET_RESET));
     }
 
     public InstantCommand initFarBlue() {
-        clearVisionCorrection();
-        return new InstantCommand(() ->setPositionOnce(Globals.TURRET_BLUE_FAR_READ));
+        return new InstantCommand(() -> setPositionOnce(G.TURRET_BLUE_FAR_READ));
     }
 
     public InstantCommand initFarRed() {
-        clearVisionCorrection();
-        return new InstantCommand(() ->setPositionOnce(Globals.TURRET_RED_FAR_READ));
+        return new InstantCommand(() -> setPositionOnce(G.TURRET_RED_FAR_READ));
     }
 
     public InstantCommand blueObeliskRead() {
-        customPose = null;
-        Globals.turretState = Globals.TurretState.BLUE_CLOSE_OBELISK;
-        return new InstantCommand(() -> setFixedPosition(Globals.TURRET_BLUE_CLOSE_READ));
+        G.turretState = G.TurretState.BLUE_CLOSE_OBELISK;
+        return new InstantCommand(() -> setPositionOnce(G.TURRET_BLUE_CLOSE_READ));
     }
 
     public InstantCommand redObeliskRead() {
-        customPose = null;
-        Globals.turretState = Globals.TurretState.RED_CLOSE_OBELISK;
-        return new InstantCommand(() -> setFixedPosition(Globals.TURRET_RED_CLOSE_READ));
+        G.turretState = G.TurretState.RED_CLOSE_OBELISK;
+        return new InstantCommand(() -> setPositionOnce(G.TURRET_RED_CLOSE_READ));
     }
 
-    public void setFixedPosition(double pos) {
-        setPositionOnce(clamp(pos, Globals.MIN_TURRET, Globals.MAX_TURRET));
+    public double getAngleToGoal() {
+        return TurretMath.getTurretAngleToCornerGoal(
+                follower.getPose().getX(),
+                follower.getPose().getY(),
+                follower.getPose().getHeading(),
+                G.pivotX,
+                G.pivotY,
+                cornerGoal
+        );
     }
 
     public void followGoal() {
-        double turretAngle;
-        if (customPose != null) {
-            turretAngle = getTurretAngleToGoal(
-                    customPose.getX(),
-                    customPose.getY(),
-                    customPose.getHeading()
-            );
-        } else {
-            turretAngle = getTurretAngleToGoal(
-                    follower.getPose().getX(),
-                    follower.getPose().getY(),
-                    follower.getPose().getHeading()
-            );
-        }
-
-        boolean isFar = follower.getPose().getY() < 50;
-        boolean isClose = follower.getPose().getY() > 132;
-
-        double servoPosition;
-        if (side == Globals.Side.BLUE) {
-            servoPosition = blueTurretLUT.getServoValue(turretAngle);
-        } else {
-            servoPosition = redTurretLUT.getServoValue(turretAngle);
-        }
-
-        servoPosition += visionOffset;
-
-        if (side == Globals.Side.RED && isClose) {
-            if (visionOffset!=0) servoPosition += Globals.CLOSE_TURRET_OFFSET;
-        }
-
-        if (side == Globals.Side.BLUE && isClose) {
-            if (visionOffset!=0) servoPosition += Globals.CLOSE_TURRET_OFFSET;
-        }
-
-        if (side == Globals.Side.RED && isFar) {
-            if (visionOffset !=0) servoPosition -=Globals.FAR_TURRET_OFFSET;
-        }
-
-        if (side == Globals.Side.BLUE && isFar) {
-            if (visionOffset !=0) servoPosition -= 0;
-        }
-
-        setFixedPosition(servoPosition);
-    }
-
-    private boolean robotIsStable() {
-        if (Globals.match == Globals.Match.AUTO) {
-            return follower.getVelocity().getMagnitude() < Globals.VISION_MAX_VEL_AUTO;
-        } else {
-            return follower.getVelocity().getMagnitude() < Globals.VISION_MAX_VEL_TELE;
-        }
-    }
-
-
-
-    public void followObelisk() {
-        double turretAngle = getTurretAngleToObelisk(
+        double turretAngle = TurretMath.getTurretAngleToGoal(
                 follower.getPose().getX(),
                 follower.getPose().getY(),
-                follower.getPose().getHeading()
+                follower.getPose().getHeading(),
+                G.pivotX,
+                G.pivotY,
+                virtualGoalX,
+                virtualGoalY
         );
 
         double servoPosition;
-        if (side == Globals.Side.BLUE) {
+        if (side == G.Side.BLUE) {
             servoPosition = blueTurretLUT.getServoValue(turretAngle);
         } else {
             servoPosition = redTurretLUT.getServoValue(turretAngle);
         }
 
-        setFixedPosition(servoPosition);
+        setPositionOnce(servoPosition);
+    }
+
+    public void followObelisk() {
+        double turretAngle = TurretMath.getTurretAngleToObelisk(
+                follower.getPose().getX(),
+                follower.getPose().getY(),
+                follower.getPose().getHeading(),
+                G.pivotX,
+                G.pivotY
+        );
+
+        double servoPosition;
+        if (side == G.Side.BLUE) {
+            servoPosition = blueTurretLUT.getServoValue(turretAngle);
+        } else {
+            servoPosition = redTurretLUT.getServoValue(turretAngle);
+        }
+
+        setPositionOnce(servoPosition);
     }
 
     public void loop() {
-        if (Globals.turretState == Globals.TurretState.FOLLOWING) {
+        double heading = follower.getPose().getHeading();
+        double vx = follower.getVelocity().getXComponent();
+        double vy = follower.getVelocity().getYComponent();
+
+        //These values are field centric so turning in place doesn't mess with it:
+        xVel = vx * Math.cos(heading) - vy * Math.sin(heading);
+        yVel = vx * Math.sin(heading) + vy * Math.cos(heading);
+
+        virtualGoalX = (-xVel * timeOfFlightLUT.get(TurretMath.getDistanceToGoalPinpoint(follower, originalGoalX, originalGoalY))) + originalGoalX;
+        virtualGoalY = (-yVel * timeOfFlightLUT.get(TurretMath.getDistanceToGoalPinpoint(follower, originalGoalX, originalGoalY))) + originalGoalY;
+
+//        virtualGoalX = (-xVel * 1) + originalGoalX;
+//        virtualGoalY = (-yVel * 1) + originalGoalY;
+
+        if (G.turretState == G.TurretState.FOLLOWING) {
             followGoal();
         }
 
-        if (Globals.turretState == Globals.TurretState.RED_FAR_GOAL) {
-            setFixedPosition(0.595);
-        }
-
-        if (Globals.turretState == Globals.TurretState.BLUE_FAR_GOAL) {
-            setFixedPosition(0.175);
-        }
-
-        if (Globals.turretState == Globals.TurretState.RED_CLOSE_GOAL) {
-            setFixedPosition(0.525);
-        }
-
-        if (Globals.turretState == Globals.TurretState.RED_CLOSE_DIFF_GOAL) {
-            setFixedPosition(0.66);
-        }
-
-        if (Globals.turretState == Globals.TurretState.BLUE_CLOSE_GOAL) {
-            setFixedPosition(0.213);
-        }
-
-        if (Globals.turretState == Globals.TurretState.BLUE_CLOSE_DIFF_GOAL) {
-            setFixedPosition(0.12);
-        }
-
-        if (Globals.turretState == Globals.TurretState.RED_FAR_GOAL_TELE) {
-            setFixedPosition(0.56);
-        }
-
-        if (Globals.turretState == Globals.TurretState.BLUE_CLOSE_OBELISK || Globals.turretState == Globals.TurretState.RED_CLOSE_OBELISK) {
+        if (G.turretState == G.TurretState.BLUE_CLOSE_OBELISK || G.turretState == G.TurretState.RED_CLOSE_OBELISK) {
             followObelisk();
         }
-
-        if (visionLocked && ((follower.getVelocity().getMagnitude() > Globals.VISION_MAX_VEL_TELE && Globals.match == Globals.Match.TELEOP) || follower.getVelocity().getMagnitude() > Globals.VISION_MAX_VEL_AUTO && Globals.match == Globals.Match.AUTO)) {
-            clearVisionCorrection();
-        }
-    }
-
-    public double getTurretAngleToGoal(
-            double robotX,
-            double robotY,
-            double robotHeadingRadians
-    ) {
-        double dx = goalX - robotX;
-        double dy = goalY - robotY;
-        double angleToGoal = Math.atan2(dy, dx);
-
-        double turretAngle = angleToGoal - robotHeadingRadians;
-
-        return Math.atan2(Math.sin(turretAngle), Math.cos(turretAngle));
-    }
-
-    public double getTurretAngleToObelisk(
-            double robotX,
-            double robotY,
-            double robotHeadingRadians
-    ) {
-
-        double dx = 72 - robotX;
-        double dy = 144 - robotY;
-        double angleToGoal = Math.atan2(dy, dx);
-
-        double turretAngle = angleToGoal - robotHeadingRadians;
-
-        return Math.atan2(Math.sin(turretAngle), Math.cos(turretAngle));
     }
 
     private double clamp(double v, double min, double max) {

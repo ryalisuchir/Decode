@@ -3,7 +3,7 @@ package org.firstinspires.ftc.teamcode.common.commandbase.subsystems;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 
-import org.firstinspires.ftc.teamcode.common.utility.Globals;
+import org.firstinspires.ftc.teamcode.common.utility.G;
 
 public class Kicker extends SubsystemBase {
 
@@ -28,16 +28,16 @@ public class Kicker extends SubsystemBase {
     public void kick(int slot) {
         switch (slot) {
             case 1:
-                Globals.kicker1State = Globals.Kicker1State.KICK;
-                k1.setPosition(Globals.KICKER1_KICK);
+                G.kicker1State = G.Kicker1State.KICK;
+                k1.setPosition(G.KICKER1_KICK);
                 break;
             case 2:
-                Globals.kicker2State = Globals.Kicker2State.KICK;
-                k2.setPosition(Globals.KICKER2_KICK);
+                G.kicker2State = G.Kicker2State.KICK;
+                k2.setPosition(G.KICKER2_KICK);
                 break;
             case 3:
-                Globals.kicker3State = Globals.Kicker3State.KICK;
-                k3.setPosition(Globals.KICKER3_KICK);
+                G.kicker3State = G.Kicker3State.KICK;
+                k3.setPosition(G.KICKER3_KICK);
                 break;
         }
     }
@@ -45,16 +45,16 @@ public class Kicker extends SubsystemBase {
     public void reset(int slot) {
         switch (slot) {
             case 1:
-                Globals.kicker1State = Globals.Kicker1State.RESET;
-                k1.setPosition(Globals.KICKER1_RESET);
+                G.kicker1State = G.Kicker1State.RESET;
+                k1.setPosition(G.KICKER1_RESET);
                 break;
             case 2:
-                Globals.kicker2State = Globals.Kicker2State.RESET;
-                k2.setPosition(Globals.KICKER2_RESET);
+                G.kicker2State = G.Kicker2State.RESET;
+                k2.setPosition(G.KICKER2_RESET);
                 break;
             case 3:
-                Globals.kicker3State = Globals.Kicker3State.RESET;
-                k3.setPosition(Globals.KICKER3_RESET);
+                G.kicker3State = G.Kicker3State.RESET;
+                k3.setPosition(G.KICKER3_RESET);
                 break;
         }
     }

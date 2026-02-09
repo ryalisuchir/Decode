@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.common.commandbase.subsystems.Turret;
+import org.firstinspires.ftc.teamcode.common.utility.G;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,16 +36,12 @@ public class TurretCalibrator {
             return;
         }
         telemetryLUT(telemetry);
-        turret.setFixedPosition(currentServo);
+        turret.setPositionOnce(currentServo);
 
         boolean x = gamepad.cross;
         if (x && !lastX) {
 
-            double angle = turret.getTurretAngleToGoal(
-                    robotX,
-                    robotY,
-                    robotHeading
-            );
+            double angle = TurretMath.getTurretAngleToGoal(robotX, robotY, robotHeading, G.pivotX, G.pivotY, turret.originalGoalX, turret.originalGoalY);
 
             samples.add(new Point(angle, currentServo));
 

@@ -16,13 +16,13 @@ import org.firstinspires.ftc.teamcode.common.commandbase.commands.teleopspecific
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.teleopspecific.KickOrderTCmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.utility.KickCommands;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.utility.RapidKickCommands;
-import org.firstinspires.ftc.teamcode.common.utility.Globals;
-import org.firstinspires.ftc.teamcode.common.utility.Robot;
+import org.firstinspires.ftc.teamcode.common.utility.G;
+import org.firstinspires.ftc.teamcode.common.utility.Halo;
 
 @TeleOp
 public class RedFailsafeTele extends CommandOpMode {
 
-    Robot r;
+    Halo r;
     private boolean hasStarted = false;
     private boolean threeBallRumbleLatched = false;
     Gamepad ahnaf, swetha;
@@ -41,10 +41,10 @@ public class RedFailsafeTele extends CommandOpMode {
 
     @Override
     public void initialize() {
-        r = new Robot(hardwareMap, Globals.RED_CUBE_START, Globals.Side.RED, false);
+        r = new Halo(hardwareMap, G.RED_CUBE_START, G.Side.RED, false);
         r.dt.startDrive();
         r.shooter.setCustomDistance(99.80403458213259, 99.80403458213254);
-        Globals.turretState = Globals.TurretState.FAILED;
+        G.turretState = G.TurretState.FAILED;
         ahnaf = gamepad1;
         swetha = gamepad2;
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
@@ -118,7 +118,7 @@ public class RedFailsafeTele extends CommandOpMode {
         if (ahnaf.ps || swetha.ps) {
             schedule(
                     new ParallelCommandGroup(
-                            r.dt.corner(),
+                            r.dt.resetPose(),
                             new InstantCommand(() -> {
                                 ahnaf.rumble(1000);
                                 swetha.rumble(1000);
@@ -134,7 +134,7 @@ public class RedFailsafeTele extends CommandOpMode {
         }
 
         if (swetha.circleWasPressed()) {
-            Globals.KICK_WAIT_TELE = 500;
+            G.KICK_WAIT_TELE = 500;
         }
 
         //Failsafes:
@@ -165,7 +165,7 @@ public class RedFailsafeTele extends CommandOpMode {
         }
 
         if (swetha.crossWasPressed()) {
-            Globals.turretState = Globals.TurretState.FOLLOWING;
+            G.turretState = G.TurretState.FOLLOWING;
         }
 
         if (swetha.dpadLeftWasPressed()) {

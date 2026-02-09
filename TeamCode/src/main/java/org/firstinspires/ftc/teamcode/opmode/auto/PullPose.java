@@ -5,17 +5,18 @@ import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
-import org.firstinspires.ftc.teamcode.common.utility.Globals;
-import org.firstinspires.ftc.teamcode.common.utility.Robot;
+
+import org.firstinspires.ftc.teamcode.common.utility.G;
+import org.firstinspires.ftc.teamcode.common.utility.Halo;
 
 //@Autonomous
 public class PullPose extends OpMode {
-    Robot r;
+    Halo r;
 
     @Override
     public void init() {
         CommandScheduler.getInstance().reset();
-        r = new Robot(hardwareMap, Globals.BLUE_CUBE_START, Globals.Side.BLUE, true);
+        r = new Halo(hardwareMap, G.BLUE_CUBE_START, G.Side.BLUE, true);
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
     }
 

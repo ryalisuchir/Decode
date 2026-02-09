@@ -12,7 +12,7 @@ import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.command.WaitUntilCommand;
 
-import org.firstinspires.ftc.teamcode.common.commandbase.commands.teleopspecific.NoCorrectKickACmd;
+import org.firstinspires.ftc.teamcode.common.commandbase.commands.KickOrderACmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.utility.FollowPathCmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.inits.CloseInitCmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.ResetShooterAndReadCmd;
@@ -20,24 +20,22 @@ import org.firstinspires.ftc.teamcode.common.commandbase.commands.ResetShooterCm
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.utility.DeferredCommand;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.utility.KickCommands;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.utility.RapidKickCommands;
-import org.firstinspires.ftc.teamcode.common.utility.Globals;
-import org.firstinspires.ftc.teamcode.common.utility.Robot;
+import org.firstinspires.ftc.teamcode.common.utility.G;
+import org.firstinspires.ftc.teamcode.common.utility.Halo;
 import org.firstinspires.ftc.teamcode.opmode.auto.paths.reds.RedClosePath15;
 
 @Autonomous
 public class RClose15 extends OpMode {
-    Robot r;
+    Halo r;
     RedClosePath15 p;
     boolean read = false;
 
     @Override
     public void init() {
         CommandScheduler.getInstance().reset();
-        r = new Robot(hardwareMap, Globals.RED_CUBE_START, Globals.Side.RED, true);
+        r = new Halo(hardwareMap, G.RED_CUBE_START, G.Side.RED, true);
         p = new RedClosePath15(r);
-        r.shooter.setCustomDistance(p.shootRegularPos.getX(), p.shootRegularPos.getY()+5);
         CommandScheduler.getInstance().schedule(new CloseInitCmd(r));
-        Globals.turretState = Globals.TurretState.RED_CLOSE_GOAL;
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
     }
@@ -45,7 +43,7 @@ public class RClose15 extends OpMode {
     public void init_loop() {
         telemetry.addLine("Created all subsystems.");
         telemetry.addData("Initialized:", "15 Ball Auto (Red)");
-        telemetry.addData("Obelisk Reading:", Globals.obeliskOptions);
+        telemetry.addData("Obelisk Reading:", G.obeliskOptions);
         r.initLoop(r);
         CommandScheduler.getInstance().run();
         telemetry.update();
@@ -56,36 +54,25 @@ public class RClose15 extends OpMode {
                 new SequentialCommandGroup(
                         new ParallelCommandGroup(
                                 new FollowPathCmd(r, p.next()),
-                                new InstantCommand(() -> {
-                                    Globals.turretState = Globals.TurretState.RED_CLOSE_GOAL;
-                                    r.shooter.setCustomDistance(p.shootRegularPos.getX(), p.shootRegularPos.getY()+5);
-                                }),
                                 new SequentialCommandGroup(
-                                        new WaitCommand(2500),
-                                        new NoCorrectKickACmd(r)
+                                        new WaitCommand(1500),
+                                        new KickOrderACmd(r)
                                 )
                         ),
                         new ParallelCommandGroup(
-                                new DeferredCommand(() -> new ResetShooterAndReadCmd(r, true, 5, Globals.Side.BLUE)),
+                                new ResetShooterAndReadCmd(r, true, 5, G.Side.BLUE),
                                 new FollowPathCmd(r, p.next()),
                                 new SequentialCommandGroup(
                                         new WaitCommand(1300),
                                         new InstantCommand(() -> {
-                                            Globals.turretState = Globals.TurretState.RED_CLOSE_GOAL;
-                                            r.shooter.setCustomDistance(p.shootRegularPos.getX(), p.shootRegularPos.getY()+5);
+                                            G.turretState = G.TurretState.FOLLOWING;
                                         })
                                 )
                         ),
                         new WaitCommand(800),
-                        new NoCorrectKickACmd(r),
+                        new KickOrderACmd(r),
                         new ParallelCommandGroup(
-                                new SequentialCommandGroup(
-                                        new DeferredCommand(() -> new ResetShooterCmd(r, true, 6)),
-                                        new InstantCommand(() -> {
-                                            Globals.turretState = Globals.TurretState.RED_CLOSE_GOAL;
-                                            r.shooter.setCustomDistance(p.shootRegularPos.getX(), p.shootRegularPos.getY()+5);
-                                        })
-                                ),
+                                new ResetShooterCmd(r, 6),
                                 new FollowPathCmd(r, p.next()).withStallTimeout(0.04, 2000)
                         ),
                         new ParallelRaceGroup(
@@ -94,7 +81,7 @@ public class RClose15 extends OpMode {
                         ),
                         new FollowPathCmd(r, p.next()),
                         new WaitCommand(800),
-                        new NoCorrectKickACmd(r),
+                        new KickOrderACmd(r),
 //                        new ParallelCommandGroup(
 //                                new SequentialCommandGroup(
 //                                        new DeferredCommand(() -> new ResetShooterCmd(r, true, 6)),
@@ -114,30 +101,23 @@ public class RClose15 extends OpMode {
                         //finished gate sequences, intake far
                         new ParallelCommandGroup(
                                 new FollowPathCmd(r, p.next()),
-                                new ResetShooterCmd(r, true, 3.5)
+                                new ResetShooterCmd(r, 3.5)
                         ),
-                        new InstantCommand(() -> {
-                            Globals.turretState = Globals.TurretState.RED_CLOSE_GOAL;
-                            r.shooter.setCustomDistance(p.shootRegularPos.getX(), p.shootRegularPos.getY()+5);
-                        }),
                         new WaitCommand(800),
-                        new NoCorrectKickACmd(r),
-                        new InstantCommand(() -> r.shooter.setCustomDistance(p.lastShootPos.getX(), p.lastShootPos.getY())),
+                        new KickOrderACmd(r),
                         new ParallelCommandGroup(
                                 new FollowPathCmd(r, p.next()),
-                                new SequentialCommandGroup(
-                                        new ResetShooterCmd(r, true, 6.5),
-                                        new InstantCommand(() -> Globals.turretState = Globals.TurretState.RED_CLOSE_DIFF_GOAL)
-                                )
+                                new ResetShooterCmd(r, 6.5)
                         ),
                         new WaitCommand(800),
-                        new NoCorrectKickACmd(r)
+                        new KickOrderACmd(r),
+                        new ResetShooterCmd(r)
         ));
     }
 
     @Override
     public void loop() {
-        if (Globals.obeliskOptions != Globals.ObeliskOptions.NOT_FOUND) read = true;
+        if (G.obeliskOptions != G.ObeliskOptions.NOT_FOUND) read = true;
 
         if (read)  {
             r.noVisionLoop(r);
@@ -145,7 +125,7 @@ public class RClose15 extends OpMode {
             r.loop(r);
         }
 
-        telemetry.addData("Obelisk Reading:", Globals.obeliskOptions);
+        telemetry.addData("Obelisk Reading:", G.obeliskOptions);
     }
 
     @Override

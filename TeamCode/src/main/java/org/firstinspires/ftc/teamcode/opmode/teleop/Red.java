@@ -2,9 +2,6 @@ package org.firstinspires.ftc.teamcode.opmode.teleop;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
-import com.pedropathing.geometry.BezierLine;
-import com.pedropathing.geometry.Pose;
-import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
@@ -17,7 +14,6 @@ import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.command.button.Trigger;
 
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.KickOrderACmd;
-import org.firstinspires.ftc.teamcode.common.commandbase.commands.ResetShooterCmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.teleopspecific.KickOneGreenTCmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.teleopspecific.KickOnePurpleTCmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.teleopspecific.KickOrderTCmd;
@@ -25,13 +21,16 @@ import org.firstinspires.ftc.teamcode.common.commandbase.commands.teleopspecific
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.utility.FollowPathCmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.utility.KickCommands;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.utility.RapidKickCommands;
-import org.firstinspires.ftc.teamcode.common.utility.Globals;
-import org.firstinspires.ftc.teamcode.common.utility.Robot;
+import org.firstinspires.ftc.teamcode.common.utility.G;
+import org.firstinspires.ftc.teamcode.common.utility.Halo;
+import org.firstinspires.ftc.teamcode.common.utility.peacock.geometry.BezierLine;
+import org.firstinspires.ftc.teamcode.common.utility.peacock.geometry.Pose;
+import org.firstinspires.ftc.teamcode.common.utility.peacock.paths.PathChain;
 
 @TeleOp
 public class Red extends CommandOpMode {
 
-    Robot r;
+    Halo r;
     private boolean hasStarted = false;
     private final boolean swethaCrossToggle = false;
     private boolean threeBallRumbleLatched = false;
@@ -63,7 +62,7 @@ public class Red extends CommandOpMode {
 
     @Override
     public void initialize() {
-        r = new Robot(hardwareMap, Globals.RED_FAR_START, Globals.Side.RED, false);
+        r = new Halo(hardwareMap, G.RED_FAR_START, G.Side.RED, true);
 
         r.dt.startDrive();
         ahnaf = gamepad1;
@@ -126,20 +125,20 @@ public class Red extends CommandOpMode {
 
         lastLoopTimeNs = now;
 
-        telemetry.addData("Color 1: ", Globals.ballColors[0]);
-        telemetry.addData("Color 2: ", Globals.ballColors[1]);
-        telemetry.addData("Color 3: ", Globals.ballColors[2]);
-        telemetry.addData("Obelisk: ", Globals.obeliskOptions);
-        telemetry.addData("Shooter State: ", Globals.shooterState);
+        telemetry.addData("Color 1: ", G.ballColors[0]);
+        telemetry.addData("Color 2: ", G.ballColors[1]);
+        telemetry.addData("Color 3: ", G.ballColors[2]);
+        telemetry.addData("Obelisk: ", G.obeliskOptions);
+        telemetry.addData("Shooter State: ", G.shooterState);
         telemetry.addData("Shooter Power: ", r.shooter.getShooterPower());
         telemetry.addData("Shooter RPM: ", r.shooter.getShooterRPM());
         telemetry.addData("Shooter Velocity: ", r.shooter.getShooterVelocity());
         telemetry.addData("Loop Time (ms)", "%.2f", loopTimeMs);
         telemetry.addData("Loop Rate (Hz)", "%.1f", loopHz);
         telemetry.addData("Pose: ", r.dt.getPose());
-        telemetry.addData("Side: ", Globals.side);
+        telemetry.addData("Side: ", G.side);
         telemetry.addData("DT Side: ", r.dt.a);
-        telemetry.addData("Transfer State: ", Globals.transferState);
+        telemetry.addData("Transfer State: ", G.transferState);
 
         telemetry.update();
 
@@ -148,7 +147,7 @@ public class Red extends CommandOpMode {
             Pose currPos = r.dt.getPose();
 
             r.shooter.setCustomDistance(shootFarPos.getX()-11, shootFarPos.getY()-11);
-            Globals.turretState = Globals.TurretState.RED_FAR_GOAL;
+            G.turretState = G.TurretState.RED_FAR_GOAL;
 
             schedule(
                     new SequentialCommandGroup(
@@ -171,7 +170,7 @@ public class Red extends CommandOpMode {
         if (ahnaf.ps || swetha.ps) {
             schedule(
                     new ParallelCommandGroup(
-                            r.dt.corner(),
+                            r.dt.resetPose(),
                             new InstantCommand(() -> {
                                 ahnaf.rumble(1000);
                                 swetha.rumble(1000);
@@ -187,7 +186,7 @@ public class Red extends CommandOpMode {
         }
 
         if (swetha.circleWasPressed()) {
-            Globals.KICK_WAIT_TELE = 500;
+            G.KICK_WAIT_TELE = 500;
         }
 
         //Failsafes:
@@ -218,7 +217,7 @@ public class Red extends CommandOpMode {
         }
 
         if (swetha.crossWasPressed()) {
-            Globals.turretState = Globals.TurretState.FOLLOWING;
+            G.turretState = G.TurretState.FOLLOWING;
         }
 
         if (swetha.dpadLeftWasPressed()) {

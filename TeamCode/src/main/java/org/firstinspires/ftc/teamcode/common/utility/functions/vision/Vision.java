@@ -1,12 +1,12 @@
 package org.firstinspires.ftc.teamcode.common.utility.functions.vision;
 
-import com.pedropathing.math.Vector;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.teamcode.common.utility.Globals;
+import org.firstinspires.ftc.teamcode.common.utility.G;
+import org.firstinspires.ftc.teamcode.common.utility.peacock.math.Vector;
 
 import java.util.List;
 
@@ -37,7 +37,7 @@ public final class Vision {
         List<LLResultTypes.FiducialResult> fiducials = result.getFiducialResults();
         if (fiducials == null || fiducials.isEmpty()) return false;
 
-        int wantedId = (Globals.side == Globals.Side.BLUE) ? 20 : 24;
+        int wantedId = (G.side == G.Side.BLUE) ? 20 : 24;
 
         for (LLResultTypes.FiducialResult f : fiducials) {
             if (f.getFiducialId() == wantedId) {
@@ -53,7 +53,7 @@ public final class Vision {
 
         if (r.isEmpty()) return 0;
 
-        int tagID = (Globals.side == Globals.Side.BLUE) ? 20 : 24;
+        int tagID = (G.side == G.Side.BLUE) ? 20 : 24;
 
         LLResultTypes.FiducialResult target = null;
         for (LLResultTypes.FiducialResult i: r) {
@@ -82,7 +82,7 @@ public final class Vision {
         List<LLResultTypes.FiducialResult> fiducials = result.getFiducialResults();
         if (fiducials == null || fiducials.isEmpty()) return 0.0;
 
-        int wantedId = (Globals.side == Globals.Side.BLUE) ? 20 : 24;
+        int wantedId = (G.side == G.Side.BLUE) ? 20 : 24;
 
         for (LLResultTypes.FiducialResult f : fiducials) {
             if (f.getFiducialId() == wantedId) {

@@ -4,32 +4,42 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+
+import org.firstinspires.ftc.teamcode.common.commandbase.commands.KickOrderACmd;
+import org.firstinspires.ftc.teamcode.common.commandbase.commands.utility.KickCommands;
+import org.firstinspires.ftc.teamcode.common.utility.G;
+import org.firstinspires.ftc.teamcode.common.utility.Halo;
+import org.firstinspires.ftc.teamcode.common.utility.functions.TurretCalibrator;
+import org.firstinspires.ftc.teamcode.common.utility.functions.vision.Vision;
+
+import com.seattlesolvers.solverslib.command.Command;
+import com.seattlesolvers.solverslib.command.CommandBase;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
+import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
+import com.seattlesolvers.solverslib.command.SubsystemBase;
 import com.seattlesolvers.solverslib.command.UninterruptibleCommand;
+import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.command.button.Trigger;
-
-import org.firstinspires.ftc.teamcode.common.commandbase.commands.KickOrderACmd;
-import org.firstinspires.ftc.teamcode.common.commandbase.commands.utility.KickCommands;
-import org.firstinspires.ftc.teamcode.common.utility.Globals;
-import org.firstinspires.ftc.teamcode.common.utility.Robot;
-import org.firstinspires.ftc.teamcode.common.utility.functions.TurretCalibrator;
-import org.firstinspires.ftc.teamcode.common.utility.functions.vision.Vision;
+import com.seattlesolvers.solverslib.controller.PIDFController;
+import com.seattlesolvers.solverslib.geometry.Vector2d;
+import com.seattlesolvers.solverslib.hardware.motors.Motor;
+import com.seattlesolvers.solverslib.hardware.servos.ServoEx;
 
 @TeleOp
 @Config
 public class TurretTuner extends CommandOpMode {
-    Robot r;
+    Halo r;
     Trigger intakeTrigger;
     public static double shooterPower = 0;
-    public static double hoodAngle = Globals.HOOD_MAX;
+    public static double hoodAngle = G.HOOD_MAX;
     TurretCalibrator t;
 
     @Override
     public void initialize() {
-        r = new Robot(hardwareMap, Globals.BLUE_CUBE_START, Globals.Side.BLUE, true);
+        r = new Halo(hardwareMap, G.RED_CUBE_START, G.Side.RED, true);
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         r.initLoop(r);
         r.dt.startDrive();

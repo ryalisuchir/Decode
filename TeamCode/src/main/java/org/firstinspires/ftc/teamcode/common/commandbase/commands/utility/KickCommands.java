@@ -5,7 +5,7 @@ import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 
 import org.firstinspires.ftc.teamcode.common.commandbase.subsystems.Kicker;
-import org.firstinspires.ftc.teamcode.common.utility.Globals;
+import org.firstinspires.ftc.teamcode.common.utility.G;
 import com.seattlesolvers.solverslib.command.WaitCommand;
 
 public class KickCommands {
@@ -21,7 +21,7 @@ public class KickCommands {
     public static Command kickAndReset(Kicker kicker, int slot) {
         return new SequentialCommandGroup(
                 new InstantCommand(() -> kicker.kick(slot), kicker),
-                new WaitCommand(Globals.KICK_WAIT_AUTO),
+                new WaitCommand(G.KICK_WAIT_AUTO),
                 new InstantCommand(() -> kicker.reset(slot), kicker)
         );
     }

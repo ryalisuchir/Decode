@@ -8,15 +8,15 @@ import com.seattlesolvers.solverslib.command.WaitCommand;
 
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.utility.KickCommands;
 import org.firstinspires.ftc.teamcode.common.commandbase.subsystems.Kicker;
-import org.firstinspires.ftc.teamcode.common.utility.Globals;
-import org.firstinspires.ftc.teamcode.common.utility.Robot;
+import org.firstinspires.ftc.teamcode.common.utility.G;
+import org.firstinspires.ftc.teamcode.common.utility.Halo;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class KickOrderAFarCmd extends SequentialCommandGroup {
 
-    public KickOrderAFarCmd(Robot r) {
+    public KickOrderAFarCmd(Halo r) {
         List<Integer> firingOrder = computeFiringOrder();
 
         if (firingOrder.isEmpty()) {
@@ -26,29 +26,27 @@ public class KickOrderAFarCmd extends SequentialCommandGroup {
 
         List<Command> sequence = new ArrayList<>();
 
-        sequence.add(new ParallelCommandGroup(new InstantCommand(() -> {
-            r.turret.applyVisionCorrectionOnce();
-        }), new InstantCommand(() -> r.spinner.transferStart()), r.shooter.startShooter()));
+        sequence.add(new ParallelCommandGroup(new InstantCommand(() -> r.spinner.transferStart()), r.shooter.startShooter()));
 
         for (int i = 0; i < firingOrder.size(); i++) {
             int slot = firingOrder.get(i);
             sequence.add(kickCommand(r.kicker, slot));
         }
 
-        sequence.add(new WaitCommand(Globals.KICK_WAIT_AUTO+80));
+        sequence.add(new WaitCommand(G.KICK_WAIT_AUTO+80));
 
         addCommands(sequence.toArray(new Command[0]));
     }
 
     private Command kickCommand(Kicker kicker, int slot) {
-        return new SequentialCommandGroup(new InstantCommand(() -> Globals.shooterKicking = true), KickCommands.kickOnce(kicker, slot), new WaitCommand(Globals.KICK_WAIT_AUTO + 80));
+        return new SequentialCommandGroup(new InstantCommand(() -> G.shooterKicking = true), KickCommands.kickOnce(kicker, slot), new WaitCommand(G.KICK_WAIT_AUTO + 80));
     }
 
     private List<Integer> computeFiringOrder() {
         List<Integer> order = new ArrayList<>();
-        char c1 = toChar(Globals.ballColors[0]);
-        char c2 = toChar(Globals.ballColors[1]);
-        char c3 = toChar(Globals.ballColors[2]);
+        char c1 = toChar(G.ballColors[0]);
+        char c2 = toChar(G.ballColors[1]);
+        char c3 = toChar(G.ballColors[2]);
 
         List<SlotInfo> slots = new ArrayList<>();
         slots.add(new SlotInfo(1, c1));
@@ -78,7 +76,7 @@ public class KickOrderAFarCmd extends SequentialCommandGroup {
         return order;
     }
 
-    private char toChar(Globals.BallColor color) {
+    private char toChar(G.BallColor color) {
         if (color == null) return 'N';
         switch (color) {
             case P:
@@ -92,7 +90,7 @@ public class KickOrderAFarCmd extends SequentialCommandGroup {
 
     private List<Character> getTargetColorSequence() {
         List<Character> seq = new ArrayList<>();
-        switch (Globals.obeliskOptions) {
+        switch (G.obeliskOptions) {
             case PPG:
                 seq.add('P');
                 seq.add('P');

@@ -5,12 +5,12 @@ import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.utility.KickCommands;
-import org.firstinspires.ftc.teamcode.common.utility.Globals;
-import org.firstinspires.ftc.teamcode.common.utility.Robot;
+import org.firstinspires.ftc.teamcode.common.utility.G;
+import org.firstinspires.ftc.teamcode.common.utility.Halo;
 
 public class KickOnePurpleTCmd extends SequentialCommandGroup {
 
-    public KickOnePurpleTCmd(Robot r) {
+    public KickOnePurpleTCmd(Halo r) {
 
         Integer purpleSlot = findOnePurpleSlot();
 
@@ -23,14 +23,11 @@ public class KickOnePurpleTCmd extends SequentialCommandGroup {
         addCommands(
                 new ParallelCommandGroup(
                         new InstantCommand(() -> r.spinner.transferStart()),
-                        r.shooter.startShooter(),
-                        new InstantCommand(() -> {
-                            r.turret.applyVisionCorrectionOnce();
-                        })
+                        r.shooter.startShooter()
                 ),
                 new SequentialCommandGroup(
                         KickCommands.kickOnce(r.kicker, purpleSlot),
-                        new WaitCommand(Globals.KICK_WAIT_TELE)
+                        new WaitCommand(G.KICK_WAIT_TELE)
                 )
         );
 
@@ -48,7 +45,7 @@ public class KickOnePurpleTCmd extends SequentialCommandGroup {
 
     private Integer findOnePurpleSlot() {
         for (int i = 0; i < 3; i++) {
-            if (Globals.ballColors[i] == Globals.BallColor.P) {
+            if (G.ballColors[i] == G.BallColor.P) {
                 return i + 1;
             }
         }
@@ -60,7 +57,7 @@ public class KickOnePurpleTCmd extends SequentialCommandGroup {
             int slot = i + 1;
             if (slot == kickedSlot) continue;
 
-            if (Globals.ballColors[i] != Globals.BallColor.NONE) {
+            if (G.ballColors[i] != G.BallColor.NONE) {
                 return false;
             }
         }

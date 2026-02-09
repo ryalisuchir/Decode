@@ -1,36 +1,28 @@
 package org.firstinspires.ftc.teamcode.common.commandbase.subsystems;
 
-import com.pedropathing.follower.Follower;
-import com.pedropathing.geometry.BezierPoint;
-import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.seattlesolvers.solverslib.command.InstantCommand;
+import com.seattlesolvers.solverslib.command.SubsystemBase;
 import com.seattlesolvers.solverslib.geometry.Vector2d;
 
-import org.firstinspires.ftc.teamcode.common.utility.Globals;
+import org.firstinspires.ftc.teamcode.common.utility.C;
+import org.firstinspires.ftc.teamcode.common.utility.G;
 import org.firstinspires.ftc.teamcode.common.utility.functions.TurretMath;
-import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+import org.firstinspires.ftc.teamcode.common.utility.peacock.follower.Follower;
+import org.firstinspires.ftc.teamcode.common.utility.peacock.geometry.BezierPoint;
+import org.firstinspires.ftc.teamcode.common.utility.peacock.geometry.Pose;
+import org.firstinspires.ftc.teamcode.common.utility.peacock.math.Vector;
 
-import kotlin.time.Instant;
-
-public class Drivetrain {
+public class Drivetrain extends SubsystemBase {
     private final Follower f;
-    public final Globals.Side a;
+    public final G.Side a;
     private boolean hold = false, field = true;
 
-    public Drivetrain(HardwareMap hardwareMap, Globals.Side a, Pose start) {
-        f = Constants.createFollower(hardwareMap);
+    public Drivetrain(HardwareMap hardwareMap, G.Side a, Pose start) {
+        f = C.createFollower(hardwareMap);
         f.setStartingPose(start);
         this.a = a;
-    }
-
-    public double getGoalDistance() {
-        Vector2d goal = (a == Globals.Side.BLUE)
-                ? Globals.BLUE_CASTLE
-                : Globals.RED_CASTLE;
-
-        return TurretMath.getDistanceToGoalPinpoint(f, goal.getX(), goal.getY());
     }
 
     public void startDrive() {
@@ -38,10 +30,10 @@ public class Drivetrain {
     }
 
     public void resetDrive() {
-        if (a.equals(Globals.Side.BLUE)) {
-            f.setPose(new Pose(8, 6.25, Math.toRadians(0)).mirror());
+        if (a.equals(G.Side.BLUE)) {
+            f.setPose(G.BLUE_CUBE_START);
         } else {
-            f.setPose(new Pose(8, 6.25, Math.toRadians(0)));
+            f.setPose(G.RED_CUBE_START);
         }
     }
 
@@ -49,6 +41,22 @@ public class Drivetrain {
 
     public void loop() {
         f.update();
+    }
+
+    public double getGoalDistance() {
+        Vector2d goal = (a == G.Side.BLUE)
+                ? G.BLUE_CASTLE
+                : G.RED_CASTLE;
+
+        return TurretMath.getDistanceToGoalPinpoint(f, goal.getX(), goal.getY());
+    }
+
+    public Vector getGoalVector() {
+        Vector2d goal = (a == G.Side.BLUE)
+                ? G.BLUE_CASTLE
+                : G.RED_CASTLE;
+
+        return TurretMath.getVectorToGoalPinpoint(f, goal.getX(), goal.getY());
     }
 
     public void drive(Gamepad g) {
@@ -74,13 +82,13 @@ public class Drivetrain {
         field = !field;
     }
 
-    public void cornerReset() {
-        if (a.equals(Globals.Side.BLUE)) {
-            f.setPose(Globals.BLUE_CUBE_START);
+    public void resetPosition() {
+        if (a.equals(G.Side.BLUE)) {
+            f.setPose(G.BLUE_CUBE_START);
         }
 
-        if (a.equals(Globals.Side.RED)) {
-            f.setPose(Globals.RED_CUBE_START);
+        if (a.equals(G.Side.RED)) {
+            f.setPose(G.RED_CUBE_START);
         }
     }
 
@@ -91,13 +99,11 @@ public class Drivetrain {
     public InstantCommand hold() {
         return new InstantCommand(this::holdCurrent);
     }
-
     public InstantCommand release() {
         return new InstantCommand(this::releaseHold);
     }
-
-    public InstantCommand corner() {
-        return new InstantCommand(this::cornerReset);
+    public InstantCommand resetPose() {
+        return new InstantCommand(this::resetPosition);
     }
 
     public void setStart(Pose start) {

@@ -1,64 +1,91 @@
 package org.firstinspires.ftc.teamcode.opmode.tuning;
 
+import android.util.Log;
+
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.common.utility.Globals;
-import org.firstinspires.ftc.teamcode.common.utility.Robot;
+import com.seattlesolvers.solverslib.command.Command;
+import com.seattlesolvers.solverslib.command.CommandBase;
+import com.seattlesolvers.solverslib.command.CommandOpMode;
+import com.seattlesolvers.solverslib.command.CommandScheduler;
+import com.seattlesolvers.solverslib.command.InstantCommand;
+import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
+import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
+import com.seattlesolvers.solverslib.command.SubsystemBase;
+import com.seattlesolvers.solverslib.command.WaitCommand;
+import com.seattlesolvers.solverslib.controller.PIDFController;
+import com.seattlesolvers.solverslib.geometry.Vector2d;
+import com.seattlesolvers.solverslib.hardware.motors.Motor;
+import com.seattlesolvers.solverslib.hardware.servos.ServoEx;
 
-//@TeleOp
+import org.firstinspires.ftc.teamcode.common.utility.G;
+import org.firstinspires.ftc.teamcode.common.utility.Halo;
+
 @Config
-public class ShooterPIDTuner extends OpMode {
+@TeleOp
+public class ShooterPIDTuner extends CommandOpMode {
+    public static double P = 0.001;
+    public static double I = 0.001;
+    public static double D = 0.000;
+    public static double F = 0.0004;
 
-    Robot r;
-    public static double kV = 0.00045;
-    public static double kS = 0.02;
-    public static double kP = 0.0012;
-    public static double targetVelocity = 0;
+    public static double TARGET_VEL = 0.0;
+    public static double POS_TOLERANCE = 0;
+
+    private static final PIDFController launcherPIDF = new PIDFController(P, I, D, F);
+
+    public ElapsedTime timer;
+    Halo r;
 
     @Override
-    public void init() {
-        r = new Robot(hardwareMap, Globals.DEFAULT_START_POSE, Globals.Side.BLUE, true);
+    public void initialize() {
+        r = new Halo(hardwareMap, G.BLUE_CUBE_START, G.Side.BLUE, true);
+        r.r.setPosition(G.HOOD_MAX);
+        launcherPIDF.setTolerance(POS_TOLERANCE, 0);
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
+
+        super.reset();
     }
 
     @Override
-    public void loop() {
-        double currentVel = -r.s2.getCorrectedVelocity();
+    public void run() {
+        if (timer == null) {
+            timer = new ElapsedTime();
+        }
 
-        double ff = feedforward(targetVelocity);
-        double fb = feedback(targetVelocity, currentVel);
+        double currentVel = r.s1.getCorrectedVelocity();
 
-        double power = ff + fb;
-        power = clamp(power, 0, 1);
+        launcherPIDF.setPIDF(P, I, D, F);
+
+        launcherPIDF.setTolerance(POS_TOLERANCE, 0);
+        launcherPIDF.setSetPoint(TARGET_VEL);
+
+        double power = launcherPIDF.calculate(currentVel, TARGET_VEL);
 
         r.s1.set(power);
         r.s2.set(power);
 
-        r.clearCache();
+        telemetry.addData("Loop Time", timer.milliseconds());
+        timer.reset();
 
-        telemetry.addData("Target Velocity", targetVelocity);
-        telemetry.addData("Current Velocity", currentVel);
-        telemetry.addData("Power", power);
+        telemetry.addData("Power: ", power);
+        telemetry.addData("Target Velocity: ", TARGET_VEL);
+        telemetry.addData("Actual Velocity: ", currentVel);
         telemetry.update();
+
+        r.nothingLoop(r);
     }
 
-    private double feedforward(double targetVel) {
-        if (Math.abs(targetVel) < 1e-6) return 0;
-        double sign = Math.signum(targetVel);
-        return kS * sign + kV * targetVel;
-    }
-
-    private double feedback(double targetVel, double currentVel) {
-        double error = targetVel - currentVel;
-        return kP * error;
-    }
-
-    private double clamp(double v, double min, double max) {
-        return Math.max(min, Math.min(max, v));
+    @Override
+    public void end() {
+        Log.v("P", String.valueOf(P));
+        Log.v("I", String.valueOf(I));
+        Log.v("D", String.valueOf(D));
+        Log.v("F", String.valueOf(F));
+        Log.v("posTolerance", String.valueOf(POS_TOLERANCE));
     }
 }

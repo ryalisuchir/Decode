@@ -1,27 +1,43 @@
 package org.firstinspires.ftc.teamcode.common.commandbase.subsystems;
 
-import com.pedropathing.follower.Follower;
+import static org.firstinspires.ftc.teamcode.common.commandbase.subsystems.Turret.virtualGoalX;
+import static org.firstinspires.ftc.teamcode.common.commandbase.subsystems.Turret.virtualGoalY;
+import static org.firstinspires.ftc.teamcode.common.commandbase.subsystems.Turret.xVel;
+import static org.firstinspires.ftc.teamcode.common.commandbase.subsystems.Turret.yVel;
+
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
+import com.seattlesolvers.solverslib.controller.PIDFController;
 import com.seattlesolvers.solverslib.geometry.Vector2d;
 import com.seattlesolvers.solverslib.hardware.motors.Motor;
 
-import org.firstinspires.ftc.teamcode.common.utility.Globals;
+import org.firstinspires.ftc.teamcode.common.utility.G;
+import org.firstinspires.ftc.teamcode.common.utility.functions.TurretMath;
 import org.firstinspires.ftc.teamcode.common.utility.functions.luts.ShooterParams;
+import org.firstinspires.ftc.teamcode.common.utility.peacock.follower.Follower;
 import org.firstinspires.ftc.teamcode.common.utility.shooter.ShooterLUT;
 
-public class Shooter extends SubsystemBase {
 
-    public static double kV = 0.00045;
-    public static double kS = 0.02;
-    public static double kP = 0.0013;
+public class Shooter extends SubsystemBase { //new pidf system rather than relying on ramp down
+
+    private final PIDFController flywheelController = new PIDFController(
+            new PIDFCoefficients(
+                    0.001,
+                    0.001,
+                    0,
+                    0.0004
+            )
+    );
+
+    private static final double WHEEL_DIAMETER_IN = 60.0 / 25.4;
+    private static final double GEAR_RATIO = 1.0;
 
     public boolean reached = false;
 
     private double targetVelocity = 0.0;
-    private final double lastTargetVelocity = 0.0;
-    private double lastShooterPower = -999.0;
 
     private final Motor shooterMotor1, shooterMotor2;
     private final ServoImplEx hood;
@@ -30,9 +46,7 @@ public class Shooter extends SubsystemBase {
     private final double gX, gY;
     private Vector2d customPosition = null;
 
-    private final ShooterLUT closeShooterLUT = new ShooterLUT();
-
-    /* ================= CONSTRUCTOR ================= */
+    private final ShooterLUT shooterLUT = new ShooterLUT();
 
     public Shooter(
             Motor shooterMotor1,
@@ -48,38 +62,33 @@ public class Shooter extends SubsystemBase {
         this.follower = follower;
         this.gX = gX;
         this.gY = gY;
+        flywheelController.setTolerance(G.SHOOTER_VELOCITY_TOLERANCE);
     }
 
     public InstantCommand startShooter() {
         return new InstantCommand(() -> {
-            Globals.shooterState = Globals.ShooterState.SHOOTING;
-            if (Globals.match == Globals.Match.AUTO &&
-                    Globals.turretState != Globals.TurretState.BLUE_CLOSE_OBELISK &&
-                    Globals.turretState != Globals.TurretState.RED_CLOSE_OBELISK &&
-                    Globals.turretState != Globals.TurretState.RED_FAR_GOAL &&
-            Globals.turretState != Globals.TurretState.RED_CLOSE_DIFF_GOAL &&
-                    Globals.turretState != Globals.TurretState.RED_CLOSE_GOAL &&
-                    Globals.turretState != Globals.TurretState.BLUE_CLOSE_DIFF_GOAL &&
-                    Globals.turretState != Globals.TurretState.BLUE_CLOSE_GOAL &&
-                    Globals.turretState != Globals.TurretState.BLUE_FAR_GOAL
+            G.shooterState = G.ShooterState.SHOOTING;
+            if (G.match == G.Match.AUTO &&
+                    G.turretState != G.TurretState.BLUE_CLOSE_OBELISK &&
+                    G.turretState != G.TurretState.RED_CLOSE_OBELISK &&
+                    G.turretState != G.TurretState.SET_POSITION
             ) {
-                Globals.turretState = Globals.TurretState.FOLLOWING;
+                G.turretState = G.TurretState.FOLLOWING;
             }
         });
     }
 
     public InstantCommand stopShooter() {
         return new InstantCommand(() -> {
-            Globals.shooterState = Globals.ShooterState.STOPPED;
-            Globals.turretState = Globals.TurretState.RESET;
+            G.shooterState = G.ShooterState.STOPPED;
+            G.turretState = G.TurretState.RESET;
             targetVelocity = 0;
         });
     }
 
     public InstantCommand stopShooterFollow() {
         return new InstantCommand(() -> {
-            Globals.shooterState = Globals.ShooterState.STOPPED;
-            Globals.turretState = Globals.TurretState.BLUE_CLOSE_OBELISK;
+            G.shooterState = G.ShooterState.STOPPED;
             targetVelocity = 0;
         });
     }
@@ -94,76 +103,64 @@ public class Shooter extends SubsystemBase {
 
     public void loop() {
 
-        reached = shooterIsSpunUp();
+        reached = flywheelController.atSetPoint();
 
-        if (Globals.shooterState != Globals.ShooterState.SHOOTING &&
-                Globals.match != Globals.Match.AUTO) {
-            setShooterPower(Globals.MIN_SHOOTER_POWER);
+        if (G.shooterState != G.ShooterState.SHOOTING &&
+                G.match != G.Match.AUTO) {
+            setShooterPower(G.MIN_SHOOTER_POWER);
             return;
         }
 
-        double x, y;
+        double distance;
+
         if (customPosition != null) {
-            x = customPosition.getX() - gX;
-            y = customPosition.getY() - gY;
+            distance = TurretMath.getDistanceToGoalPinpoint(
+                    follower,
+                    customPosition.getX(),
+                    customPosition.getY()
+            );
         } else {
-            x = follower.getPose().getX() - gX;
-            y = follower.getPose().getY() - gY;
+            distance = TurretMath.getDistanceToGoalPinpoint(
+                    follower,
+                    virtualGoalX,
+                    virtualGoalY
+            );
         }
 
-        double distance = Math.hypot(x, y);
-
-        ShooterParams params = closeShooterLUT.getShooterValue(distance);
+        ShooterParams params = shooterLUT.getShooterValue(distance);
 
         hood.setPosition(
-                clamp(params.hoodPos, Globals.HOOD_LOWERED, Globals.HOOD_MAX)
+                clamp(params.hoodPos, G.HOOD_LOWERED, G.HOOD_MAX)
         );
 
-        targetVelocity = params.shooterVel;
+//        double radialVel = getRadialVelocityInPerSec(virtualGoalX, virtualGoalY);
+//        double rpmComp = linearVelocityToRPM(radialVel);
 
-        double currentVelocity = -shooterMotor2.getCorrectedVelocity();
-        double error = targetVelocity - currentVelocity;
+        targetVelocity = params.shooterVel; //accounts for robot movement into the goal
 
-        double feedforward = 0.0;
-        if (Math.abs(targetVelocity) > 1e-6) {
-            feedforward = kV * targetVelocity;
-            if (error > 0) {
-                feedforward += kS;
-            }
-        }
+        double flywheelVel = shooterMotor1.getCorrectedVelocity();
 
-        double feedback = kP * error;
-
-        double power = clamp(
-                feedforward + feedback,
-                -1.0,
-                1.0
-        );
+        flywheelController.setSetPoint(Math.min(targetVelocity, 2600));
+        double power = flywheelController.calculate(flywheelVel);
 
         setShooterPower(power);
     }
 
     private void setShooterPower(double power) {
-
-        boolean decelerating = (-shooterMotor2.getCorrectedVelocity() > targetVelocity);
-
-        double threshold = decelerating ? 0.005 : 0.02;
-
-        if (Math.abs(power - lastShooterPower) > threshold) {
-            shooterMotor1.set(power);
-            shooterMotor2.set(power);
-            lastShooterPower = power;
-        }
+        shooterMotor1.set(power);
+        shooterMotor2.set(power);
     }
 
     public boolean shooterIsSpunUp() {
-        return Math.abs(
-                -shooterMotor2.getCorrectedVelocity() - targetVelocity
-        ) < Globals.SHOOTER_VELOCITY_TOLERANCE;
+        return flywheelController.atSetPoint();
     }
 
     public double getShooterVelocity() {
-        return -shooterMotor2.getCorrectedVelocity();
+        return shooterMotor1.getCorrectedVelocity();
+    }
+
+    public double getShooterGoal() {
+        return targetVelocity;
     }
 
     public double getShooterRPM() {
@@ -171,7 +168,25 @@ public class Shooter extends SubsystemBase {
     }
 
     public double getShooterPower() {
-        return shooterMotor2.get();
+        return shooterMotor1.get();
+    }
+
+    private double getRadialVelocityInPerSec(double goalX, double goalY) {
+        double dx = goalX - follower.getPose().getX();
+        double dy = goalY - follower.getPose().getY();
+
+        double dist = Math.hypot(dx, dy);
+        if (dist < 1e-6) return 0;
+
+        double ux = dx / dist;
+        double uy = dy / dist;
+
+        return xVel * ux + yVel * uy;
+    }
+
+    private double linearVelocityToRPM(double vInPerSec) {
+        double wheelCircumference = Math.PI * WHEEL_DIAMETER_IN;
+        return (vInPerSec / wheelCircumference) * 60.0 * GEAR_RATIO;
     }
 
     private double clamp(double v, double min, double max) {

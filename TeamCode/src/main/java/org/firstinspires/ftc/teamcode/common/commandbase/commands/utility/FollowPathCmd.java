@@ -1,11 +1,10 @@
 package org.firstinspires.ftc.teamcode.common.commandbase.commands.utility;
 
-
-import com.pedropathing.follower.Follower;
-import com.pedropathing.paths.PathChain;
 import com.seattlesolvers.solverslib.command.CommandBase;
 
-import org.firstinspires.ftc.teamcode.common.utility.Robot;
+import org.firstinspires.ftc.teamcode.common.utility.Halo;
+import org.firstinspires.ftc.teamcode.common.utility.peacock.follower.Follower;
+import org.firstinspires.ftc.teamcode.common.utility.peacock.paths.PathChain;
 
 public class FollowPathCmd extends CommandBase {
     private final Follower follower;
@@ -21,18 +20,18 @@ public class FollowPathCmd extends CommandBase {
     private double lastT;
     private long lastProgressTime;
 
-    public FollowPathCmd(Robot r, PathChain pathChain) {
+    public FollowPathCmd(Halo r, PathChain pathChain) {
         this.follower = r.dt.getFollower();
         this.path = pathChain;
     }
 
-    public FollowPathCmd(Robot r, PathChain pathChain, double maxPower) {
+    public FollowPathCmd(Halo r, PathChain pathChain, double maxPower) {
         this.follower = r.dt.getFollower();
         this.path = pathChain;
         this.maxPower = maxPower;
     }
 
-    public FollowPathCmd(Robot r, PathChain pathChain, boolean holdEnd) {
+    public FollowPathCmd(Halo r, PathChain pathChain, boolean holdEnd) {
         this.follower = r.dt.getFollower();
         this.path = pathChain;
         this.holdEnd = holdEnd;
@@ -45,7 +44,7 @@ public class FollowPathCmd extends CommandBase {
         return this;
     }
 
-    public FollowPathCmd(Robot r, PathChain pathChain, boolean holdEnd, double maxPower) {
+    public FollowPathCmd(Halo r, PathChain pathChain, boolean holdEnd, double maxPower) {
         this.follower = r.dt.getFollower();
         this.path = pathChain;
         this.holdEnd = holdEnd;

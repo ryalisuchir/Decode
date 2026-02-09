@@ -2,9 +2,6 @@ package org.firstinspires.ftc.teamcode.opmode.testing;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
-import com.pedropathing.geometry.BezierLine;
-import com.pedropathing.geometry.Pose;
-import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
@@ -17,7 +14,6 @@ import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.command.button.Trigger;
 
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.KickOrderACmd;
-import org.firstinspires.ftc.teamcode.common.commandbase.commands.ResetShooterCmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.teleopspecific.KickOneGreenTCmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.teleopspecific.KickOnePurpleTCmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.teleopspecific.KickOrderTCmd;
@@ -25,14 +21,17 @@ import org.firstinspires.ftc.teamcode.common.commandbase.commands.teleopspecific
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.utility.FollowPathCmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.utility.KickCommands;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.utility.RapidKickCommands;
-import org.firstinspires.ftc.teamcode.common.utility.Globals;
-import org.firstinspires.ftc.teamcode.common.utility.Robot;
+import org.firstinspires.ftc.teamcode.common.utility.G;
+import org.firstinspires.ftc.teamcode.common.utility.Halo;
 import org.firstinspires.ftc.teamcode.common.utility.functions.vision.Vision;
+import org.firstinspires.ftc.teamcode.common.utility.peacock.geometry.BezierLine;
+import org.firstinspires.ftc.teamcode.common.utility.peacock.geometry.Pose;
+import org.firstinspires.ftc.teamcode.common.utility.peacock.paths.PathChain;
 
 @TeleOp
 public class SubTest extends CommandOpMode {
 
-    Robot r;
+    Halo r;
     private final boolean selfDriving = false;
     private boolean hasStarted = false;
     private boolean threeBallRumbleLatched = false;
@@ -41,6 +40,7 @@ public class SubTest extends CommandOpMode {
     private long lastLoopTimeNs = 0;
     private double loopTimeMs = 0;
     private double loopHz = 0;
+    boolean gateWarningLatched = false;
 
     private boolean driveHoldEnabled = false;
 
@@ -50,9 +50,10 @@ public class SubTest extends CommandOpMode {
                 Math.abs(gp.right_stick_x) > 0.05;
     }
 
+
     @Override
     public void initialize() {
-        r = new Robot(hardwareMap, Globals.BLUE_CUBE_START, Globals.Side.BLUE, true);
+        r = new Halo(hardwareMap, G.RED_CUBE_START, G.Side.RED, true);
 
         r.dt.startDrive();
         ahnaf = gamepad1;
@@ -108,7 +109,7 @@ public class SubTest extends CommandOpMode {
             Pose currPos = r.dt.getPose();
 
             r.shooter.setCustomDistance(shootFarPos.getX()-5, shootFarPos.getY()-5);
-            Globals.turretState = Globals.TurretState.RED_FAR_GOAL_TELE;
+            G.turretState = G.TurretState.RED_FAR_GOAL_TELE;
 
             schedule(
                     new SequentialCommandGroup(
@@ -135,7 +136,7 @@ public class SubTest extends CommandOpMode {
             }
         }
 
-        telemetry.addData("Turret Status, ", Globals.turretState);
+        telemetry.addData("Turret Status, ", G.turretState);
 
 
         long now = System.nanoTime();
@@ -147,8 +148,14 @@ public class SubTest extends CommandOpMode {
 
         lastLoopTimeNs = now;
         telemetry.addData("tx: ", Vision.getTx());
+        telemetry.addData("Loop time: ", loopTimeMs);
         telemetry.addData("Shooter Power: ", r.shooter.getShooterPower());
         telemetry.addData("Shooter Velocity: ", r.shooter.getShooterVelocity());
+        telemetry.addData("Curr Pos:", r.dt.getPose());
+        telemetry.addData("Turret Angle: ", r.turret.getAngleToGoal());
+        telemetry.addData("Dist Goal: ", r.dt.getGoalDistance());
+        telemetry.addData("Intended Velocity Goal: ", r.shooter.getShooterGoal());
+        telemetry.addData("Turret Servo: ", r.t1.getPosition());
 
         telemetry.update();
 
@@ -161,7 +168,7 @@ public class SubTest extends CommandOpMode {
         if (ahnaf.ps || swetha.ps) {
             schedule(
                     new ParallelCommandGroup(
-                            r.dt.corner(),
+                            r.dt.resetPose(),
                             new InstantCommand(() -> {
                                 ahnaf.rumble(1000);
                                 swetha.rumble(1000);
@@ -177,7 +184,7 @@ public class SubTest extends CommandOpMode {
         }
 
         if (swetha.circleWasPressed()) {
-            Globals.KICK_WAIT_TELE = 500;
+            G.KICK_WAIT_TELE = 500;
         }
 
         //Failsafes:
@@ -208,7 +215,7 @@ public class SubTest extends CommandOpMode {
         }
 
         if (swetha.crossWasPressed()) {
-            Globals.turretState = Globals.TurretState.FOLLOWING;
+            G.turretState = G.TurretState.FOLLOWING;
         }
 
         if (swetha.dpadLeftWasPressed()) {

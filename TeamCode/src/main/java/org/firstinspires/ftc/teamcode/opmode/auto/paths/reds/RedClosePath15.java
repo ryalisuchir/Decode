@@ -1,13 +1,12 @@
 package org.firstinspires.ftc.teamcode.opmode.auto.paths.reds;
 
-import com.pedropathing.follower.Follower;
-import com.pedropathing.geometry.BezierCurve;
-import com.pedropathing.geometry.BezierLine;
-import com.pedropathing.geometry.Pose;
-import com.pedropathing.paths.PathChain;
-
-import org.firstinspires.ftc.teamcode.common.utility.Globals;
-import org.firstinspires.ftc.teamcode.common.utility.Robot;
+import org.firstinspires.ftc.teamcode.common.utility.G;
+import org.firstinspires.ftc.teamcode.common.utility.Halo;
+import org.firstinspires.ftc.teamcode.common.utility.peacock.follower.Follower;
+import org.firstinspires.ftc.teamcode.common.utility.peacock.geometry.BezierCurve;
+import org.firstinspires.ftc.teamcode.common.utility.peacock.geometry.BezierLine;
+import org.firstinspires.ftc.teamcode.common.utility.peacock.geometry.Pose;
+import org.firstinspires.ftc.teamcode.common.utility.peacock.paths.PathChain;
 
 public class RedClosePath15 {
     private final Follower f;
@@ -15,9 +14,9 @@ public class RedClosePath15 {
     public Pose startPos, shootRegularPos, intakeMidInitialPos, intakeMidHoldPos, intakeMidPos, shootHoldPos, slamGateHoldPos, slamGatePos, gateIntakeWraparoundHoldPos, gateIntakeWraparoundPos, gateIntakeWraparoundForwardPos, shootGateBallsHoldPos, intakeFarPos, intakeCloseHold1Pos, intakeCloseHold2Pos, intakeClosePos, lastShootPos;
     private int index;
 
-    public RedClosePath15(Robot r) {
+    public RedClosePath15(Halo r) {
         this.f = r.dt.getFollower();
-        startPos = m(Globals.BLUE_CUBE_START);
+        startPos = m(G.BLUE_CUBE_START);
         shootRegularPos = m(new Pose(56, 81, Math.toRadians(180)));
         intakeMidInitialPos = m(new Pose(42.750720461095106, 57, Math.toRadians(170)));
         intakeMidHoldPos = m(new Pose(32.989913544668596, 53));
@@ -184,6 +183,6 @@ public class RedClosePath15 {
     }
 
     private Pose m(Pose p) {
-        return Globals.side == Globals.Side.BLUE ? p : p.mirror();
+        return G.side == G.Side.BLUE ? p : p.mirror();
     }
 }
