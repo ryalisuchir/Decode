@@ -25,10 +25,10 @@ public class Shooter extends SubsystemBase { //new pidf system rather than relyi
 
     private final PIDFController flywheelController = new PIDFController(
             new PIDFCoefficients(
-                    0.001,
-                    0.001,
+                    0.003,
                     0,
-                    0.0004
+                    0,
+                    0.00035
             )
     );
 

@@ -7,13 +7,11 @@ public class ShooterLUT {
     private final ShooterParamLUT shooterLUT = new ShooterParamLUT();
 
     public ShooterLUT() {
-        shooterLUT.addPoint(42, new ShooterParams(0.74, 900)); //done
-
-        shooterLUT.addPoint(73, new ShooterParams(0.78, 1000)); //done
-
-        shooterLUT.addPoint(85, new ShooterParams(0.86, 1200)); //done
-
-        shooterLUT.addPoint(100, new ShooterParams(0.85, 1300)); //done
+        shooterLUT.addPoint(23, new ShooterParams(0.65, 1500)); //done
+        shooterLUT.addPoint(34, new ShooterParams(0.72, 1500)); //done
+        shooterLUT.addPoint(51, new ShooterParams(0.75, 1600)); //done
+        shooterLUT.addPoint(72, new ShooterParams(0.81, 1750)); //done
+        shooterLUT.addPoint(90, new ShooterParams(0.83, 1950)); //done
 
         shooterLUT.addPoint(143, new ShooterParams(0.87, 2100));
         shooterLUT.addPoint(157, new ShooterParams(0.92, 2300)); //middle of far triangle (0.01 was good offset)

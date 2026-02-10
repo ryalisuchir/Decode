@@ -61,8 +61,8 @@ public class G {
     public static double TURRET_BLUE_FAR_READ = 0.1;
     public static double TURRET_RED_FAR_READ = 0.66;
 
-    public static double HOOD_LOWERED = 0.74;
-    public static double HOOD_MAX = 0.91;
+    public static double HOOD_LOWERED = 0.65;
+    public static double HOOD_MAX = 0.93;
 
     public static double MIN_SHOOTER_POWER = 0.4;
 

@@ -7,9 +7,14 @@ public final class TurretMath {
 
     private TurretMath() {}
 
-    public static final double FIELD_SIZE = 141.5;
+    public static final double FIELD_SIZE = 144;
     public static final double GOAL_W = 23.0; // along X
     public static final double GOAL_H = 22.20; // along Y
+    public static final double GOAL_CENTER_X_BIAS_CLOSE = 0.0;
+    public static final double GOAL_CENTER_Y_BIAS_CLOSE = 5.0;
+    public static final double GOAL_CENTER_X_BIAS_FAR = 3;
+    public static final double GOAL_CENTER_Y_BIAS_FAR = 3;
+    public static final double CLOSE_ZONE_MIN_Y = 50.0;
 
     public enum CornerGoal {
         LEFT_BLUE,
@@ -77,7 +82,7 @@ public final class TurretMath {
             double pivotY,
             CornerGoal goal
     ) {
-        double[] g = getCornerGoalCenter(goal);
+        double[] g = getCornerGoalCenter(goal, robotY);
         return getTurretAngleToGoal(
                 robotX,
                 robotY,
@@ -117,13 +122,19 @@ public final class TurretMath {
     }
 
     public static double[] getCornerGoalCenter(CornerGoal goal) {
+        return getCornerGoalCenter(goal, CLOSE_ZONE_MIN_Y);
+    }
+
+    public static double[] getCornerGoalCenter(CornerGoal goal, double robotY) {
+        double xBias = (robotY >= CLOSE_ZONE_MIN_Y) ? GOAL_CENTER_X_BIAS_CLOSE : GOAL_CENTER_X_BIAS_FAR;
+        double yBias = (robotY >= CLOSE_ZONE_MIN_Y) ? GOAL_CENTER_Y_BIAS_CLOSE : GOAL_CENTER_Y_BIAS_FAR;
         if (goal == CornerGoal.LEFT_BLUE) {
-            double gx = GOAL_W / 2.0;
-            double gy = FIELD_SIZE - GOAL_H / 2.0;
+            double gx = (GOAL_W / 2.0) + xBias;
+            double gy = FIELD_SIZE - GOAL_H / 2.0 + yBias;
             return new double[]{gx, gy};
         } else {
-            double gx = FIELD_SIZE - GOAL_W / 2.0;
-            double gy = FIELD_SIZE - GOAL_H / 2.0;
+            double gx = FIELD_SIZE - (GOAL_W / 2.0) - xBias;
+            double gy = FIELD_SIZE - GOAL_H / 2.0 + yBias;
             return new double[]{gx, gy};
         }
     }

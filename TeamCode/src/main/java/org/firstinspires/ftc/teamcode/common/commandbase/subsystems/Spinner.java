@@ -18,16 +18,6 @@ public class Spinner {
     private double intakeTargetPower = 0.0;
     private double currentIntakePower = 0.0;
 
-    public static double P = 0.001;
-    public static double I = 0;
-    public static double D = 0.000;
-    public static double F = 0.00055;
-
-    public static double TARGET_VEL = 0.0;
-    public static double POS_TOLERANCE = 0;
-
-    private static final PIDFController launcherPIDF = new PIDFController(P, I, D, F);
-
     private double transferTargetPower = 0.0;
     private long lastUpdateTimeNs = 0;
 
@@ -37,12 +27,11 @@ public class Spinner {
         this.i = i;
         this.t = t;
         this.g = g;
-        launcherPIDF.setTolerance(POS_TOLERANCE, 0);
     }
 
     public void transferStart() {
         G.transferState = G.TransferState.TRANSFERRING;
-        setTransferTarget(G.TRANSFER_VEL);
+        setTransferTarget(-1);
     }
 
     public void transferStop() {
@@ -64,8 +53,8 @@ public class Spinner {
         intakeTargetPower = power;
     }
 
-    private void setTransferTarget(double velocity) {
-        TARGET_VEL = velocity;
+    private void setTransferTarget(double power) {
+        transferTargetPower = power;
     }
 
     public void intakeIn() {
@@ -73,7 +62,7 @@ public class Spinner {
         G.transferState = G.TransferState.INTAKING;
 
         setIntakeTarget(G.MAX_INTAKING_POWER);
-        setTransferTarget(G.TRANSFER_INTAKE_VEL);
+        setTransferTarget(0.4);
     }
 
     public SequentialCommandGroup intakeOut() {
@@ -171,17 +160,7 @@ public class Spinner {
         }
 
         i.setPower(currentIntakePower);
-
-        double currentVel = t.getVelocity();
-
-        launcherPIDF.setPIDF(P, I, D, F);
-
-        launcherPIDF.setTolerance(POS_TOLERANCE, 0);
-        launcherPIDF.setSetPoint(TARGET_VEL);
-
-        double power = launcherPIDF.calculate(currentVel, TARGET_VEL);
-
-        t.setPower(power);
+        t.setPower(transferTargetPower);
 
         if (oneBallDetected()) {
             G.shooterState = G.ShooterState.SHOOTING;
