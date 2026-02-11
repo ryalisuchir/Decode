@@ -8,41 +8,32 @@ import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
-import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.UninterruptibleCommand;
-import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.command.button.Trigger;
 
-import org.firstinspires.ftc.teamcode.common.commandbase.commands.KickOrderACmd;
-import org.firstinspires.ftc.teamcode.common.commandbase.commands.teleopspecific.KickOneGreenTCmd;
+import org.firstinspires.ftc.teamcode.common.commandbase.commands.ResetShooterCmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.teleopspecific.KickOnePurpleTCmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.teleopspecific.KickOrderTCmd;
-import org.firstinspires.ftc.teamcode.common.commandbase.commands.teleopspecific.Reset;
-import org.firstinspires.ftc.teamcode.common.commandbase.commands.utility.FollowPathCmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.utility.KickCommands;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.utility.RapidKickCommands;
 import org.firstinspires.ftc.teamcode.common.utility.G;
 import org.firstinspires.ftc.teamcode.common.utility.Halo;
-import org.firstinspires.ftc.teamcode.common.utility.functions.vision.Vision;
-import org.firstinspires.ftc.teamcode.common.utility.peacock.geometry.BezierLine;
-import org.firstinspires.ftc.teamcode.common.utility.peacock.geometry.Pose;
-import org.firstinspires.ftc.teamcode.common.utility.peacock.paths.PathChain;
 
 @TeleOp
 public class SubTest extends CommandOpMode {
 
     Halo r;
-    private final boolean selfDriving = false;
     private boolean hasStarted = false;
     private boolean threeBallRumbleLatched = false;
-    Gamepad ahnaf, swetha;
+    Gamepad suchir;
     Trigger intakeTrigger;
     private long lastLoopTimeNs = 0;
     private double loopTimeMs = 0;
-    private double loopHz = 0;
-    boolean gateWarningLatched = false;
 
     private boolean driveHoldEnabled = false;
+    private boolean psLatch = false;
+    private boolean leftStickLatch = false;
+    private int telemetryDivider = 0;
 
     private boolean drivetrainCommanded(Gamepad gp) {
         return Math.abs(gp.left_stick_x)  > 0.05 ||
@@ -53,14 +44,13 @@ public class SubTest extends CommandOpMode {
 
     @Override
     public void initialize() {
-        r = new Halo(hardwareMap, G.RED_CUBE_START, G.Side.RED, true);
+        r = new Halo(hardwareMap, G.RED_FAR_START, G.Side.RED, false);
 
         r.dt.startDrive();
-        ahnaf = gamepad1;
-        swetha = gamepad2;
+        suchir = gamepad1;
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         intakeTrigger = new Trigger(
-                () -> ahnaf.right_trigger > 0.1 && !r.spinner.threeBallsDetected()
+                () -> suchir.right_trigger > 0.1 && !r.spinner.threeBallsDetected()
         );
         intakeTrigger
                 .whileActiveContinuous(
@@ -88,47 +78,13 @@ public class SubTest extends CommandOpMode {
                 );
     }
 
-    public PathChain intakeHpAndShoot(Pose currPos, Pose shootFarPos) {
-        return r.dt.getFollower().pathBuilder()
-                .addPath(
-                        new BezierLine(
-                                currPos,
-                                shootFarPos
-                        )
-                ).setLinearHeadingInterpolation(currPos.getHeading(), shootFarPos.getHeading())
-                .build();
-    }
-
     @Override
     public void run() {
-
-            r.dt.drive(gamepad1);
-
-        if (ahnaf.rightBumperWasPressed()) {
-            Pose shootFarPos = new Pose(72, 20, Math.toRadians(0));
-            Pose currPos = r.dt.getPose();
-
-            r.shooter.setCustomDistance(shootFarPos.getX()-5, shootFarPos.getY()-5);
-            G.turretState = G.TurretState.RED_FAR_GOAL_TELE;
-
-            schedule(
-                    new SequentialCommandGroup(
-                            new FollowPathCmd(r, intakeHpAndShoot(currPos, shootFarPos)),
-                            new WaitCommand(100),
-                            new KickOrderACmd(r),
-                            new Reset(r),
-                            new InstantCommand(() -> r.dt.startDrive())
-                    )
-            );
-        }
-
-        r.dt.loop();
+        r.profiler.start("Full Loop");
+        r.dt.drive(gamepad1);
 
         if (!hasStarted) {
-            telemetry.addLine("Move to begin.");
-            telemetry.update();
-
-            if (drivetrainCommanded(ahnaf)) {
+            if (drivetrainCommanded(suchir)) {
                 hasStarted = true;
                 lastLoopTimeNs = 0;
             } else {
@@ -136,65 +92,42 @@ public class SubTest extends CommandOpMode {
             }
         }
 
-        telemetry.addData("Turret Status, ", G.turretState);
-
-
         long now = System.nanoTime();
 
         if (lastLoopTimeNs != 0) {
             loopTimeMs = (now - lastLoopTimeNs) / 1_000_000.0;
-            loopHz = 1000.0 / loopTimeMs;
         }
 
         lastLoopTimeNs = now;
-        telemetry.addData("tx: ", Vision.getTx());
-        telemetry.addData("Loop time: ", loopTimeMs);
-        telemetry.addData("Shooter Power: ", r.shooter.getShooterPower());
-        telemetry.addData("Shooter Velocity: ", r.shooter.getShooterVelocity());
-        telemetry.addData("Curr Pos:", r.dt.getPose());
-        telemetry.addData("Turret Angle: ", r.turret.getAngleToGoal());
-        telemetry.addData("Dist Goal: ", r.dt.getGoalDistance());
-        telemetry.addData("Intended Velocity Goal: ", r.shooter.getShooterGoal());
-        telemetry.addData("Turret Servo: ", r.t1.getPosition());
+        if ((telemetryDivider++ & 0x3) == 0) {
+            telemetry.addData("Loop time: ", loopTimeMs);
+            telemetry.update();
+        }
 
-        telemetry.update();
-
-        if (ahnaf.leftBumperWasPressed()) {
+        if (suchir.leftBumperWasPressed()) {
             schedule(
                     new UninterruptibleCommand(new KickOrderTCmd(r))
             );
         }
 
-        if (ahnaf.ps || swetha.ps) {
+        boolean psPressed = suchir.ps;
+        if (psPressed && !psLatch) {
             schedule(
                     new ParallelCommandGroup(
                             r.dt.resetPose(),
-                            new InstantCommand(() -> {
-                                ahnaf.rumble(1000);
-                                swetha.rumble(1000);
-                            })
+                            new InstantCommand(() -> suchir.rumble(1000))
                     )
             );
         }
+        psLatch = psPressed;
 
-        if (ahnaf.crossWasPressed()) { //rapid fire
+        if (suchir.crossWasPressed()) { //rapid fire
             schedule(
                     RapidKickCommands.kickAndResetMany(r,3,1,2)
             );
         }
 
-        if (swetha.circleWasPressed()) {
-            G.KICK_WAIT_TELE = 500;
-        }
-
-        //Failsafes:
-        if (swetha.leftBumperWasPressed() || ahnaf.triangleWasPressed()) {
-            schedule(
-                    new UninterruptibleCommand(new KickOneGreenTCmd(r))
-            );
-        }
-
-        if (ahnaf.circleWasPressed()) {
+        if (suchir.circleWasPressed()) {
             driveHoldEnabled = !driveHoldEnabled;
 
             if (driveHoldEnabled) {
@@ -203,44 +136,23 @@ public class SubTest extends CommandOpMode {
                 schedule(new InstantCommand(() -> r.dt.releaseHold()));
             }
         }
+        
+        if (suchir.left_stick_button && !leftStickLatch) {
+            schedule(new ResetShooterCmd(r));
+        }
+        
+        leftStickLatch = suchir.left_stick_button;
 
-        if (swetha.rightBumperWasPressed() || ahnaf.squareWasPressed()) {
+        if (suchir.squareWasPressed()) {
             schedule(
                     new UninterruptibleCommand(new KickOnePurpleTCmd(r))
-            );
-        }
-
-        if (swetha.triangleWasPressed()) {
-            schedule(KickCommands.kickAndResetMany(r.kicker, 1, 2, 3));
-        }
-
-        if (swetha.crossWasPressed()) {
-            G.turretState = G.TurretState.FOLLOWING;
-        }
-
-        if (swetha.dpadLeftWasPressed()) {
-            schedule(
-                    new UninterruptibleCommand(KickCommands.kickAndReset(r.kicker, 1))
-            );
-        }
-
-        if (swetha.dpadRightWasPressed()) {
-            schedule(
-                    new UninterruptibleCommand(KickCommands.kickAndReset(r.kicker, 2))
-            );
-        }
-
-        if (swetha.dpadDownWasPressed()) {
-            schedule(
-                    new UninterruptibleCommand(KickCommands.kickAndReset(r.kicker, 3))
             );
         }
 
         if (r.spinner.threeBallsDetected() && !threeBallRumbleLatched) {
             schedule(
                     new InstantCommand(() -> {
-                        ahnaf.rumble(1000);
-                        swetha.rumble(1000);
+                        suchir.rumble(1000);
                         threeBallRumbleLatched = true;
                     })
             );
@@ -250,6 +162,25 @@ public class SubTest extends CommandOpMode {
             threeBallRumbleLatched = false;
         }
 
-        r.loop(r);
+        r.noSubsystemLoop(r);
+        r.profiler.start("Drivetrain");
+        r.dt.loop();
+        r.profiler.end("Drivetrain");
+        r.profiler.start("Spinner");
+        r.spinner.periodic();
+        r.profiler.end("Spinner");
+        r.profiler.start("Shooter");
+        r.shooter.loop();
+        r.profiler.end("Shooter");
+        r.profiler.start("Turret");
+        r.turret.loop();
+        r.profiler.end("Turret");
+        r.profiler.end("Full Loop");
+    }
+
+    @Override
+    public void end() {
+        r.stop();
+        r.exportProfiler(r.file);
     }
 }
