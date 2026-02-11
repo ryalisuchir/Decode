@@ -185,6 +185,7 @@ public class Turret {
     }
 
     public void loop() {
+        double robotY = follower.getPose().getY();
         double heading = follower.getPose().getHeading();
         double vx = follower.getVelocity().getXComponent();
         double vy = follower.getVelocity().getYComponent();
@@ -193,11 +194,18 @@ public class Turret {
         xVel = vx * Math.cos(heading) - vy * Math.sin(heading);
         yVel = vx * Math.sin(heading) + vy * Math.cos(heading);
 
-        virtualGoalX = (-xVel * timeOfFlightLUT.get(TurretMath.getDistanceToGoalPinpoint(follower, originalGoalX, originalGoalY))) + originalGoalX;
-        virtualGoalY = (-yVel * timeOfFlightLUT.get(TurretMath.getDistanceToGoalPinpoint(follower, originalGoalX, originalGoalY))) + originalGoalY;
+        // Recompute the base target each cycle so close/far center biasing updates with robot Y.
+        double[] goalCenter = TurretMath.getCornerGoalCenter(cornerGoal, robotY);
+        originalGoalX = goalCenter[0];
+        originalGoalY = goalCenter[1];
 
-//        virtualGoalX = (-xVel * 1) + originalGoalX;
-//        virtualGoalY = (-yVel * 1) + originalGoalY;
+        double distance = TurretMath.getDistanceToGoalPinpoint(follower, originalGoalX, originalGoalY);
+        double speed = Math.hypot(xVel, yVel);
+        boolean useSotm = G.TURRET_TOF_COMP_ENABLED && speed >= G.TURRET_SOTM_MIN_SPEED;
+        double tof = useSotm ? timeOfFlightLUT.get(distance) * G.TURRET_TOF_COMP_GAIN : 0.0;
+
+        virtualGoalX = originalGoalX - (xVel * tof);
+        virtualGoalY = originalGoalY - (yVel * tof);
 
         if (G.turretState == G.TurretState.FOLLOWING) {
             followGoal();
@@ -206,9 +214,5 @@ public class Turret {
         if (G.turretState == G.TurretState.BLUE_CLOSE_OBELISK || G.turretState == G.TurretState.RED_CLOSE_OBELISK) {
             followObelisk();
         }
-    }
-
-    private double clamp(double v, double min, double max) {
-        return Math.max(min, Math.min(max, v));
     }
 }

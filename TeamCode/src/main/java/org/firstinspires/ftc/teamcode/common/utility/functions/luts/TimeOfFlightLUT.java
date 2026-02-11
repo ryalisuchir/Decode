@@ -18,6 +18,19 @@ public class TimeOfFlightLUT {
 
     private final List<Point> points = new ArrayList<>();
 
+    public TimeOfFlightLUT() {
+        // Starter physics-style estimates (seconds) across the same distance range as ShooterLUT.
+        // These are intentionally conservative and should be finalized with on-robot tuning.
+        addPoint(23, 0.12);
+        addPoint(35, 0.17);
+        addPoint(51, 0.23);
+        addPoint(72, 0.30);
+        addPoint(90, 0.36);
+        addPoint(130, 0.48);
+        addPoint(147, 0.55);
+        addPoint(181, 0.68);
+    }
+
     public void addPoint(double distance, double time) {
         points.add(new Point(distance, time));
         points.sort(Comparator.comparingDouble(p -> p.distance));
