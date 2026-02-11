@@ -7,33 +7,28 @@ public class ShooterLUT {
     private final ShooterParamLUT shooterLUT = new ShooterParamLUT();
 
     public ShooterLUT() {
-        shooterLUT.addPoint(23, new ShooterParams(0.65, 1500)); //done
-        shooterLUT.addPoint(34, new ShooterParams(0.72, 1500)); //done
+        shooterLUT.addPoint(23, new ShooterParams(0.65, 1490)); //done
+        shooterLUT.addPoint(35, new ShooterParams(0.72, 1510)); //done
         shooterLUT.addPoint(51, new ShooterParams(0.75, 1600)); //done
         shooterLUT.addPoint(72, new ShooterParams(0.81, 1750)); //done
         shooterLUT.addPoint(90, new ShooterParams(0.83, 1950)); //done
-
-        shooterLUT.addPoint(143, new ShooterParams(0.87, 2100));
-        shooterLUT.addPoint(157, new ShooterParams(0.92, 2300)); //middle of far triangle (0.01 was good offset)
-        shooterLUT.addPoint(181, new ShooterParams(0.92, 2400)); //inconsistent and 0.01 was good offset
+        shooterLUT.addPoint(130, new ShooterParams(0.89, 2230));
+        shooterLUT.addPoint(147, new ShooterParams(0.9, 2350));
+        shooterLUT.addPoint(181, new ShooterParams(0.92, 2500));
     }
 
-//    hood_data = np.array([0.77, 0.83, 0.87, 0.87, 0.90, 0.92, 0.91, 0.92])
-//    velo_data = np.array([1100, 1200, 1400, 1500, 1600, 1800, 2000, 2400])
-//    dist_data = np.array([51, 71, 95, 116, 150, 163, 176, 195])
-
     public ShooterParams getShooterValue(double dist) {
-        double baseHood = (4.17432e-9) * Math.pow(dist, 4)
-                - 0.00000196658 * Math.pow(dist, 3)
-                + 0.000318789 * Math.pow(dist, 2)
-                - 0.0189858 * dist
-                + 1.09674;
+        double baseHood = -(1.23418e-9) * Math.pow(dist, 4)
+                + (5.61273e-7) * Math.pow(dist, 3)
+                - 0.0000970021 * Math.pow(dist, 2)
+                + 0.00882568 * dist
+                + 0.49629;
 
-        double baseVel = -0.0000270146 * Math.pow(dist, 4)
-                + 0.0113594 * Math.pow(dist, 3)
-                - 1.62607 * Math.pow(dist, 2)
-                + 102.36663 * dist
-                - 1222.90722;
+        double baseVel = 0.00000388478 * Math.pow(dist, 4)
+                - 0.00191582 * Math.pow(dist, 3)
+                + 0.312943 * Math.pow(dist, 2)
+                - 12.07482 * dist
+                + 1624.99329;
 
         return new ShooterParams(baseHood, baseVel);
     }

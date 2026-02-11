@@ -20,7 +20,7 @@ public class RedClosePath15 {
         shootRegularPos = m(new Pose(56, 81, Math.toRadians(180)));
         intakeMidInitialPos = m(new Pose(42.750720461095106, 57, Math.toRadians(170)));
         intakeMidHoldPos = m(new Pose(32.989913544668596, 53));
-        intakeMidPos = m(new Pose(12, 58.069, Math.toRadians(180)));
+        intakeMidPos = m(new Pose(13, 58.069, Math.toRadians(180)));
 
         shootHoldPos = m(new Pose(44.70592363112392, 66.82712968299712));
         slamGateHoldPos = m(new Pose(33, 54, Math.toRadians(180)));
@@ -68,7 +68,6 @@ public class RedClosePath15 {
                                 intakeMidPos
                         )
                 ).setLinearHeadingInterpolation(intakeMidInitialPos.getHeading(), intakeMidPos.getHeading())
-                .addParametricCallback(0.7, () -> f.setMaxPower(0.5))
                 .addPath(
                         new BezierCurve(
                                 intakeMidPos,
@@ -76,7 +75,6 @@ public class RedClosePath15 {
                                 shootRegularPos
                         )
                 ).setLinearHeadingInterpolation(intakeMidPos.getHeading(), shootRegularPos.getHeading())
-                .addParametricCallback(0, () -> f.setMaxPower(1))
                 .build();
     }
 
@@ -89,7 +87,6 @@ public class RedClosePath15 {
                                 slamGatePos
                         )
                 ).setLinearHeadingInterpolation(shootRegularPos.getHeading(), slamGatePos.getHeading())
-                .addParametricCallback(0.8, () -> f.setMaxPower(0.5))
                 .addPath(
                         new BezierCurve(
                                 slamGatePos,
@@ -97,7 +94,6 @@ public class RedClosePath15 {
                                 gateIntakeWraparoundPos
                         )
                 ).setLinearHeadingInterpolation(slamGatePos.getHeading(), gateIntakeWraparoundPos.getHeading())
-                .addParametricCallback(0, () -> f.setMaxPower(1))
 //                .addPath(
 //                        new BezierLine(
 //                                gateIntakeWraparoundPos,
@@ -129,7 +125,6 @@ public class RedClosePath15 {
                                 intakeFarPos
                         )
                 ).setLinearHeadingInterpolation(shootRegularPos.getHeading(), intakeFarPos.getHeading())
-                .addParametricCallback(0.5, () -> f.setMaxPower(0.5))
                 .addPath(
                         new BezierLine(
                                 intakeFarPos,
@@ -150,15 +145,12 @@ public class RedClosePath15 {
                                 intakeClosePos
                         )
                 ).setLinearHeadingInterpolation(shootRegularPos.getHeading(), intakeClosePos.getHeading())
-                .addParametricCallback(0.9, () -> f.setMaxPower(0.5))
                 .addPath(
                         new BezierLine(
                                 intakeClosePos,
                                 lastShootPos
                         )
                 ).setTangentHeadingInterpolation()
-                .addParametricCallback(0, () -> f.setMaxPower(1))
-                .addParametricCallback(0.7, () -> f.setMaxPower(0.5))
                 .setReversed()
                 .build();
     }

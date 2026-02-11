@@ -5,7 +5,6 @@ import static org.firstinspires.ftc.teamcode.common.commandbase.subsystems.Turre
 import static org.firstinspires.ftc.teamcode.common.commandbase.subsystems.Turret.xVel;
 import static org.firstinspires.ftc.teamcode.common.commandbase.subsystems.Turret.yVel;
 
-import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 import com.seattlesolvers.solverslib.command.InstantCommand;
@@ -17,6 +16,7 @@ import com.seattlesolvers.solverslib.hardware.motors.Motor;
 import org.firstinspires.ftc.teamcode.common.utility.G;
 import org.firstinspires.ftc.teamcode.common.utility.functions.TurretMath;
 import org.firstinspires.ftc.teamcode.common.utility.functions.luts.ShooterParams;
+import org.firstinspires.ftc.teamcode.common.utility.functions.luts.TimeOfFlightLUT;
 import org.firstinspires.ftc.teamcode.common.utility.peacock.follower.Follower;
 import org.firstinspires.ftc.teamcode.common.utility.shooter.ShooterLUT;
 
@@ -25,15 +25,12 @@ public class Shooter extends SubsystemBase { //new pidf system rather than relyi
 
     private final PIDFController flywheelController = new PIDFController(
             new PIDFCoefficients(
-                    0.003,
+                    0.0012,
                     0,
                     0,
-                    0.00035
+                    0.0004
             )
     );
-
-    private static final double WHEEL_DIAMETER_IN = 60.0 / 25.4;
-    private static final double GEAR_RATIO = 1.0;
 
     public boolean reached = false;
 
@@ -43,10 +40,10 @@ public class Shooter extends SubsystemBase { //new pidf system rather than relyi
     private final ServoImplEx hood;
     private final Follower follower;
 
-    private final double gX, gY;
     private Vector2d customPosition = null;
 
     private final ShooterLUT shooterLUT = new ShooterLUT();
+    private final TimeOfFlightLUT timeOfFlightLUT = new TimeOfFlightLUT();
 
     public Shooter(
             Motor shooterMotor1,
@@ -60,8 +57,6 @@ public class Shooter extends SubsystemBase { //new pidf system rather than relyi
         this.shooterMotor2 = shooterMotor2;
         this.hood = hood;
         this.follower = follower;
-        this.gX = gX;
-        this.gY = gY;
         flywheelController.setTolerance(G.SHOOTER_VELOCITY_TOLERANCE);
     }
 
@@ -111,36 +106,44 @@ public class Shooter extends SubsystemBase { //new pidf system rather than relyi
             return;
         }
 
-        double distance;
+        double goalX;
+        double goalY;
 
         if (customPosition != null) {
-            distance = TurretMath.getDistanceToGoalPinpoint(
-                    follower,
-                    customPosition.getX(),
-                    customPosition.getY()
-            );
+            goalX = customPosition.getX();
+            goalY = customPosition.getY();
         } else {
-            distance = TurretMath.getDistanceToGoalPinpoint(
-                    follower,
-                    virtualGoalX,
-                    virtualGoalY
-            );
+            goalX = virtualGoalX;
+            goalY = virtualGoalY;
         }
 
-        ShooterParams params = shooterLUT.getShooterValue(distance);
+        double distance = TurretMath.getDistanceToGoalPinpoint(follower, goalX, goalY);
+        double hoodDistance = getCompensatedDistance(
+                distance,
+                goalX,
+                goalY,
+                G.SHOOTER_TOF_COMP_GAIN_HOOD,
+                G.SHOOTER_TOF_BLEND_HOOD
+        );
+        double velocityDistance = getCompensatedDistance(
+                distance,
+                goalX,
+                goalY,
+                G.SHOOTER_TOF_COMP_GAIN_VEL,
+                G.SHOOTER_TOF_BLEND_VEL
+        );
+        ShooterParams hoodParams = shooterLUT.getShooterValue(hoodDistance);
+        ShooterParams velocityParams = shooterLUT.getShooterValue(velocityDistance);
 
         hood.setPosition(
-                clamp(params.hoodPos, G.HOOD_LOWERED, G.HOOD_MAX)
+                clamp(hoodParams.hoodPos, G.HOOD_LOWERED, G.HOOD_MAX)
         );
 
-//        double radialVel = getRadialVelocityInPerSec(virtualGoalX, virtualGoalY);
-//        double rpmComp = linearVelocityToRPM(radialVel);
-
-        targetVelocity = params.shooterVel; //accounts for robot movement into the goal
+        targetVelocity = velocityParams.shooterVel;
 
         double flywheelVel = shooterMotor1.getCorrectedVelocity();
 
-        flywheelController.setSetPoint(Math.min(targetVelocity, 2600));
+        flywheelController.setSetPoint(Math.min(targetVelocity, 2550));
         double power = flywheelController.calculate(flywheelVel);
 
         setShooterPower(power);
@@ -171,22 +174,34 @@ public class Shooter extends SubsystemBase { //new pidf system rather than relyi
         return shooterMotor1.get();
     }
 
+    private double getCompensatedDistance(
+            double distance,
+            double goalX,
+            double goalY,
+            double gain,
+            double blend
+    ) {
+        if (!G.SHOOTER_TOF_COMP_ENABLED) return distance;
+        if (Math.hypot(xVel, yVel) < G.SHOOTER_SOTM_MIN_SPEED) return distance;
+
+        double tof = timeOfFlightLUT.get(distance);
+        double radialVel = getRadialVelocityInPerSec(goalX, goalY);
+        double predictedDistance = distance - (radialVel * tof * gain);
+        double delta = clamp(predictedDistance - distance, -G.SHOOTER_TOF_MAX_DELTA_IN, G.SHOOTER_TOF_MAX_DELTA_IN);
+        double filteredDistance = distance + delta * clamp(blend, 0.0, 1.0);
+        return Math.max(0.0, filteredDistance);
+    }
+
     private double getRadialVelocityInPerSec(double goalX, double goalY) {
         double dx = goalX - follower.getPose().getX();
         double dy = goalY - follower.getPose().getY();
 
         double dist = Math.hypot(dx, dy);
-        if (dist < 1e-6) return 0;
+        if (dist < 1e-6) return 0.0;
 
         double ux = dx / dist;
         double uy = dy / dist;
-
         return xVel * ux + yVel * uy;
-    }
-
-    private double linearVelocityToRPM(double vInPerSec) {
-        double wheelCircumference = Math.PI * WHEEL_DIAMETER_IN;
-        return (vInPerSec / wheelCircumference) * 60.0 * GEAR_RATIO;
     }
 
     private double clamp(double v, double min, double max) {

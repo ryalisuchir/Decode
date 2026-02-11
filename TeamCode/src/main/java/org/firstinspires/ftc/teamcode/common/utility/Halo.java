@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.common.utility;
 
+import android.util.Log;
+
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.lynx.LynxModule;
@@ -11,10 +13,12 @@ import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
+import com.qualcomm.robotcore.util.RobotLog;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
 import com.seattlesolvers.solverslib.hardware.motors.Motor;
 
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
+import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
 import org.firstinspires.ftc.teamcode.common.commandbase.subsystems.Drivetrain;
 import org.firstinspires.ftc.teamcode.common.commandbase.subsystems.Kicker;
 import org.firstinspires.ftc.teamcode.common.commandbase.subsystems.Shooter;
@@ -25,7 +29,12 @@ import org.firstinspires.ftc.teamcode.common.utility.functions.DenoiseFilter;
 import org.firstinspires.ftc.teamcode.common.utility.functions.vision.ObeliskVision;
 import org.firstinspires.ftc.teamcode.common.utility.functions.vision.Vision;
 import org.firstinspires.ftc.teamcode.common.utility.peacock.geometry.Pose;
+import org.firstinspires.ftc.teamcode.common.utility.profiler.Profiler;
+import org.firstinspires.ftc.teamcode.common.utility.profiler.entry.BasicProfilerEntryFactory;
+import org.firstinspires.ftc.teamcode.common.utility.profiler.exporter.CSVProfilerExporter;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -61,6 +70,9 @@ public class Halo {
 
     public static Limelight3A l;
 
+    public Profiler profiler;
+    public File file;
+
     DigitalChannel dig1a, dig2a;
     AnalogInput analog1;
 
@@ -77,6 +89,18 @@ public class Halo {
     public Halo(HardwareMap h, Pose p, G.Side s, boolean a) {
         G.side = s; //Sets blue/red depending on what side we're on. Especially important for turret movement.
         if (!a) G.match = G.Match.TELEOP; //Sets the match to teleop so we don't have to reset global enums
+
+        File logsFolder = new File(AppUtil.FIRST_FOLDER, "logs");
+        if (!logsFolder.exists()) logsFolder.mkdirs();
+
+        long timestamp = System.currentTimeMillis();
+        file = new File(logsFolder, "profiler-" + timestamp + ".csv");
+
+        profiler = Profiler.builder()
+                .factory(new BasicProfilerEntryFactory())
+                .exporter(new CSVProfilerExporter(file))
+                .debugLog(false) // Log EVERYTHING
+                .build();
 
         if (a) { //If we say that we're running auto, all the global enums will reset
             G.intakeState = G.IntakeState.STOPPED;
@@ -234,6 +258,13 @@ public class Halo {
         CommandScheduler.getInstance().run();
     }
 
+    public void noSubsystemLoop(Halo r) {
+        clearCache();
+        readColors();
+        updateVision();
+        CommandScheduler.getInstance().run();
+    }
+
     public void noVisionLoop(Halo r) {
         clearCache();
         dt.loop();
@@ -276,25 +307,15 @@ public class Halo {
     }
 
     private void readColors() {
-        double[] rawHues = {
-                analog1.getVoltage() / 3.3 * 360,
-                analog2.getVoltage() / 3.3 * 360,
-                analog3.getVoltage() / 3.3 * 360
-        };
+        updateColorSlot(0, analog1.getVoltage() / 3.3 * 360, dig1a.getState(), dig2a.getState());
+        updateColorSlot(1, analog2.getVoltage() / 3.3 * 360, dig3a.getState(), dig4a.getState());
+        updateColorSlot(2, analog3.getVoltage() / 3.3 * 360, dig5a.getState(), dig6a.getState());
+    }
 
-        boolean[][] digs = {
-                {dig1a.getState(), dig2a.getState()},
-                {dig3a.getState(), dig4a.getState()},
-                {dig5a.getState(), dig6a.getState()}
-        };
-
-        for (int i = 0; i < 3; i++) {
-            double filteredHue = hueFilters[i].filter(rawHues[i]);
-            int rawColor = getColor(filteredHue, digs[i][0], digs[i][1]);
-            G.BallColor instantColor = toBallColor(rawColor);
-
-            G.ballColors[i] = colorFilters[i].update(instantColor);
-        }
+    private void updateColorSlot(int slot, double rawHue, boolean digA, boolean digB) {
+        double filteredHue = hueFilters[slot].filter(rawHue);
+        int rawColor = getColor(filteredHue, digA, digB);
+        G.ballColors[slot] = colorFilters[slot].update(toBallColor(rawColor));
     }
 
 
@@ -321,6 +342,23 @@ public class Halo {
         for (LynxModule hub : allHubs) {
             hub.clearBulkCache();
         }
+    }
+
+    public void exportProfiler(File file) {
+        RobotLog.i("Starting async profiler export to: " + file.getAbsolutePath());
+
+        Thread exportThread = new Thread(() -> {
+            try {
+                profiler.export();
+                profiler.shutdown();
+            } catch (Exception e) {
+                Log.e("An error occurred", e.toString());
+                Log.e(e.toString(), Arrays.toString(e.getStackTrace()));
+            }
+        });
+
+        exportThread.setDaemon(true);
+        exportThread.start();
     }
 
     public void stop() {

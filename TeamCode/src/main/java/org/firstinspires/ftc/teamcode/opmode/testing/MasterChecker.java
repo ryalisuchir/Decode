@@ -83,8 +83,8 @@ public class MasterChecker extends OpMode {
         telemetry.addData("Turret Heading: ", getTurretAngleToGoal(fpose.getX(), fpose.getY(), fpose.getHeading()));
 
         telemetry.update();
-        robot.dt.loop();
         robot.clearCache();
+        robot.dt.loop();
         robot.updateVision();
     }
 

@@ -12,8 +12,8 @@ public class RedTurretLUT {
         turretServoLUT.addPoint(-0.81166, 0.150); // radians, servo position
         turretServoLUT.addPoint(-0.59229, 0.200); // radians, servo position
         turretServoLUT.addPoint(-0.26894, 0.250); // radians, servo position
-//        turretServoLUT.addPoint(-0.04557, 0.300); // radians, servo position
-//        turretServoLUT.addPoint(-0.32009, 0.350); // radians, servo position
+        turretServoLUT.addPoint(-0.04557, 0.300); // radians, servo position
+        turretServoLUT.addPoint(-0.32009, 0.350); // radians, servo position
         turretServoLUT.addPoint( 0.48893, 0.400); // radians, servo position
         turretServoLUT.addPoint( 0.85393, 0.450); // radians, servo position
         turretServoLUT.addPoint( 1.13452, 0.500); // radians, servo position

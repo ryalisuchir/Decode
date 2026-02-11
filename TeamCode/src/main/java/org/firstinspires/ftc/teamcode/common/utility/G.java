@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.common.utility;
 
 import com.acmerobotics.dashboard.config.Config;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.seattlesolvers.solverslib.geometry.Vector2d;
 
 import org.firstinspires.ftc.teamcode.common.utility.peacock.geometry.Pose;
@@ -74,15 +75,32 @@ public class G {
     public static double MAX_INTAKING_POWER = 1;
 
     public static double SHOOTER_VELOCITY_TOLERANCE = 100;
+    public static boolean SHOOTER_TOF_COMP_ENABLED = true;
 
-    public static long KICK_WAIT_TELE = 250;
-    public static long KICK_WAIT_RAPID = 95;
-    public static long KICK_WAIT_AUTO = 250;
+    public static double SHOOTER_TOF_COMP_GAIN_HOOD = 0.5;
+    public static double SHOOTER_TOF_COMP_GAIN_VEL = 1.0;
+
+    public static double SHOOTER_TOF_BLEND_HOOD = 1.0;
+    public static double SHOOTER_TOF_BLEND_VEL = 1.0;
+
+    public static double SHOOTER_TOF_MAX_DELTA_IN = 20;
+    public static double SHOOTER_SOTM_MIN_SPEED = 3.0;
+
+    public static  double GOAL_CENTER_X_BIAS_CLOSE = 3;
+    public static  double GOAL_CENTER_Y_BIAS_CLOSE = 10;
+    public static  double GOAL_CENTER_X_BIAS_FAR = 14;
+    public static  double GOAL_CENTER_Y_BIAS_FAR = 10;
+
+    public static long KICK_WAIT_TELE = 140;
+    public static long KICK_WAIT_RAPID = 65;
+    public static long KICK_WAIT_AUTO = 140;
 
     public static long GATE_WAIT_AUTO = 300;
     public static long GATE_WAIT_TELE = 600;
 
-    public static double TURRET_GLOBAL_BIAS = Math.toRadians(-8.6);
+    public static boolean TURRET_TOF_COMP_ENABLED = true;
+    public static double TURRET_TOF_COMP_GAIN = 1;
+    public static double TURRET_SOTM_MIN_SPEED = 3.0;
 
 
     //Pre-Match Configuration:

@@ -39,6 +39,8 @@ public class Red extends CommandOpMode {
     private long lastLoopTimeNs = 0;
     private double loopTimeMs = 0;
     private double loopHz = 0;
+    private boolean psLatch = false;
+    private int telemetryDivider = 0;
 
     private boolean driveHoldEnabled = false;
 
@@ -62,7 +64,7 @@ public class Red extends CommandOpMode {
 
     @Override
     public void initialize() {
-        r = new Halo(hardwareMap, G.RED_FAR_START, G.Side.RED, true);
+        r = new Halo(hardwareMap, G.RED_FAR_START, G.Side.RED, false);
 
         r.dt.startDrive();
         ahnaf = gamepad1;
@@ -101,8 +103,6 @@ public class Red extends CommandOpMode {
     @Override
     public void run() {
         r.dt.drive(gamepad1);
-        r.dt.loop();
-
         if (!hasStarted) {
             telemetry.addLine("Move to begin.");
             telemetry.update();
@@ -125,22 +125,23 @@ public class Red extends CommandOpMode {
 
         lastLoopTimeNs = now;
 
-        telemetry.addData("Color 1: ", G.ballColors[0]);
-        telemetry.addData("Color 2: ", G.ballColors[1]);
-        telemetry.addData("Color 3: ", G.ballColors[2]);
-        telemetry.addData("Obelisk: ", G.obeliskOptions);
-        telemetry.addData("Shooter State: ", G.shooterState);
-        telemetry.addData("Shooter Power: ", r.shooter.getShooterPower());
-        telemetry.addData("Shooter RPM: ", r.shooter.getShooterRPM());
-        telemetry.addData("Shooter Velocity: ", r.shooter.getShooterVelocity());
-        telemetry.addData("Loop Time (ms)", "%.2f", loopTimeMs);
-        telemetry.addData("Loop Rate (Hz)", "%.1f", loopHz);
-        telemetry.addData("Pose: ", r.dt.getPose());
-        telemetry.addData("Side: ", G.side);
-        telemetry.addData("DT Side: ", r.dt.a);
-        telemetry.addData("Transfer State: ", G.transferState);
-
-        telemetry.update();
+        if ((telemetryDivider++ & 0x3) == 0) {
+            telemetry.addData("Color 1: ", G.ballColors[0]);
+            telemetry.addData("Color 2: ", G.ballColors[1]);
+            telemetry.addData("Color 3: ", G.ballColors[2]);
+            telemetry.addData("Obelisk: ", G.obeliskOptions);
+            telemetry.addData("Shooter State: ", G.shooterState);
+            telemetry.addData("Shooter Power: ", r.shooter.getShooterPower());
+            telemetry.addData("Shooter RPM: ", r.shooter.getShooterRPM());
+            telemetry.addData("Shooter Velocity: ", r.shooter.getShooterVelocity());
+            telemetry.addData("Loop Time (ms)", "%.2f", loopTimeMs);
+            telemetry.addData("Loop Rate (Hz)", "%.1f", loopHz);
+            telemetry.addData("Pose: ", r.dt.getPose());
+            telemetry.addData("Side: ", G.side);
+            telemetry.addData("DT Side: ", r.dt.a);
+            telemetry.addData("Transfer State: ", G.transferState);
+            telemetry.update();
+        }
 
         if (ahnaf.rightBumperWasPressed()) {
             Pose shootFarPos = new Pose(89, 17.5, Math.toRadians(0));
@@ -167,7 +168,8 @@ public class Red extends CommandOpMode {
         }
 
 
-        if (ahnaf.ps || swetha.ps) {
+        boolean psPressed = ahnaf.ps || swetha.ps;
+        if (psPressed && !psLatch) {
             schedule(
                     new ParallelCommandGroup(
                             r.dt.resetPose(),
@@ -178,6 +180,7 @@ public class Red extends CommandOpMode {
                     )
             );
         }
+        psLatch = psPressed;
 
         if (ahnaf.crossWasPressed()) { //rapid fire
             schedule(

@@ -28,10 +28,10 @@ import org.firstinspires.ftc.teamcode.common.utility.Halo;
 @Config
 @TeleOp
 public class ShooterPIDTuner extends CommandOpMode {
-    public static double P = 0.003;
+    public static double P = 0.0012;
     public static double I = 0;
     public static double D = 0;
-    public static double F = 0.00035;
+    public static double F = 0.0004;
 
     public static double TARGET_VEL = 0.0;
     public static double POS_TOLERANCE = 0;

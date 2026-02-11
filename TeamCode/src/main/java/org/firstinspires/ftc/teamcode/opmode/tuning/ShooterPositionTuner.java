@@ -36,10 +36,10 @@ public class ShooterPositionTuner extends CommandOpMode {
     public static double turretPosition = G.TURRET_RESET;
 
     public static double hoodPosition = G.HOOD_MAX;
-    public static double P = 0.003;
+    public static double P = 0.0012;
     public static double I = 0;
     public static double D = 0;
-    public static double F = 0.00035;
+    public static double F = 0.0004;
 
     public static double TARGET_VEL = 0.0;
     public static double POS_TOLERANCE = 0;
@@ -49,7 +49,7 @@ public class ShooterPositionTuner extends CommandOpMode {
     @Override
     public void initialize() {
         launcherPIDF.setTolerance(POS_TOLERANCE, 0);
-        r = new Halo(hardwareMap, G.RED_FAR_START, G.Side.RED, true);
+        r = new Halo(hardwareMap, G.RED_CUBE_START, G.Side.RED, true);
 
         r.initLoop(r);
         r.dt.startDrive();

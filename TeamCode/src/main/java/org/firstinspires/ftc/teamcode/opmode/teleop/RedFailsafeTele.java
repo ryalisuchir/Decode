@@ -30,6 +30,8 @@ public class RedFailsafeTele extends CommandOpMode {
     private long lastLoopTimeNs = 0;
     private double loopTimeMs = 0;
     private double loopHz = 0;
+    private boolean psLatch = false;
+    private int telemetryDivider = 0;
 
     private boolean driveHoldEnabled = false;
 
@@ -81,7 +83,6 @@ public class RedFailsafeTele extends CommandOpMode {
     @Override
     public void run() {
         r.dt.drive(gamepad1);
-        r.dt.loop();
 
         if (!hasStarted) {
             telemetry.addLine("Move to begin.");
@@ -105,9 +106,10 @@ public class RedFailsafeTele extends CommandOpMode {
 
         lastLoopTimeNs = now;
 
-        telemetry.addLine("FAILSAFE BLUE SIDE TELE RUNNING ");
-
-        telemetry.update();
+        if ((telemetryDivider++ & 0x3) == 0) {
+            telemetry.addLine("FAILSAFE BLUE SIDE TELE RUNNING ");
+            telemetry.update();
+        }
 
         if (ahnaf.leftBumperWasPressed()) {
             schedule(
@@ -115,7 +117,8 @@ public class RedFailsafeTele extends CommandOpMode {
             );
         }
 
-        if (ahnaf.ps || swetha.ps) {
+        boolean psPressed = ahnaf.ps || swetha.ps;
+        if (psPressed && !psLatch) {
             schedule(
                     new ParallelCommandGroup(
                             r.dt.resetPose(),
@@ -126,6 +129,7 @@ public class RedFailsafeTele extends CommandOpMode {
                     )
             );
         }
+        psLatch = psPressed;
 
         if (ahnaf.crossWasPressed()) { //rapid fire
             schedule(
