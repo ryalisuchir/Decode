@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.opmode.testing;
 
-import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
@@ -11,6 +9,7 @@ import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
 import com.seattlesolvers.solverslib.command.UninterruptibleCommand;
 import com.seattlesolvers.solverslib.command.button.Trigger;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.ResetShooterCmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.teleopspecific.KickOnePurpleTCmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.teleopspecific.KickOrderTCmd;
@@ -18,6 +17,7 @@ import org.firstinspires.ftc.teamcode.common.commandbase.commands.utility.KickCo
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.utility.RapidKickCommands;
 import org.firstinspires.ftc.teamcode.common.utility.G;
 import org.firstinspires.ftc.teamcode.common.utility.Halo;
+import org.firstinspires.ftc.teamcode.common.utility.peacock.util.telemetry.PeacockTelemetry;
 
 @TeleOp
 public class SubTest extends CommandOpMode {
@@ -34,6 +34,7 @@ public class SubTest extends CommandOpMode {
     private boolean psLatch = false;
     private boolean leftStickLatch = false;
     private int telemetryDivider = 0;
+    Telemetry telemetry;
 
     private boolean drivetrainCommanded(Gamepad gp) {
         return Math.abs(gp.left_stick_x)  > 0.05 ||
@@ -48,7 +49,7 @@ public class SubTest extends CommandOpMode {
 
         r.dt.startDrive();
         suchir = gamepad1;
-        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
+        telemetry = new PeacockTelemetry(this);
         intakeTrigger = new Trigger(
                 () -> suchir.right_trigger > 0.1 && !r.spinner.threeBallsDetected()
         );
