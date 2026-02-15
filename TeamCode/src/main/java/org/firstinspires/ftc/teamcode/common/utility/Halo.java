@@ -29,6 +29,7 @@ import org.firstinspires.ftc.teamcode.common.utility.functions.DenoiseFilter;
 import org.firstinspires.ftc.teamcode.common.utility.functions.vision.ObeliskVision;
 import org.firstinspires.ftc.teamcode.common.utility.functions.vision.Vision;
 import org.firstinspires.ftc.teamcode.common.utility.peacock.geometry.Pose;
+import org.firstinspires.ftc.teamcode.common.utility.photon.PhotonCore;
 import org.firstinspires.ftc.teamcode.common.utility.profiler.Profiler;
 import org.firstinspires.ftc.teamcode.common.utility.profiler.entry.BasicProfilerEntryFactory;
 import org.firstinspires.ftc.teamcode.common.utility.profiler.exporter.CSVProfilerExporter;
@@ -39,7 +40,6 @@ import java.util.Arrays;
 import java.util.List;
 
 public class Halo {
-    YawPitchRollAngles orientation;
     public DcMotorEx i, t;
     public Motor s1, s2;
     public DcMotorEx fl, fr, rl, rr;
@@ -82,7 +82,7 @@ public class Halo {
     DigitalChannel dig5a, dig6a;
     AnalogInput analog3;
 
-    public List<LynxModule> allHubs;
+//    public List<LynxModule> allHubs;
 
     public double gX, gY;
 
@@ -228,10 +228,15 @@ public class Halo {
         dig6a = h.get(DigitalChannel.class, "dig6a");
 
 
-        allHubs = h.getAll(LynxModule.class);
-        for (LynxModule hub : allHubs) {
-            hub.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
-        }
+//        allHubs = h.getAll(LynxModule.class);
+//        for (LynxModule hub : allHubs) {
+//            hub.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
+//        }
+
+        PhotonCore.CONTROL_HUB.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
+        PhotonCore.EXPANSION_HUB.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
+        PhotonCore.experimental.setMaximumParallelCommands(8);
+        PhotonCore.enable();
 
         kicker = new Kicker(k1, k2, k3);
         spinner = new Spinner(i, t, g);
@@ -339,9 +344,8 @@ public class Halo {
     }
 
     public void clearCache() {
-        for (LynxModule hub : allHubs) {
-            hub.clearBulkCache();
-        }
+        PhotonCore.CONTROL_HUB.clearBulkCache();
+        PhotonCore.EXPANSION_HUB.clearBulkCache();
     }
 
     public void exportProfiler(File file) {
