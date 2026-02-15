@@ -69,13 +69,13 @@ public class Spinner {
         G.intakeState = G.IntakeState.STOPPED;
         return new SequentialCommandGroup(
                 new ParallelCommandGroup(
-                        new InstantCommand(() -> setIntakeTarget(-0.7)),
+                        new InstantCommand(() -> setIntakeTarget(-0.86)),
                         new SequentialCommandGroup(
-                                new WaitCommand(300),
+                                new WaitCommand(450),
                                 new InstantCommand(this::closeGate)
                         )
                 ),
-                new WaitCommand(600),
+                new WaitCommand(750),
                 new InstantCommand(this::intakeStop)
         );
     }

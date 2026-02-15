@@ -127,18 +127,7 @@ public class DrivetrainTuning extends SelectableOpMode {
         follower.setTeleOpDrive(0,0,0,true);
     }
 }
-/**
- * This is the Predictive Braking Tuner. It runs the robot forward and backward at various power
- * levels, recording the robot’s velocity and position immediately before braking. The motors are
- * then set to a reverse power, which represents the fastest theoretical braking the robot
- * can achieve. Once the robot comes to a complete stop, the tuner measures the stopping distance.
- * Using the collected data, it generates a velocity-vs-stopping-distance graph and fits a
- * quadratic curve to model the braking behavior.
- *
- * @author Ashay Sarda - 19745 Turtle Walkers
- * @author Jacob Ophoven - 18535 Frozen Code
- * @version 1.0, 12/26/2025
- */
+
 class PredictiveBrakingTuner extends OpMode {
     private static final double[] TEST_POWERS =
             {1, 1, 1, 0.9, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2};
@@ -186,9 +175,6 @@ class PredictiveBrakingTuner extends OpMode {
     public void init_loop() {
         telemetryM.debug("The robot will move forwards and backwards starting at max speed and slowing down.");
         telemetryM.debug("Make sure you have enough room. Leave at least 4-5 feet.");
-        telemetryM.debug("After stopping, kFriction and kBraking will be displayed.");
-        telemetryM.debug("Make sure to turn the timer off.");
-        telemetryM.debug("Press B on game pad 1 to stop.");
         telemetryM.update(telemetry);
         follower.update();
     }

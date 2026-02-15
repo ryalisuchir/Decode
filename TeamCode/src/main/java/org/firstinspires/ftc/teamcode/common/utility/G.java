@@ -92,7 +92,7 @@ public class G {
     public static  double GOAL_CENTER_Y_BIAS_FAR = 10;
 
     public static long KICK_WAIT_TELE = 140;
-    public static long KICK_WAIT_RAPID = 65;
+    public static long KICK_WAIT_RAPID = 45;
     public static long KICK_WAIT_AUTO = 140;
 
     public static long GATE_WAIT_AUTO = 300;
