@@ -1,9 +1,7 @@
 package org.firstinspires.ftc.teamcode.common.commandbase.subsystems;
 
-import static org.firstinspires.ftc.teamcode.common.commandbase.subsystems.Turret.virtualGoalX;
-import static org.firstinspires.ftc.teamcode.common.commandbase.subsystems.Turret.virtualGoalY;
-import static org.firstinspires.ftc.teamcode.common.commandbase.subsystems.Turret.xVel;
-import static org.firstinspires.ftc.teamcode.common.commandbase.subsystems.Turret.yVel;
+import static org.firstinspires.ftc.teamcode.common.commandbase.subsystems.Turret.baseGoalX;
+import static org.firstinspires.ftc.teamcode.common.commandbase.subsystems.Turret.baseGoalY;
 
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
@@ -113,33 +111,30 @@ public class Shooter extends SubsystemBase { //new pidf system rather than relyi
             goalX = customPosition.getX();
             goalY = customPosition.getY();
         } else {
-            goalX = virtualGoalX;
-            goalY = virtualGoalY;
+            goalX = baseGoalX;
+            goalY = baseGoalY;
         }
 
-        double distance = TurretMath.getDistanceToGoalPinpoint(follower, goalX, goalY);
-        double hoodDistance = getCompensatedDistance(
-                distance,
-                goalX,
-                goalY,
-                G.SHOOTER_TOF_COMP_GAIN_HOOD,
-                G.SHOOTER_TOF_BLEND_HOOD
-        );
-        double velocityDistance = getCompensatedDistance(
-                distance,
-                goalX,
-                goalY,
-                G.SHOOTER_TOF_COMP_GAIN_VEL,
-                G.SHOOTER_TOF_BLEND_VEL
-        );
-        ShooterParams hoodParams = shooterLUT.getShooterValue(hoodDistance);
-        ShooterParams velocityParams = shooterLUT.getShooterValue(velocityDistance);
+        double vx = follower.getVelocity().getXComponent();
+        double vy = follower.getVelocity().getYComponent();
+        double ledGoalX = goalX;
+        double ledGoalY = goalY;
+        if (G.SHOOTER_SOTM_ENABLED) {
+            double baseDistance = TurretMath.getDistanceToGoalPinpoint(follower, goalX, goalY);
+            double tof = timeOfFlightLUT.get(baseDistance);
+            ledGoalX = goalX - (vx * tof);
+            ledGoalY = goalY - (vy * tof);
+        }
+
+        double distance = TurretMath.getDistanceToGoalPinpoint(follower, ledGoalX, ledGoalY);
+        ShooterParams params = shooterLUT.getShooterValue(distance);
 
         hood.setPosition(
-                clamp(hoodParams.hoodPos, G.HOOD_LOWERED, G.HOOD_MAX)
+                clamp(params.hoodPos, G.HOOD_LOWERED, G.HOOD_MAX)
         );
 
-        targetVelocity = velocityParams.shooterVel;
+        double velocityOffset = G.SHOOTER_SOTM_ENABLED ? shotVelocityOffset(vx, vy) * G.SHOOTER_SOTM_RPM_GAIN : 0.0;
+        targetVelocity = params.shooterVel + velocityOffset;
 
         double flywheelVel = shooterMotor1.getCorrectedVelocity();
 
@@ -174,34 +169,12 @@ public class Shooter extends SubsystemBase { //new pidf system rather than relyi
         return shooterMotor1.get();
     }
 
-    private double getCompensatedDistance(
-            double distance,
-            double goalX,
-            double goalY,
-            double gain,
-            double blend
-    ) {
-        if (!G.SHOOTER_TOF_COMP_ENABLED) return distance;
-        if (Math.hypot(xVel, yVel) < G.SHOOTER_SOTM_MIN_SPEED) return distance;
-
-        double tof = timeOfFlightLUT.get(distance);
-        double radialVel = getRadialVelocityInPerSec(goalX, goalY);
-        double predictedDistance = distance - (radialVel * tof * gain);
-        double delta = clamp(predictedDistance - distance, -G.SHOOTER_TOF_MAX_DELTA_IN, G.SHOOTER_TOF_MAX_DELTA_IN);
-        double filteredDistance = distance + delta * clamp(blend, 0.0, 1.0);
-        return Math.max(0.0, filteredDistance);
-    }
-
-    private double getRadialVelocityInPerSec(double goalX, double goalY) {
-        double dx = goalX - follower.getPose().getX();
-        double dy = goalY - follower.getPose().getY();
-
-        double dist = Math.hypot(dx, dy);
-        if (dist < 1e-6) return 0.0;
-
-        double ux = dx / dist;
-        double uy = dy / dist;
-        return xVel * ux + yVel * uy;
+    private double shotVelocityOffset(double xVelInPerSec, double yVelInPerSec) {
+        double velVectorMagnitudeMps = Math.hypot(
+                Math.max(xVelInPerSec, 0.0),
+                Math.min(yVelInPerSec, 0.0)
+        ) * 0.0254;
+        return ((velVectorMagnitudeMps * 1000.0) / (G.SHOOTER_SOTM_WHEEL_DIAMETER_MM * Math.PI)) * 60.0;
     }
 
     private double clamp(double v, double min, double max) {

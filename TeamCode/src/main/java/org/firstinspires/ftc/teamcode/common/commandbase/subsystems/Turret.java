@@ -8,6 +8,7 @@ import org.firstinspires.ftc.teamcode.common.utility.G;
 import org.firstinspires.ftc.teamcode.common.utility.functions.TurretMath;
 import org.firstinspires.ftc.teamcode.common.utility.functions.luts.TimeOfFlightLUT;
 import org.firstinspires.ftc.teamcode.common.utility.peacock.follower.Follower;
+import org.firstinspires.ftc.teamcode.common.utility.peacock.math.Vector;
 import org.firstinspires.ftc.teamcode.common.utility.turret.BlueTurretLUT;
 import org.firstinspires.ftc.teamcode.common.utility.turret.RedTurretLUT;
 
@@ -16,14 +17,13 @@ public class Turret {
     private final BlueTurretLUT blueTurretLUT = new BlueTurretLUT();
     private final RedTurretLUT redTurretLUT = new RedTurretLUT();
     private final TimeOfFlightLUT timeOfFlightLUT = new TimeOfFlightLUT();
-
-    public static double xVel, yVel;
     private double lastPos = -1;
 
     private final Follower follower;
     private final G.Side side;
     private final TurretMath.CornerGoal cornerGoal;
     public static double virtualGoalX, virtualGoalY;
+    public static double baseGoalX, baseGoalY;
     public double originalGoalX, originalGoalY;
 
     public Turret(
@@ -41,6 +41,8 @@ public class Turret {
                 : TurretMath.CornerGoal.RIGHT_RED;
 
         double[] g = TurretMath.getCornerGoalCenter(cornerGoal);
+        this.baseGoalX = g[0];
+        this.baseGoalY = g[1];
         this.virtualGoalX = g[0];
         this.virtualGoalY = g[1];
         this.originalGoalX = g[0];
@@ -78,17 +80,40 @@ public class Turret {
         });
     }
 
+
+    public InstantCommand customRedOriginal() {
+        G.turretState = G.TurretState.SET_POSITION;
+        return new InstantCommand(() -> {
+            setPositionOnce(0.75);
+        });
+    }
+
     public InstantCommand customRedClose() {
         G.turretState = G.TurretState.SET_POSITION;
         return new InstantCommand(() -> {
-            setPositionOnce(0.525);
+            setPositionOnce(0.570);
+        });
+    }
+
+    public InstantCommand customRedAudClose() {
+        G.turretState = G.TurretState.SET_POSITION;
+        return new InstantCommand(() -> {
+            setPositionOnce(0.333);
         });
     }
 
     public InstantCommand customRedCloser() {
         G.turretState = G.TurretState.SET_POSITION;
         return new InstantCommand(() -> {
-            setPositionOnce(0.66);
+            setPositionOnce(0.504);
+        });
+    }
+
+
+    public InstantCommand customBlueOriginal() {
+        G.turretState = G.TurretState.SET_POSITION;
+        return new InstantCommand(() -> {
+            setPositionOnce(0.213);
         });
     }
 
@@ -186,26 +211,27 @@ public class Turret {
 
     public void loop() {
         double robotY = follower.getPose().getY();
-        double heading = follower.getPose().getHeading();
-        double vx = follower.getVelocity().getXComponent();
-        double vy = follower.getVelocity().getYComponent();
 
-        //These values are field centric so turning in place doesn't mess with it:
-        xVel = vx * Math.cos(heading) - vy * Math.sin(heading);
-        yVel = vx * Math.sin(heading) + vy * Math.cos(heading);
-
-        // Recompute the base target each cycle so close/far center biasing updates with robot Y.
         double[] goalCenter = TurretMath.getCornerGoalCenter(cornerGoal, robotY);
-        originalGoalX = goalCenter[0];
-        originalGoalY = goalCenter[1];
+        baseGoalX = goalCenter[0];
+        baseGoalY = goalCenter[1];
+        originalGoalX = baseGoalX;
+        originalGoalY = baseGoalY;
 
-        double distance = TurretMath.getDistanceToGoalPinpoint(follower, originalGoalX, originalGoalY);
-        double speed = Math.hypot(xVel, yVel);
-        boolean useSotm = G.TURRET_TOF_COMP_ENABLED && speed >= G.TURRET_SOTM_MIN_SPEED;
-        double tof = useSotm ? timeOfFlightLUT.get(distance) * G.TURRET_TOF_COMP_GAIN : 0.0;
+        virtualGoalX = baseGoalX;
+        virtualGoalY = baseGoalY;
 
-        virtualGoalX = originalGoalX - (xVel * tof);
-        virtualGoalY = originalGoalY - (yVel * tof);
+        if (G.TURRET_TOF_COMP_ENABLED) {
+            Vector velocity = follower.getVelocity();
+            double speed = velocity.getMagnitude();
+            if (speed >= G.TURRET_SOTM_MIN_SPEED) {
+                double distance = TurretMath.getDistanceToGoalPinpoint(follower, baseGoalX, baseGoalY);
+                double tof = timeOfFlightLUT.get(distance) * G.TURRET_TOF_COMP_GAIN;
+
+                virtualGoalX = baseGoalX - velocity.getXComponent() * tof;
+                virtualGoalY = baseGoalY - velocity.getYComponent() * tof;
+            }
+        }
 
         if (G.turretState == G.TurretState.FOLLOWING) {
             followGoal();

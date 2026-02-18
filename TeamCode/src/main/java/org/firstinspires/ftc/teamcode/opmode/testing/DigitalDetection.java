@@ -2,12 +2,16 @@ package org.firstinspires.ftc.teamcode.opmode.testing;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 
+import org.firstinspires.ftc.teamcode.common.utility.peacock.util.telemetry.PeacockTelemetry;
+
 @TeleOp
+@Disabled
 public class DigitalDetection extends OpMode {
 
     int color1 = 0;
@@ -25,7 +29,7 @@ public class DigitalDetection extends OpMode {
 
     @Override
     public void init() {
-        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
+        telemetry = new PeacockTelemetry(this);
 
         analog1 = hardwareMap.get(AnalogInput.class, "analog1");
         dig1a = hardwareMap.get(DigitalChannel.class, "dig1a");
@@ -47,7 +51,7 @@ public class DigitalDetection extends OpMode {
         double hue2 = analog2.getVoltage() / 3.3 * 360;
         double hue3 = analog3.getVoltage() / 3.3 * 360;
 
-        if (!dig2a.getState() && !dig1a.getState()) {
+        if ((!dig2a.getState() && !dig1a.getState()) || (dig2a.getState() && dig1a.getState())) {
             if (hue1 < 115) {
                 color1 = 0;
             } else if (hue1 < 128) {
@@ -58,14 +62,14 @@ public class DigitalDetection extends OpMode {
 
         } else {
             if (dig2a.getState()) {
-                color2 = 2;
+                color1 = 2;
             } else {
-                color2 = 1;
+                color1 = 1;
             }
         }
 
         //second:
-        if (!dig4a.getState() && !dig3a.getState()) {
+        if ((!dig4a.getState() && !dig3a.getState()) || (dig4a.getState() && dig3a.getState())) {
             if (hue2 < 115) {
                 color2 = 0;
             } else if (hue2 < 128) {
@@ -83,7 +87,7 @@ public class DigitalDetection extends OpMode {
         }
 
         //third:
-        if (!dig6a.getState() && !dig5a.getState()) {
+        if ((!dig6a.getState() && !dig5a.getState()) || (dig6a.getState() && dig5a.getState())) {
             if (hue3 < 115) {
                 color3 = 0;
             } else if (hue3 < 128) {

@@ -14,9 +14,9 @@ import org.firstinspires.ftc.teamcode.common.utility.Halo;
 import java.util.ArrayList;
 import java.util.List;
 
-public class KickOrderAFarCmd extends SequentialCommandGroup {
+public class RapidOrderCmd extends SequentialCommandGroup {
 
-    public KickOrderAFarCmd(Halo r) {
+    public RapidOrderCmd(Halo r) {
         List<Integer> firingOrder = computeFiringOrder();
 
         if (firingOrder.isEmpty()) {
@@ -25,6 +25,7 @@ public class KickOrderAFarCmd extends SequentialCommandGroup {
         }
 
         List<Command> sequence = new ArrayList<>();
+
         sequence.add(new ParallelCommandGroup(new InstantCommand(() -> r.spinner.transferStart()), r.shooter.startShooter()));
 
         for (int i = 0; i < firingOrder.size(); i++) {
@@ -32,13 +33,13 @@ public class KickOrderAFarCmd extends SequentialCommandGroup {
             sequence.add(kickCommand(r.kicker, slot));
         }
 
-        sequence.add(new WaitCommand(G.KICK_WAIT_AUTO));
+        sequence.add(new WaitCommand(G.KICK_WAIT_RAPID));
 
         addCommands(sequence.toArray(new Command[0]));
     }
 
     private Command kickCommand(Kicker kicker, int slot) {
-        return new SequentialCommandGroup(new InstantCommand(() -> G.shooterKicking = true), KickCommands.kickOnce(kicker, slot), new WaitCommand(G.KICK_WAIT_AUTO));
+        return new SequentialCommandGroup(new InstantCommand(() -> G.shooterKicking = true), KickCommands.kickOnce(kicker, slot), new WaitCommand(G.KICK_WAIT_RAPID));
     }
 
     private List<Integer> computeFiringOrder() {

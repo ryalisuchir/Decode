@@ -18,6 +18,7 @@ import com.bylazar.field.PanelsField;
 import com.bylazar.field.Style;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -45,6 +46,7 @@ import java.util.List;
  */
 @Configurable
 @TeleOp
+@Disabled
 public class DrivetrainTuning extends SelectableOpMode {
     public static Follower follower;
 

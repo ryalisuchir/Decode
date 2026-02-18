@@ -165,7 +165,7 @@ public class Spinner {
         if (oneBallDetected()) {
             G.shooterState = G.ShooterState.SHOOTING;
 
-            if (G.match == G.Match.AUTO && (G.turretState != G.TurretState.BLUE_CLOSE_OBELISK && G.turretState != G.TurretState.RED_CLOSE_OBELISK && G.turretState != G.TurretState.RED_FAR_GOAL && G.turretState != G.TurretState.RED_FAR_GOAL_TELE && G.turretState != G.TurretState.BLUE_CLOSE_GOAL && G.turretState != G.TurretState.BLUE_CLOSE_DIFF_GOAL && G.turretState != G.TurretState.RED_CLOSE_GOAL && G.turretState != G.TurretState.RED_CLOSE_DIFF_GOAL && G.turretState != G.TurretState.BLUE_FAR_GOAL)) {
+            if (G.match == G.Match.AUTO && (G.turretState != G.TurretState.BLUE_CLOSE_OBELISK && G.turretState != G.TurretState.RED_CLOSE_OBELISK && G.turretState != G.TurretState.SET_POSITION)) {
                 G.turretState = G.TurretState.FOLLOWING;
             }
         }

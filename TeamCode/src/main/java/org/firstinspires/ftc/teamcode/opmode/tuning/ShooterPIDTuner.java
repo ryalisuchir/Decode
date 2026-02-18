@@ -5,6 +5,7 @@ import android.util.Log;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -27,6 +28,7 @@ import org.firstinspires.ftc.teamcode.common.utility.Halo;
 
 @Config
 @TeleOp
+@Disabled
 public class ShooterPIDTuner extends CommandOpMode {
     public static double P = 0.0012;
     public static double I = 0;

@@ -18,13 +18,14 @@ import com.seattlesolvers.solverslib.command.CommandScheduler;
 import com.seattlesolvers.solverslib.hardware.motors.Motor;
 
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
 import org.firstinspires.ftc.teamcode.common.commandbase.subsystems.Drivetrain;
 import org.firstinspires.ftc.teamcode.common.commandbase.subsystems.Kicker;
 import org.firstinspires.ftc.teamcode.common.commandbase.subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.common.commandbase.subsystems.Spinner;
 import org.firstinspires.ftc.teamcode.common.commandbase.subsystems.Turret;
-import org.firstinspires.ftc.teamcode.common.utility.functions.BallColorDebounce;
+import org.firstinspires.ftc.teamcode.common.utility.camera.CameraConfig;
 import org.firstinspires.ftc.teamcode.common.utility.functions.DenoiseFilter;
 import org.firstinspires.ftc.teamcode.common.utility.functions.vision.ObeliskVision;
 import org.firstinspires.ftc.teamcode.common.utility.functions.vision.Vision;
@@ -40,6 +41,11 @@ import java.util.Arrays;
 import java.util.List;
 
 public class Halo {
+    private static final double ANALOG_VREF = 3.3;
+    private static final double HUE_NONE_MAX = 115.0;
+    private static final double HUE_GREEN_MAX = 128.0;
+    private static final double HUE_PURPLE_MAX = 170.0;
+
     public DcMotorEx i, t;
     public Motor s1, s2;
     public DcMotorEx fl, fr, rl, rr;
@@ -49,15 +55,9 @@ public class Halo {
     public ServoImplEx t1, t2;
 
     private final DenoiseFilter[] hueFilters = {
-            new DenoiseFilter(5),
-            new DenoiseFilter(5),
-            new DenoiseFilter(5)
-    };
-
-    private final BallColorDebounce[] colorFilters = {
-            new BallColorDebounce(4),
-            new BallColorDebounce(4),
-            new BallColorDebounce(4)
+            new DenoiseFilter(8),
+            new DenoiseFilter(8),
+            new DenoiseFilter(8)
     };
 
     public Drivetrain dt;
@@ -69,6 +69,7 @@ public class Halo {
     public static Pose endPose;
 
     public static Limelight3A l;
+    public WebcamName camera;
 
     public Profiler profiler;
     public File file;
@@ -82,7 +83,7 @@ public class Halo {
     DigitalChannel dig5a, dig6a;
     AnalogInput analog3;
 
-//    public List<LynxModule> allHubs;
+    public List<LynxModule> allHubs;
 
     public double gX, gY;
 
@@ -204,6 +205,8 @@ public class Halo {
         l.setPollRateHz(100);
         l.start();
 
+        camera = h.get(WebcamName.class, CameraConfig.WEBCAM_NAME);
+
         if (s == G.Side.RED) {
             gX = G.RED_CASTLE.getX();
             gY = G.RED_CASTLE.getY();
@@ -216,27 +219,28 @@ public class Halo {
         analog1 = h.get(AnalogInput.class, "analog1");
         dig1a = h.get(DigitalChannel.class, "dig1a");
         dig2a = h.get(DigitalChannel.class, "dig2a");
+        dig1a.setMode(DigitalChannel.Mode.INPUT);
+        dig2a.setMode(DigitalChannel.Mode.INPUT);
 
         //set 2:
         analog2 = h.get(AnalogInput.class, "analog2");
         dig3a = h.get(DigitalChannel.class, "dig3a");
         dig4a = h.get(DigitalChannel.class, "dig4a");
+        dig3a.setMode(DigitalChannel.Mode.INPUT);
+        dig4a.setMode(DigitalChannel.Mode.INPUT);
 
         //set 3:
         analog3 = h.get(AnalogInput.class, "analog3");
         dig5a = h.get(DigitalChannel.class, "dig5a");
         dig6a = h.get(DigitalChannel.class, "dig6a");
+        dig5a.setMode(DigitalChannel.Mode.INPUT);
+        dig6a.setMode(DigitalChannel.Mode.INPUT);
 
 
-//        allHubs = h.getAll(LynxModule.class);
-//        for (LynxModule hub : allHubs) {
-//            hub.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
-//        }
-
-        PhotonCore.CONTROL_HUB.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
-        PhotonCore.EXPANSION_HUB.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
-        PhotonCore.experimental.setMaximumParallelCommands(8);
-        PhotonCore.enable();
+        allHubs = h.getAll(LynxModule.class);
+        for (LynxModule hub : allHubs) {
+            hub.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
+        }
 
         kicker = new Kicker(k1, k2, k3);
         spinner = new Spinner(i, t, g);
@@ -250,6 +254,13 @@ public class Halo {
         readColors();
         updateVision();
         CommandScheduler.getInstance().run();
+    }
+
+    public void init() {
+//        PhotonCore.CONTROL_HUB.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
+//        PhotonCore.EXPANSION_HUB.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
+//        PhotonCore.experimental.setMaximumParallelCommands(8);
+//        PhotonCore.enable();
     }
 
     public void loop(Halo r) {
@@ -312,27 +323,23 @@ public class Halo {
     }
 
     private void readColors() {
-        updateColorSlot(0, analog1.getVoltage() / 3.3 * 360, dig1a.getState(), dig2a.getState());
-        updateColorSlot(1, analog2.getVoltage() / 3.3 * 360, dig3a.getState(), dig4a.getState());
-        updateColorSlot(2, analog3.getVoltage() / 3.3 * 360, dig5a.getState(), dig6a.getState());
+        updateColorSlot(0, toHue(analog1.getVoltage()), dig1a.getState(), dig2a.getState());
+        updateColorSlot(1, toHue(analog2.getVoltage()), dig3a.getState(), dig4a.getState());
+        updateColorSlot(2, toHue(analog3.getVoltage()), dig5a.getState(), dig6a.getState());
     }
 
     private void updateColorSlot(int slot, double rawHue, boolean digA, boolean digB) {
         double filteredHue = hueFilters[slot].filter(rawHue);
         int rawColor = getColor(filteredHue, digA, digB);
-        G.ballColors[slot] = colorFilters[slot].update(toBallColor(rawColor));
+        G.ballColors[slot] = toBallColor(rawColor);
     }
 
 
     private int getColor(double hue, boolean digA, boolean digB) {
-        if (!digA && !digB) {
-            if (hue < 115) return 0;      // NONE
-            if (hue < 128) return 2;      // GREEN
-            if (hue < 170) return 1;      // PURPLE
-            return 0;
+        if (digA ^ digB) {
+            return digB ? 2 : 1;
         }
-
-        return digB ? 2 : 1;
+        return classifyHue(hue);
     }
 
     private G.BallColor toBallColor(int color) {
@@ -343,9 +350,23 @@ public class Halo {
         }
     }
 
+    private double toHue(double voltage) {
+        return Math.max(0.0, Math.min(360.0, voltage / ANALOG_VREF * 360.0));
+    }
+
+    private int classifyHue(double hue) {
+        if (hue < HUE_NONE_MAX) return 0;
+        if (hue < HUE_GREEN_MAX) return 2;
+        if (hue < HUE_PURPLE_MAX) return 1;
+        return 0;
+    }
+
     public void clearCache() {
-        PhotonCore.CONTROL_HUB.clearBulkCache();
-        PhotonCore.EXPANSION_HUB.clearBulkCache();
+//        PhotonCore.CONTROL_HUB.clearBulkCache();
+//        PhotonCore.EXPANSION_HUB.clearBulkCache();
+        for (LynxModule hub : allHubs) {
+            hub.clearBulkCache();
+        }
     }
 
     public void exportProfiler(File file) {

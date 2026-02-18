@@ -26,6 +26,7 @@ import org.firstinspires.ftc.teamcode.common.utility.Halo;
 import org.firstinspires.ftc.teamcode.common.utility.peacock.geometry.BezierLine;
 import org.firstinspires.ftc.teamcode.common.utility.peacock.geometry.Pose;
 import org.firstinspires.ftc.teamcode.common.utility.peacock.paths.PathChain;
+import org.firstinspires.ftc.teamcode.common.utility.peacock.util.telemetry.PeacockTelemetry;
 
 @TeleOp
 public class Red extends CommandOpMode {
@@ -51,25 +52,15 @@ public class Red extends CommandOpMode {
     }
 
 
-    public PathChain intakeHpAndShoot(Pose currPos, Pose shootFarPos) {
-        return r.dt.getFollower().pathBuilder()
-                .addPath(
-                        new BezierLine(
-                                currPos,
-                                shootFarPos
-                        )
-                ).setLinearHeadingInterpolation(currPos.getHeading(), shootFarPos.getHeading())
-                .build();
-    }
 
     @Override
     public void initialize() {
-        r = new Halo(hardwareMap, G.RED_FAR_START, G.Side.RED, false);
+        r = new Halo(hardwareMap, G.RED_CUBE_START, G.Side.RED, false);
 
         r.dt.startDrive();
         ahnaf = gamepad1;
         swetha = gamepad2;
-        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
+        telemetry = new PeacockTelemetry(this);
         intakeTrigger = new Trigger(
                 () -> ahnaf.right_trigger > 0.1 && !r.spinner.threeBallsDetected()
         );
@@ -141,24 +132,6 @@ public class Red extends CommandOpMode {
             telemetry.addData("DT Side: ", r.dt.a);
             telemetry.addData("Transfer State: ", G.transferState);
             telemetry.update();
-        }
-
-        if (ahnaf.rightBumperWasPressed()) {
-            Pose shootFarPos = new Pose(89, 17.5, Math.toRadians(0));
-            Pose currPos = r.dt.getPose();
-
-            r.shooter.setCustomDistance(shootFarPos.getX()-11, shootFarPos.getY()-11);
-            G.turretState = G.TurretState.RED_FAR_GOAL;
-
-            schedule(
-                    new SequentialCommandGroup(
-                            new FollowPathCmd(r, intakeHpAndShoot(currPos, shootFarPos)),
-                            new WaitCommand(100),
-                            new KickOrderACmd(r),
-                            new Reset(r),
-                            new InstantCommand(() -> r.dt.startDrive())
-                    )
-            );
         }
 
         if (ahnaf.leftBumperWasPressed()) {

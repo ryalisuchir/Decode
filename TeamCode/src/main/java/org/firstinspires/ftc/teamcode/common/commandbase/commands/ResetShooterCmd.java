@@ -17,6 +17,8 @@ import com.seattlesolvers.solverslib.geometry.Vector2d;
 import com.seattlesolvers.solverslib.hardware.motors.Motor;
 import com.seattlesolvers.solverslib.hardware.servos.ServoEx;
 
+import java.time.Instant;
+
 public class ResetShooterCmd extends ParallelCommandGroup {
     public ResetShooterCmd(Halo r, double x) {
         super(
@@ -26,6 +28,17 @@ public class ResetShooterCmd extends ParallelCommandGroup {
                         r.turret.reset(),
                         r.shooter.stopShooter(),
                         new InstantCommand(() -> r.shooter.clearCustomDistance()),
+                        new IntakeCmd(r, x)
+                )
+        );
+    }
+
+    public ResetShooterCmd(Halo r, double x, InstantCommand instant) {
+        super(
+                new ParallelCommandGroup(
+                        KickCommands.resetAll(r.kicker),
+                        new InstantCommand(() -> G.shooterKicking = false),
+                        instant,
                         new IntakeCmd(r, x)
                 )
         );
@@ -46,4 +59,19 @@ public class ResetShooterCmd extends ParallelCommandGroup {
                 )
         );
     }
+
+    public ResetShooterCmd(Halo r, InstantCommand instant) {
+        super(
+                new ParallelCommandGroup(
+                        KickCommands.resetAll(r.kicker),
+                        new InstantCommand(() -> G.shooterKicking = false),
+                        instant,
+                        new SequentialCommandGroup(
+                                new WaitCommand(800),
+                                new InstantCommand(() -> r.spinner.transferStop())
+                        )
+                )
+        );
+    }
+
 }

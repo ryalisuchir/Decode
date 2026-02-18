@@ -3,13 +3,15 @@ package org.firstinspires.ftc.teamcode.opmode.auto;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
 
 import org.firstinspires.ftc.teamcode.common.utility.G;
 import org.firstinspires.ftc.teamcode.common.utility.Halo;
 
-//@Autonomous
+@Disabled
+@Autonomous
 public class PullPose extends OpMode {
     Halo r;
 

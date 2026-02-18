@@ -46,7 +46,7 @@ public class RedFailsafeTele extends CommandOpMode {
         r = new Halo(hardwareMap, G.RED_CUBE_START, G.Side.RED, false);
         r.dt.startDrive();
         r.shooter.setCustomDistance(99.80403458213259, 99.80403458213254);
-        G.turretState = G.TurretState.FAILED;
+        r.turret.setPositionOnce(0.32);
         ahnaf = gamepad1;
         swetha = gamepad2;
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());

@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.opmode.tuning;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.utility.KickCommands;
@@ -28,6 +29,7 @@ import com.seattlesolvers.solverslib.hardware.servos.ServoEx;
 
 @TeleOp
 @Config
+@Disabled
 public class ShooterPositionTuner extends CommandOpMode {
 
     Halo r;
