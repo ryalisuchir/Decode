@@ -55,9 +55,9 @@ public class Halo {
     public ServoImplEx t1, t2;
 
     private final DenoiseFilter[] hueFilters = {
-            new DenoiseFilter(8),
-            new DenoiseFilter(8),
-            new DenoiseFilter(8)
+            new DenoiseFilter(3),
+            new DenoiseFilter(3),
+            new DenoiseFilter(3)
     };
 
     public Drivetrain dt;
@@ -71,8 +71,8 @@ public class Halo {
     public static Limelight3A l;
     public WebcamName camera;
 
-    public Profiler profiler;
-    public File file;
+//    public Profiler profiler;
+//    public File file;
 
     DigitalChannel dig1a, dig2a;
     AnalogInput analog1;
@@ -91,17 +91,17 @@ public class Halo {
         G.side = s; //Sets blue/red depending on what side we're on. Especially important for turret movement.
         if (!a) G.match = G.Match.TELEOP; //Sets the match to teleop so we don't have to reset global enums
 
-        File logsFolder = new File(AppUtil.FIRST_FOLDER, "logs");
-        if (!logsFolder.exists()) logsFolder.mkdirs();
+//        File logsFolder = new File(AppUtil.FIRST_FOLDER, "logs");
+//        if (!logsFolder.exists()) logsFolder.mkdirs();
 
-        long timestamp = System.currentTimeMillis();
-        file = new File(logsFolder, "profiler-" + timestamp + ".csv");
-
-        profiler = Profiler.builder()
-                .factory(new BasicProfilerEntryFactory())
-                .exporter(new CSVProfilerExporter(file))
-                .debugLog(false) // Log EVERYTHING
-                .build();
+//        long timestamp = System.currentTimeMillis();
+//        file = new File(logsFolder, "profiler-" + timestamp + ".csv");
+//
+//        profiler = Profiler.builder()
+//                .factory(new BasicProfilerEntryFactory())
+//                .exporter(new CSVProfilerExporter(file))
+//                .debugLog(false) // Log EVERYTHING
+//                .build();
 
         if (a) { //If we say that we're running auto, all the global enums will reset
             G.intakeState = G.IntakeState.STOPPED;
@@ -369,22 +369,22 @@ public class Halo {
         }
     }
 
-    public void exportProfiler(File file) {
-        RobotLog.i("Starting async profiler export to: " + file.getAbsolutePath());
-
-        Thread exportThread = new Thread(() -> {
-            try {
-                profiler.export();
-                profiler.shutdown();
-            } catch (Exception e) {
-                Log.e("An error occurred", e.toString());
-                Log.e(e.toString(), Arrays.toString(e.getStackTrace()));
-            }
-        });
-
-        exportThread.setDaemon(true);
-        exportThread.start();
-    }
+//    public void exportProfiler(File file) {
+//        RobotLog.i("Starting async profiler export to: " + file.getAbsolutePath());
+//
+//        Thread exportThread = new Thread(() -> {
+//            try {
+//                profiler.export();
+//                profiler.shutdown();
+//            } catch (Exception e) {
+//                Log.e("An error occurred", e.toString());
+//                Log.e(e.toString(), Arrays.toString(e.getStackTrace()));
+//            }
+//        });
+//
+//        exportThread.setDaemon(true);
+//        exportThread.start();
+//    }
 
     public void stop() {
         endPose = dt.getPose();

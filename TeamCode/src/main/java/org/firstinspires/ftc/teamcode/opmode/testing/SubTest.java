@@ -17,6 +17,7 @@ import org.firstinspires.ftc.teamcode.common.commandbase.commands.utility.KickCo
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.utility.RapidKickCommands;
 import org.firstinspires.ftc.teamcode.common.utility.G;
 import org.firstinspires.ftc.teamcode.common.utility.Halo;
+import org.firstinspires.ftc.teamcode.common.utility.functions.TurretMath;
 import org.firstinspires.ftc.teamcode.common.utility.peacock.util.telemetry.PeacockTelemetry;
 
 @TeleOp
@@ -45,7 +46,7 @@ public class SubTest extends CommandOpMode {
 
     @Override
     public void initialize() {
-        r = new Halo(hardwareMap, G.RED_FAR_START, G.Side.RED, true);
+        r = new Halo(hardwareMap, G.BLUE_CUBE_START, G.Side.BLUE, true);
         r.init();
         r.dt.startDrive();
         suchir = gamepad1;
@@ -81,7 +82,7 @@ public class SubTest extends CommandOpMode {
 
     @Override
     public void run() {
-        r.profiler.start("Full Loop");
+//        r.profiler.start("Full Loop");
         r.dt.drive(gamepad1);
 
         if (!hasStarted) {
@@ -102,6 +103,7 @@ public class SubTest extends CommandOpMode {
         lastLoopTimeNs = now;
         if ((telemetryDivider++ & 0x3) == 0) {
             telemetry.addData("Loop time: ", loopTimeMs);
+            telemetry.addData("Distance: ", r.dt.getGoalDistance());
             telemetry.addData("1: ", G.ballColors[0]);
             telemetry.addData("2: ", G.ballColors[1]);
             telemetry.addData("3: ", G.ballColors[2]);
@@ -167,24 +169,14 @@ public class SubTest extends CommandOpMode {
         }
 
         r.noSubsystemLoop(r);
-        r.profiler.start("Drivetrain");
         r.dt.loop();
-        r.profiler.end("Drivetrain");
-        r.profiler.start("Spinner");
         r.spinner.periodic();
-        r.profiler.end("Spinner");
-        r.profiler.start("Shooter");
         r.shooter.loop();
-        r.profiler.end("Shooter");
-        r.profiler.start("Turret");
         r.turret.loop();
-        r.profiler.end("Turret");
-        r.profiler.end("Full Loop");
     }
 
     @Override
     public void end() {
         r.stop();
-        r.exportProfiler(r.file);
     }
 }

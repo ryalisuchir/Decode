@@ -20,7 +20,7 @@ public class RedFarPath {
         this.side = G.side;
 
         startPos = G.RED_FAR_START;
-        shootPos = alliancePose(new Pose(88.847, 17.911, Math.toRadians(0)));
+        shootPos = alliancePose(new Pose(88.847, 17.911, Math.toRadians(8)));
         intakeSpikeHoldPos = alliancePose(new Pose(103.68299711815563, 37.26512968299712));
         intakeSpikePos = alliancePose(new Pose(134.78962536023056, 36.63688760806917, Math.toRadians(0)));
         intakeHpControlPos = alliancePose(new Pose(113.303, 10.568));

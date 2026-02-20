@@ -32,7 +32,7 @@ public class G {
     public static Pose BLUE_CUBE_START = new Pose(32, 134, Math.toRadians(-90));
     public static Pose RED_CUBE_START = BLUE_CUBE_START.mirror();
     public static Pose RED_FAR_START = new Pose(80.71469740634006, 8.922190201729103, Math.toRadians(0));
-    public static Pose BLUE_FAR_START = RED_FAR_START.mirror();
+    public static Pose BLUE_FAR_START = new Pose(62.84726224783862, 8.922190201729103, Math.toRadians(180));
 
     public static double pivotX = 0.0; //forward length for turret hole
     public static double pivotY = 3.0; //left length for turret hole
@@ -52,14 +52,14 @@ public class G {
     public static double TILT_RESET = 0;
     public static double TILT_ENGAGED = 0.8;
 
-    public static double GATE_OPEN = 0.73;
-    public static double GATE_CLOSED = 0.1;
+    public static double GATE_OPEN = 0.55;
+    public static double GATE_CLOSED = 0.07;
 
     public static double TURRET_RESET = 0.32;
     public static double TURRET_BLUE_CLOSE_READ = 0.15;
     public static double TURRET_RED_CLOSE_READ = 0.78;
 
-    public static double TURRET_BLUE_FAR_READ = 0.1;
+    public static double TURRET_BLUE_FAR_READ = 0.03;
     public static double TURRET_RED_FAR_READ = 0.6;
 
     public static double HOOD_LOWERED = 0.65;
@@ -74,10 +74,16 @@ public class G {
 
     public static double SHOOTER_VELOCITY_TOLERANCE = 100;
 
-    public static  double GOAL_CENTER_X_BIAS_CLOSE = 0;
-    public static  double GOAL_CENTER_Y_BIAS_CLOSE = 5;
-    public static  double GOAL_CENTER_X_BIAS_FAR = 8;
-    public static  double GOAL_CENTER_Y_BIAS_FAR = -4;
+    // Red side goal-center offsets
+    public static double GOAL_CENTER_X_BIAS_CLOSE_RED = 0;
+    public static double GOAL_CENTER_Y_BIAS_CLOSE_RED = 5;
+    public static double GOAL_CENTER_X_BIAS_FAR_RED = 8;
+    public static double GOAL_CENTER_Y_BIAS_FAR_RED = -4;
+
+    public static double GOAL_CENTER_X_BIAS_CLOSE_BLUE = 0;
+    public static double GOAL_CENTER_Y_BIAS_CLOSE_BLUE = 5;
+    public static double GOAL_CENTER_X_BIAS_FAR_BLUE = 8;
+    public static double GOAL_CENTER_Y_BIAS_FAR_BLUE = 8;
 
     public static long KICK_WAIT_TELE = 140;
     public static long KICK_WAIT_RAPID = 70; //65
@@ -87,11 +93,11 @@ public class G {
     public static long GATE_WAIT_TELE = 600;
 
     public static boolean TURRET_TOF_COMP_ENABLED = true;
-    public static double TURRET_TOF_COMP_GAIN = 1;
+    public static double TURRET_TOF_COMP_GAIN = 2;
     public static double TURRET_SOTM_MIN_SPEED = 2.3;
 
     public static boolean SHOOTER_SOTM_ENABLED = true;
-    public static double SHOOTER_SOTM_RPM_GAIN = 1.0;
+    public static double SHOOTER_SOTM_RPM_GAIN = 0.6;
     public static double SHOOTER_SOTM_WHEEL_DIAMETER_MM = 72.0;
 
 

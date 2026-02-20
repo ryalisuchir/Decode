@@ -6,7 +6,6 @@ import com.seattlesolvers.solverslib.command.CommandScheduler;
 import org.firstinspires.ftc.teamcode.common.utility.Halo;
 
 public class IntakeCmd extends CommandBase {
-
     private final Halo r;
     private final double timer;
     private long startTime;
@@ -19,7 +18,7 @@ public class IntakeCmd extends CommandBase {
     @Override
     public void initialize() {
         startTime = System.currentTimeMillis();
-        CommandScheduler.getInstance().schedule(r.spinner.toggleIn());
+        CommandScheduler.getInstance().schedule(r.spinner.intake());
     }
 
     @Override

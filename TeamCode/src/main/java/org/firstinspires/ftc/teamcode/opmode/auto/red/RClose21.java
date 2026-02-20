@@ -1,33 +1,27 @@
 package org.firstinspires.ftc.teamcode.opmode.auto.red;
 
-import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.seattlesolvers.solverslib.command.CommandScheduler;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
-import com.seattlesolvers.solverslib.command.ParallelRaceGroup;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
-import com.seattlesolvers.solverslib.command.WaitUntilCommand;
 
-import org.firstinspires.ftc.teamcode.common.commandbase.commands.KickOrderACmd;
-import org.firstinspires.ftc.teamcode.common.commandbase.commands.RapidOrderCmd;
-import org.firstinspires.ftc.teamcode.common.commandbase.commands.teleopspecific.KickOrderTCmd;
+import org.firstinspires.ftc.teamcode.common.commandbase.commands.RapidAllCmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.utility.FollowPathCmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.inits.CloseInitCmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.ResetShooterAndReadCmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.ResetShooterCmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.utility.DeferredCommand;
-import org.firstinspires.ftc.teamcode.common.commandbase.commands.utility.KickCommands;
-import org.firstinspires.ftc.teamcode.common.commandbase.commands.utility.RapidKickCommands;
 import org.firstinspires.ftc.teamcode.common.utility.G;
 import org.firstinspires.ftc.teamcode.common.utility.Halo;
 import org.firstinspires.ftc.teamcode.common.utility.peacock.util.telemetry.PeacockTelemetry;
 import org.firstinspires.ftc.teamcode.opmode.auto.paths.reds.RedClosePath21;
 
 @Autonomous
+@Disabled
 public class RClose21 extends OpMode {
     Halo r;
     RedClosePath21 p;
@@ -60,8 +54,8 @@ public class RClose21 extends OpMode {
                                 r.spinner.transfer(),
                                 new FollowPathCmd(r, p.next()), //shoot preloads
                                 new SequentialCommandGroup(
-                                        new WaitCommand(1800),
-                                        new RapidOrderCmd(r)
+                                        new WaitCommand(2000),
+                                        new RapidAllCmd(r)
                                 )
                         ),
                         new ParallelCommandGroup(
@@ -72,14 +66,14 @@ public class RClose21 extends OpMode {
                                         new InstantCommand(() -> G.turretState = G.TurretState.FOLLOWING)
                                 )
                         ),
-                        new RapidOrderCmd(r), //kicks middle spike
+                        new RapidAllCmd(r),
                         //this is gate sequence 1:
                         new ParallelCommandGroup(
                                 new ResetShooterCmd(r, 3.5),
                                 new FollowPathCmd(r, p.next()).withStallTimeout(0.04, 1300) //this is gate intake
                         ),
                         new FollowPathCmd(r, p.next()), //gate intake's shooting
-                        new RapidOrderCmd(r),
+                new RapidAllCmd(r),
                         //end of gate sequence 1 ^^
                         //this is gate sequence 2:
         new ParallelCommandGroup(
@@ -87,28 +81,28 @@ public class RClose21 extends OpMode {
                 new FollowPathCmd(r, p.next()).withStallTimeout(0.04, 1300) //this is gate intake
         ),
                 new FollowPathCmd(r, p.next()), //gate intake's shooting
-                new RapidOrderCmd(r),
+                new RapidAllCmd(r),
         //end of gate sequence 2 ^^
                         //this is gate sequence 3:
-                new ParallelCommandGroup(
-                        new ResetShooterCmd(r, 5),
-                new FollowPathCmd(r, p.next()).withStallTimeout(0.04, 1300) //this is gate intake
-        ),
-                new FollowPathCmd(r, p.next()), //gate intake's shooting
-                new RapidOrderCmd(r),
-        //end of gate sequence 3 ^^
+                        new ParallelCommandGroup(
+                                new ResetShooterCmd(r, 5),
+                                new FollowPathCmd(r, p.next()).withStallTimeout(0.04, 1300) //this is gate intake
+                        ),
+                        new FollowPathCmd(r, p.next()), //gate intake's shooting
+                        new RapidAllCmd(r),
+                        //end of gate sequence 3 ^^
                         new ParallelCommandGroup(
                                 new FollowPathCmd(r, p.next()), //intakes spike closest to audience
-                                new ResetShooterCmd(r, 6
-                                        )
+                                new ResetShooterCmd(r, 7.5)
 
                         ),
-                                new RapidOrderCmd(r),
+                        new RapidAllCmd(r),
                                 new ParallelCommandGroup(
                                         new FollowPathCmd(r, p.next()), //intakes spike closest to obelisk
-                                        new ResetShooterCmd(r, 2.5)
+                                        new ResetShooterCmd(r, 2.5, new InstantCommand(() -> r.turret.customRedCloser()))
                                 ),
-                        new RapidOrderCmd(r)
+                        new InstantCommand(() -> r.turret.customRedCloser()),
+                        new RapidAllCmd(r)
                 ));
     }
 

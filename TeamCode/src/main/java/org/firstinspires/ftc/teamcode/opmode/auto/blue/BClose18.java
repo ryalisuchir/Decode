@@ -8,7 +8,7 @@ import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
 
-import org.firstinspires.ftc.teamcode.common.commandbase.commands.RapidAllCmd;
+import org.firstinspires.ftc.teamcode.common.commandbase.commands.RapidSlowerCmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.utility.FollowPathCmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.inits.CloseInitCmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.ResetShooterAndReadCmd;
@@ -17,20 +17,21 @@ import org.firstinspires.ftc.teamcode.common.commandbase.commands.utility.Deferr
 import org.firstinspires.ftc.teamcode.common.utility.G;
 import org.firstinspires.ftc.teamcode.common.utility.Halo;
 import org.firstinspires.ftc.teamcode.common.utility.peacock.util.telemetry.PeacockTelemetry;
-import org.firstinspires.ftc.teamcode.opmode.auto.paths.blues.BlueClosePath21;
+import org.firstinspires.ftc.teamcode.opmode.auto.paths.blues.BlueClosePath18;
+import org.firstinspires.ftc.teamcode.opmode.auto.paths.reds.RedClosePath18;
 import org.firstinspires.ftc.teamcode.opmode.auto.paths.reds.RedClosePath21;
 
 @Autonomous
-public class BClose21 extends OpMode {
+public class BClose18 extends OpMode {
     Halo r;
-    BlueClosePath21 p;
+    BlueClosePath18 p;
 
     @Override
     public void init() {
         CommandScheduler.getInstance().reset();
         r = new Halo(hardwareMap, G.BLUE_CUBE_START, G.Side.BLUE, true);
         r.init();
-        p = new BlueClosePath21(r);
+        p = new BlueClosePath18(r);
         CommandScheduler.getInstance().schedule(new CloseInitCmd(r));
         telemetry = new PeacockTelemetry(this);
 
@@ -38,7 +39,7 @@ public class BClose21 extends OpMode {
 
     public void init_loop() {
         telemetry.addLine("Created all subsystems.");
-        telemetry.addData("Initialized:", "21 Ball Auto (Blue)");
+        telemetry.addData("Initialized:", "18 Ball Auto (Blue)");
         telemetry.addData("Obelisk Reading:", G.obeliskOptions);
         r.initLoop(r);
         CommandScheduler.getInstance().run();
@@ -50,58 +51,61 @@ public class BClose21 extends OpMode {
                 new SequentialCommandGroup(
                         new ParallelCommandGroup(
                                 r.turret.clearCustom(),
+                                new InstantCommand(() -> G.turretState = G.TurretState.FOLLOWING),
                                 r.spinner.transfer(),
                                 new FollowPathCmd(r, p.next()), //shoot preloads
                                 new SequentialCommandGroup(
                                         new WaitCommand(2000),
-                                        new RapidAllCmd(r)
+                                        new RapidSlowerCmd(r)
                                 )
                         ),
                         new ParallelCommandGroup(
-                                new DeferredCommand(() -> new ResetShooterAndReadCmd(r, true, 3, G.Side.BLUE)),
+                                new DeferredCommand(() -> new ResetShooterCmd(r, 3)),
+                                new InstantCommand(() -> r.i.setPower(1)),
                                 new FollowPathCmd(r, p.next()), //intake mid and go to shoot
                                 new SequentialCommandGroup(
                                         new WaitCommand(900),
                                         new InstantCommand(() -> G.turretState = G.TurretState.FOLLOWING)
                                 )
                         ),
-                        new RapidAllCmd(r),
+                        new RapidSlowerCmd(r),
                         //this is gate sequence 1:
                         new ParallelCommandGroup(
-                                new ResetShooterCmd(r, 3.5),
+                                new DeferredCommand(() -> new ResetShooterCmd(r, 3.5)),
+                                new InstantCommand(() -> r.i.setPower(1)),
                                 new FollowPathCmd(r, p.next()).withStallTimeout(0.04, 1300) //this is gate intake
                         ),
                         new FollowPathCmd(r, p.next()), //gate intake's shooting
-                        new RapidAllCmd(r),
+                        new RapidSlowerCmd(r),
                         //end of gate sequence 1 ^^
                         //this is gate sequence 2:
                         new ParallelCommandGroup(
-                                new ResetShooterCmd(r, 5),
+                                new DeferredCommand(() -> new ResetShooterCmd(r, 5)),
+                                new InstantCommand(() -> r.i.setPower(1)),
                                 new FollowPathCmd(r, p.next()).withStallTimeout(0.04, 1300) //this is gate intake
                         ),
                         new FollowPathCmd(r, p.next()), //gate intake's shooting
-                        new RapidAllCmd(r),
+                        new RapidSlowerCmd(r),
                         //end of gate sequence 2 ^^
-                        //this is gate sequence 3:
-                        new ParallelCommandGroup(
-                                new ResetShooterCmd(r, 5),
-                                new FollowPathCmd(r, p.next()).withStallTimeout(0.04, 1300) //this is gate intake
-                        ),
-                        new FollowPathCmd(r, p.next()), //gate intake's shooting
-                        new RapidAllCmd(r),
-                        //end of gate sequence 3 ^^
                         new ParallelCommandGroup(
                                 new FollowPathCmd(r, p.next()), //intakes spike closest to audience
-                                new ResetShooterCmd(r, 7.5)
+                                new InstantCommand(() -> r.i.setPower(1)),
+                                new DeferredCommand(() -> new ResetShooterCmd(r, 6.5))
 
                         ),
-                        new RapidAllCmd(r),
                         new ParallelCommandGroup(
-                                new FollowPathCmd(r, p.next()), //intakes spike closest to obelisk
-                                new ResetShooterCmd(r, 2.5, new InstantCommand(() -> r.turret.customRedCloser()))
+                                new InstantCommand(() -> r.t.setPower(-1)),
+                                new InstantCommand(() -> r.i.setPower(1)),
+                                new RapidSlowerCmd(r)
                         ),
-                        new InstantCommand(() -> r.turret.customRedCloser()),
-                        new RapidAllCmd(r)
+                        new WaitCommand(800),
+                        new ParallelCommandGroup(
+                                new InstantCommand(() -> r.i.setPower(1)),
+                                new FollowPathCmd(r, p.next()), //intakes spike closest to obelisk
+                                new DeferredCommand(() -> new ResetShooterCmd(r, 2.5))
+                        ),
+                        new RapidSlowerCmd(r),
+                        new FollowPathCmd(r, p.next())
                 ));
     }
 

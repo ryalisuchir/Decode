@@ -155,7 +155,7 @@ public class Blue extends CommandOpMode {
 
         if (ahnaf.crossWasPressed()) { //rapid fire
             schedule(
-                    RapidKickCommands.kickAndResetMany(r,3,1,2)
+                    RapidKickCommands.kickAndResetMany(r,1,2,3)
             );
         }
 

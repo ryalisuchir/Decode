@@ -10,9 +10,11 @@ import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.command.WaitUntilCommand;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.teamcode.common.commandbase.commands.IntakeCmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.KickOrderAFarCmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.ResetShooterCmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.inits.FarInitCmd;
+import org.firstinspires.ftc.teamcode.common.commandbase.commands.teleopspecific.Reset;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.utility.DeferredCommand;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.utility.FollowPathCmd;
 import org.firstinspires.ftc.teamcode.common.utility.G;
@@ -85,18 +87,22 @@ public class RFar extends OpMode {
                         ),
                         new ParallelCommandGroup(
                                 new ResetShooterCmd(r, 3.5),
+                                new InstantCommand(() -> r.i.setPower(1)),
                                 new FollowPathCmd(r, p.intakeSpikeAndShoot()).withStallTimeout(0.03, 2000)
                         ),
                         new DeferredCommand(() -> new KickOrderAFarCmd(r)),
                         new ParallelCommandGroup(
-                                new ResetShooterCmd(r, 6),
+                                new Reset(r),
+                                new IntakeCmd(r, 5),
+                                new InstantCommand(() -> r.i.setPower(1)),
                                 new FollowPathCmd(r, p.intakeHp()).withStallTimeout(0.03, 2000)
                         ),
                         new DeferredCommand(() -> new KickOrderAFarCmd(r)),
-
                         // Camera cycle 1
                         new ParallelCommandGroup(
-                                new ResetShooterCmd(r, 5.5),
+                                new Reset(r),
+                                new IntakeCmd(r, 5),
+                                new InstantCommand(() -> r.i.setPower(1)),
                                 new DeferredCommand(this::createCameraIntakeCommand)
                         ),
                         new DeferredCommand(this::createCameraShootCommand),
@@ -104,14 +110,18 @@ public class RFar extends OpMode {
 
                         // Camera cycle 2
                         new ParallelCommandGroup(
-                                new ResetShooterCmd(r, 5.5),
+                                new Reset(r),
+                                new IntakeCmd(r, 5),
+                                new InstantCommand(() -> r.i.setPower(1)),
                                 new DeferredCommand(this::createCameraIntakeCommand)
                         ),
                         new DeferredCommand(this::createCameraShootCommand),
                         new DeferredCommand(() -> new KickOrderAFarCmd(r)),
                         //3
                         new ParallelCommandGroup(
-                                new ResetShooterCmd(r, 5.5),
+                                new Reset(r),
+                                new IntakeCmd(r, 5),
+                                new InstantCommand(() -> r.i.setPower(1)),
                                 new DeferredCommand(this::createCameraIntakeCommand)
                         ),
                         new DeferredCommand(this::createCameraShootCommand),

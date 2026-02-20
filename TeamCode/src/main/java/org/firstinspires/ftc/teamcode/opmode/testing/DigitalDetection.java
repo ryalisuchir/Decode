@@ -11,7 +11,6 @@ import com.qualcomm.robotcore.hardware.DigitalChannel;
 import org.firstinspires.ftc.teamcode.common.utility.peacock.util.telemetry.PeacockTelemetry;
 
 @TeleOp
-@Disabled
 public class DigitalDetection extends OpMode {
 
     int color1 = 0;
@@ -90,7 +89,7 @@ public class DigitalDetection extends OpMode {
         if ((!dig6a.getState() && !dig5a.getState()) || (dig6a.getState() && dig5a.getState())) {
             if (hue3 < 115) {
                 color3 = 0;
-            } else if (hue3 < 128) {
+            } else if (hue3 < 126) {
                 color3 = 2; //green
             } else if (hue3 < 170) {
                 color3 = 1; //purple

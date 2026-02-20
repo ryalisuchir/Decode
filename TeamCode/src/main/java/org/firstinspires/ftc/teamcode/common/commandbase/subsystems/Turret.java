@@ -105,7 +105,7 @@ public class Turret {
     public InstantCommand customRedCloser() {
         G.turretState = G.TurretState.SET_POSITION;
         return new InstantCommand(() -> {
-            setPositionOnce(0.504);
+            setPositionOnce(0.37);
         });
     }
 
@@ -185,6 +185,11 @@ public class Turret {
             servoPosition = blueTurretLUT.getServoValue(turretAngle);
         } else {
             servoPosition = redTurretLUT.getServoValue(turretAngle);
+        }
+
+        //cursed asf:
+        if (side == G.Side.BLUE && G.match == G.Match.AUTO && follower.getPose().getY() > 50) {
+            servoPosition-=0.008; //0.018
         }
 
         setPositionOnce(servoPosition);

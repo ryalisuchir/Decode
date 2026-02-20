@@ -86,7 +86,6 @@ public class Spinner {
         closeGate();
     }
 
-
     public ParallelCommandGroup intake() {
         return new ParallelCommandGroup(new InstantCommand(this::intakeIn), new InstantCommand(this::openGate));
     }

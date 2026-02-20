@@ -1,8 +1,5 @@
 package org.firstinspires.ftc.teamcode.common.commandbase.subsystems;
 
-import static org.firstinspires.ftc.teamcode.common.commandbase.subsystems.Turret.baseGoalX;
-import static org.firstinspires.ftc.teamcode.common.commandbase.subsystems.Turret.baseGoalY;
-
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 import com.seattlesolvers.solverslib.command.InstantCommand;
@@ -37,6 +34,8 @@ public class Shooter extends SubsystemBase { //new pidf system rather than relyi
     private final Motor shooterMotor1, shooterMotor2;
     private final ServoImplEx hood;
     private final Follower follower;
+    private final double fixedGoalX;
+    private final double fixedGoalY;
 
     private Vector2d customPosition = null;
 
@@ -55,6 +54,8 @@ public class Shooter extends SubsystemBase { //new pidf system rather than relyi
         this.shooterMotor2 = shooterMotor2;
         this.hood = hood;
         this.follower = follower;
+        this.fixedGoalX = gX;
+        this.fixedGoalY = gY;
         flywheelController.setTolerance(G.SHOOTER_VELOCITY_TOLERANCE);
     }
 
@@ -111,8 +112,8 @@ public class Shooter extends SubsystemBase { //new pidf system rather than relyi
             goalX = customPosition.getX();
             goalY = customPosition.getY();
         } else {
-            goalX = baseGoalX;
-            goalY = baseGoalY;
+            goalX = fixedGoalX;
+            goalY = fixedGoalY;
         }
 
         double vx = follower.getVelocity().getXComponent();

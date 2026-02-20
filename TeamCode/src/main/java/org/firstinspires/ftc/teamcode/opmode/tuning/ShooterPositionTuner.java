@@ -29,7 +29,6 @@ import com.seattlesolvers.solverslib.hardware.servos.ServoEx;
 
 @TeleOp
 @Config
-@Disabled
 public class ShooterPositionTuner extends CommandOpMode {
 
     Halo r;

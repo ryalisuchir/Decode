@@ -30,7 +30,7 @@ public class CameraConfig {
     public static int TARGET_COLOR_MODE = 0; // 0=both purple+green, 1=purple only, 2=green only
 
     public static double Y_LEFT2 = 45;
-    public static Pose Y_LEFT2_POSE = new Pose(135, 45, Math.toRadians(0));
+    public static Pose Y_LEFT2_POSE = new Pose(134.37752161383284, 45, Math.toRadians(0));
     public static Pose Y_LEFT2_CONTROL_POSE = new Pose(116.41539193083571, 35.3342939481268, Math.toRadians(0));
 
     public static double Y_CENTER = 28;

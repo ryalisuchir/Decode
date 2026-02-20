@@ -123,9 +123,20 @@ public final class TurretMath {
     }
 
     public static double[] getCornerGoalCenter(CornerGoal goal, double robotY) {
-        double xBias = (robotY >= CLOSE_ZONE_MIN_Y) ? G.GOAL_CENTER_X_BIAS_CLOSE : G.GOAL_CENTER_X_BIAS_FAR;
-        double yBias = (robotY >= CLOSE_ZONE_MIN_Y) ? G.GOAL_CENTER_Y_BIAS_CLOSE : G.GOAL_CENTER_Y_BIAS_FAR;
-        if (goal == CornerGoal.LEFT_BLUE) {
+        boolean closeZone = robotY >= CLOSE_ZONE_MIN_Y;
+        boolean blueGoal = goal == CornerGoal.LEFT_BLUE;
+
+        double xBias;
+        double yBias;
+        if (blueGoal) {
+            xBias = closeZone ? G.GOAL_CENTER_X_BIAS_CLOSE_BLUE : G.GOAL_CENTER_X_BIAS_FAR_BLUE;
+            yBias = closeZone ? G.GOAL_CENTER_Y_BIAS_CLOSE_BLUE : G.GOAL_CENTER_Y_BIAS_FAR_BLUE;
+        } else {
+            xBias = closeZone ? G.GOAL_CENTER_X_BIAS_CLOSE_RED : G.GOAL_CENTER_X_BIAS_FAR_RED;
+            yBias = closeZone ? G.GOAL_CENTER_Y_BIAS_CLOSE_RED : G.GOAL_CENTER_Y_BIAS_FAR_RED;
+        }
+
+        if (blueGoal) {
             double gx = (GOAL_W / 2.0) + xBias;
             double gy = FIELD_SIZE - GOAL_H / 2.0 + yBias;
             return new double[]{gx, gy};
