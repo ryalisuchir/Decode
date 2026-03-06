@@ -22,6 +22,7 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
 import org.firstinspires.ftc.teamcode.common.commandbase.subsystems.Drivetrain;
 import org.firstinspires.ftc.teamcode.common.commandbase.subsystems.Kicker;
+import org.firstinspires.ftc.teamcode.common.commandbase.subsystems.SetShooterClass;
 import org.firstinspires.ftc.teamcode.common.commandbase.subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.common.commandbase.subsystems.Spinner;
 import org.firstinspires.ftc.teamcode.common.commandbase.subsystems.Turret;
@@ -65,6 +66,7 @@ public class Halo {
     public Spinner spinner;
     public Shooter shooter;
     public Turret turret;
+    public SetShooterClass setShooterClass;
 
     public static Pose endPose;
 
@@ -245,6 +247,7 @@ public class Halo {
         kicker = new Kicker(k1, k2, k3);
         spinner = new Spinner(i, t, g);
         shooter = new Shooter(s1, s2, r, dt.getFollower(), gX, gY);
+        setShooterClass = new SetShooterClass(s1, s2, r, dt.getFollower(), gX, gY);
         turret = new Turret(s, t1, t2, dt.getFollower());
     }
 
@@ -271,6 +274,38 @@ public class Halo {
         turret.loop();
         readColors();
         updateVision();
+        CommandScheduler.getInstance().run();
+    }
+
+    public void friedLoop() {
+        clearCache();
+        dt.loop();
+        spinner.periodic();
+        setShooterClass.loop(2);
+        turret.setPositionOnce(0.5);
+        readColors();
+        CommandScheduler.getInstance().run();
+    }
+
+    public void sortedLoop() {
+        clearCache();
+        dt.loop();
+        spinner.periodic();
+        setShooterClass.loop(1);
+        turret.loop();
+        updateVision();
+        readColors();
+        CommandScheduler.getInstance().run();
+    }
+
+    public void unsortedLoop() {
+        clearCache();
+        dt.loop();
+        spinner.periodic();
+        setShooterClass.loop(2);
+        turret.loop();
+        updateVision();
+        readColors();
         CommandScheduler.getInstance().run();
     }
 
@@ -318,7 +353,10 @@ public class Halo {
     public void updateVision() {
         LLResult result = Vision.getLatestResult();
         if (result != null) {
-            G.obeliskOptions = ObeliskVision.getObeliskFiducial(result);
+            G.ObeliskOptions detected = ObeliskVision.getObeliskFiducial(result);
+            if (detected != G.ObeliskOptions.NOT_FOUND) {
+                G.obeliskOptions = detected;
+            }
         }
     }
 

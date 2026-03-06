@@ -10,6 +10,8 @@ import com.seattlesolvers.solverslib.command.UninterruptibleCommand;
 import com.seattlesolvers.solverslib.command.button.Trigger;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.common.commandbase.commands.RapidAllCmd;
+import org.firstinspires.ftc.teamcode.common.commandbase.commands.RapidSlowerCmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.ResetShooterCmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.teleopspecific.KickOnePurpleTCmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.teleopspecific.KickOrderTCmd;
@@ -46,7 +48,7 @@ public class SubTest extends CommandOpMode {
 
     @Override
     public void initialize() {
-        r = new Halo(hardwareMap, G.BLUE_CUBE_START, G.Side.BLUE, true);
+        r = new Halo(hardwareMap, G.RED_FAR_START, G.Side.RED, true);
         r.init();
         r.dt.startDrive();
         suchir = gamepad1;
@@ -128,9 +130,13 @@ public class SubTest extends CommandOpMode {
         psLatch = psPressed;
 
         if (suchir.crossWasPressed()) { //rapid fire
-            schedule(
-                    RapidKickCommands.kickAndResetMany(r,3,1,2)
-            );
+            if (r.dt.getFollower().getPose().getY() < 40) {
+                schedule(new RapidSlowerCmd(r));
+            } else {
+                schedule(
+                        new RapidAllCmd(r)
+                );
+            }
         }
 
         if (suchir.circleWasPressed()) {

@@ -18,6 +18,7 @@ public class FollowPathCmd extends CommandBase {
     private long stallTimeoutMs = 2000;
 
     private double lastT;
+    private int lastPathNumber;
     private long lastProgressTime;
 
     public FollowPathCmd(Halo r, PathChain pathChain) {
@@ -88,6 +89,7 @@ public class FollowPathCmd extends CommandBase {
         follower.followPath(path, holdEnd);
 
         lastT = follower.getCurrentTValue();
+        lastPathNumber = (int) follower.getCurrentPathNumber();
         lastProgressTime = System.currentTimeMillis();
     }
 
@@ -96,7 +98,15 @@ public class FollowPathCmd extends CommandBase {
         if (!enableStallDetection) return;
 
         double currentT = follower.getCurrentTValue();
+        int currentPathNumber = (int) follower.getCurrentPathNumber();
         long now = System.currentTimeMillis();
+
+        if (currentPathNumber != lastPathNumber) {
+            lastPathNumber = currentPathNumber;
+            lastT = currentT;
+            lastProgressTime = now;
+            return;
+        }
 
         if (currentT - lastT > minDeltaT) {
             lastT = currentT;
@@ -106,7 +116,7 @@ public class FollowPathCmd extends CommandBase {
 
     @Override
     public boolean isFinished() {
-        if (follower.getCurrentTValue() >= completionThreshold) {
+        if (hasReachedCompletionThreshold()) {
             return true;
         }
 
@@ -119,6 +129,22 @@ public class FollowPathCmd extends CommandBase {
         }
 
         return false;
+    }
+
+    private boolean hasReachedCompletionThreshold() {
+        if (!follower.getFollowingPathChain()) {
+            return follower.getCurrentTValue() >= completionThreshold;
+        }
+
+        PathChain currentChain = follower.getCurrentPathChain();
+        if (currentChain == null) {
+            return follower.getCurrentTValue() >= completionThreshold;
+        }
+
+        int currentPathNumber = (int) follower.getCurrentPathNumber();
+        int lastPathNumberInChain = currentChain.size() - 1;
+        return currentPathNumber >= lastPathNumberInChain
+                && follower.getCurrentTValue() >= completionThreshold;
     }
 
     @Override

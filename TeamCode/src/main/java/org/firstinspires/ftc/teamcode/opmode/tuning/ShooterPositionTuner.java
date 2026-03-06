@@ -6,6 +6,7 @@ import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.teamcode.common.commandbase.commands.RapidSlowerCmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.utility.KickCommands;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.utility.RapidKickCommands;
 import org.firstinspires.ftc.teamcode.common.utility.G;
@@ -37,10 +38,10 @@ public class ShooterPositionTuner extends CommandOpMode {
     public static double turretPosition = G.TURRET_RESET;
 
     public static double hoodPosition = G.HOOD_MAX;
-    public static double P = 0.0012;
+    public static double P = 0.0023;
     public static double I = 0;
     public static double D = 0;
-    public static double F = 0.0004;
+    public static double F = 0.00036;
 
     public static double TARGET_VEL = 0.0;
     public static double POS_TOLERANCE = 0;
@@ -93,6 +94,11 @@ public class ShooterPositionTuner extends CommandOpMode {
             CommandScheduler.getInstance().schedule(RapidKickCommands.kickAndResetMany(r, 2, 3, 1));
         }
 
+        if (gamepad1.circleWasPressed()) {
+            telemetry.addLine("Cross!!");
+            CommandScheduler.getInstance().schedule(new RapidSlowerCmd(r));
+        }
+
         if (gamepad1.dpadLeftWasPressed()) {
             schedule(
                     new UninterruptibleCommand(KickCommands.kickAndReset(r.kicker, 1))
@@ -125,14 +131,17 @@ public class ShooterPositionTuner extends CommandOpMode {
         if (hoodPosition > G.HOOD_MAX) hoodPosition = G.HOOD_MAX;
 
         r.r.setPosition(hoodPosition);
-        r.turret.followGoal();
+//        r.turret.followGoal();
         r.dt.drive(gamepad1);
 
-//        r.t1.setPosition(turretPosition);
-//        r.t2.setPosition(turretPosition);
+        r.t1.setPosition(turretPosition);
+        r.t2.setPosition(turretPosition);
 
         telemetry.addData("Distance: ", r.dt.getGoalDistance());
         telemetry.addData("Pose: ", r.dt.getPose());
+        telemetry.addData("Best Turret Value: ", r.turret.getBestTurretPosition());
+        telemetry.addData("Best Shooting Value: ", r.shooter.velPos);
+        telemetry.addData("Best Hood Value: ", r.shooter.hoodPose);
         telemetry.addData("Shooter Velocity: ", r.s1.getCorrectedVelocity());
         telemetry.addData("Shooter Motor RPM: ", r.s1.getCorrectedVelocity() / 28 * 60);
         telemetry.addData("Hood Value: ", r.r.getPosition());
@@ -141,6 +150,27 @@ public class ShooterPositionTuner extends CommandOpMode {
         telemetry.addData("Section 3: ", G.ballColors[2]);
         telemetry.addData("Three Detected:", r.spinner.threeBallsDetected());
         telemetry.update();
+
+        //pose, turret pos
+//93, 7, 86, 0.44
+        //82, 17, 65, 0.5
+        //74, 10.33, 68, 0.47
+        //53, 16.39, 60.82, 0.455
+        //73, 28.99, 166.4, 0.135
+
+    //distance, vel, hood
+        //31, 1570, 0.65
+        //52, 1760, 0.76
+        //72, 1850, 0.78
+        //82, 1900, 0.78
+        //95, 2050, 0.80
+        //118, 2100, 0.80
+        //125, 2100, 0.84
+        //131, 2200, 0.82
+        //134, 2200, 0.82
+        //140, 2400, 0.85
+
+        //2400, 0.84
 
         r.noOuttakeLoop(r);
     }

@@ -77,11 +77,10 @@ public class RFar extends OpMode {
         CommandScheduler.getInstance().schedule(
                 new SequentialCommandGroup(
                         new ParallelCommandGroup(
-                                r.turret.clearCustom(),
                                 r.spinner.transfer(),
                                 new FollowPathCmd(r, p.shoot0()),
                                 new SequentialCommandGroup(
-                                        new WaitCommand(2700),
+                                        new WaitCommand(3000),
                                         new KickOrderAFarCmd(r)
                                 )
                         ),
@@ -107,7 +106,6 @@ public class RFar extends OpMode {
                         ),
                         new DeferredCommand(this::createCameraShootCommand),
                         new DeferredCommand(() -> new KickOrderAFarCmd(r)),
-
                         // Camera cycle 2
                         new ParallelCommandGroup(
                                 new Reset(r),

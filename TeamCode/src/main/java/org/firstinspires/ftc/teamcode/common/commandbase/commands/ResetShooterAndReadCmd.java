@@ -14,6 +14,7 @@ public class ResetShooterAndReadCmd extends ParallelCommandGroup {
                         KickCommands.resetAll(r.kicker),
                         new InstantCommand(() -> G.shooterKicking = false),
                         s == G.Side.BLUE ? r.turret.blueObeliskRead() : r.turret.redObeliskRead(),
+                        new InstantCommand(() -> G.turretState = G.TurretState.RED_CLOSE_OBELISK),
                         r.shooter.stopShooterFollow(),
                         i ? new IntakeCmd(r, x) : new InstantCommand(() -> r.spinner.transferStop())
                 )

@@ -22,6 +22,7 @@ public class Spinner {
     private long lastUpdateTimeNs = 0;
 
     private boolean autoTransferTriggered = false;
+    private int intakeActionVersion = 0;
 
     public Spinner(DcMotorEx i, DcMotorEx t, ServoImplEx g) {
         this.i = i;
@@ -57,7 +58,22 @@ public class Spinner {
         transferTargetPower = power;
     }
 
+    private int nextIntakeActionVersion() {
+        return ++intakeActionVersion;
+    }
+
+    private boolean isCurrentIntakeAction(int actionVersion) {
+        return actionVersion == intakeActionVersion;
+    }
+
+    private void applyIntakeStop() {
+        setIntakeTarget(0);
+        G.intakeState = G.IntakeState.STOPPED;
+        closeGate();
+    }
+
     public void intakeIn() {
+        nextIntakeActionVersion();
         G.intakeState = G.IntakeState.INTAKING;
         G.transferState = G.TransferState.INTAKING;
 
@@ -66,24 +82,24 @@ public class Spinner {
     }
 
     public SequentialCommandGroup intakeOut() {
+        int actionVersion = nextIntakeActionVersion();
         G.intakeState = G.IntakeState.STOPPED;
         return new SequentialCommandGroup(
-                new ParallelCommandGroup(
-                        new InstantCommand(() -> setIntakeTarget(-0.86)),
-                        new SequentialCommandGroup(
-                                new WaitCommand(450),
-                                new InstantCommand(this::closeGate)
-                        )
-                ),
-                new WaitCommand(750),
-                new InstantCommand(this::intakeStop)
+                new InstantCommand(() -> {
+                    if (!isCurrentIntakeAction(actionVersion)) return;
+                    closeGate();
+                    setIntakeTarget(-0.86);
+                }),
+                new WaitCommand(300),
+                new InstantCommand(() -> {
+                    if (isCurrentIntakeAction(actionVersion)) applyIntakeStop();
+                })
         );
     }
 
     public void intakeStop() {
-        setIntakeTarget(0);
-        G.intakeState = G.IntakeState.STOPPED;
-        closeGate();
+        nextIntakeActionVersion();
+        applyIntakeStop();
     }
 
     public ParallelCommandGroup intake() {
@@ -106,7 +122,11 @@ public class Spinner {
         }
 
         if (!threeBallsDetected()) {
-            return new ParallelCommandGroup(new SequentialCommandGroup(new InstantCommand(() -> setIntakeTarget(-0.6)), new WaitCommand(wait), new InstantCommand(() -> {
+            int actionVersion = nextIntakeActionVersion();
+            return new ParallelCommandGroup(new SequentialCommandGroup(new InstantCommand(() -> {
+                if (isCurrentIntakeAction(actionVersion)) setIntakeTarget(-0.6);
+            }), new WaitCommand(wait), new InstantCommand(() -> {
+                if (!isCurrentIntakeAction(actionVersion)) return;
                 setIntakeTarget(0);
                 G.intakeState = G.IntakeState.STOPPED;
                 g.setPosition(G.GATE_OPEN);
@@ -135,30 +155,7 @@ public class Spinner {
     }
 
     public void periodic() {
-        long now = System.nanoTime();
-
-        if (lastUpdateTimeNs == 0) {
-            lastUpdateTimeNs = now;
-        }
-
-        double dt = (now - lastUpdateTimeNs) * 1e-9;
-        lastUpdateTimeNs = now;
-
-        double delta = intakeTargetPower - currentIntakePower;
-
-        if (Math.abs(delta) <= 0.05) {
-            currentIntakePower = intakeTargetPower;
-        } else {
-            double maxDelta = G.POWER_RAMP_PER_SEC * dt;
-
-            if (Math.abs(delta) > maxDelta) {
-                currentIntakePower += Math.signum(delta) * maxDelta;
-            } else {
-                currentIntakePower = intakeTargetPower;
-            }
-        }
-
-        i.setPower(currentIntakePower);
+        i.setPower(intakeTargetPower);
         t.setPower(transferTargetPower);
 
         if (oneBallDetected()) {

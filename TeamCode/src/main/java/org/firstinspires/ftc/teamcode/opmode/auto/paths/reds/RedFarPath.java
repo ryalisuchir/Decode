@@ -62,19 +62,19 @@ public class RedFarPath {
                                 intakeHpControlPos,
                                 intakeHpPos
                         )
-                ).setLinearHeadingInterpolation(intakeHpPos.getHeading(), shootPos.getHeading())
-                .addPath(
-                        new BezierLine(
-                                intakeHpPos,
-                                intakeHpBackPos
-                        )
-                ).setLinearHeadingInterpolation(intakeHpPos.getHeading(), shootPos.getHeading())
-                .addPath(
-                        new BezierLine(
-                                intakeHpBackPos,
-                                intakeHpPos
-                        )
-                ).setLinearHeadingInterpolation(intakeHpPos.getHeading(), shootPos.getHeading())
+                ).setLinearHeadingInterpolation(shootPos.getHeading(), intakeHpPos.getHeading())
+//                .addPath(
+//                        new BezierLine(
+//                                intakeHpPos,
+//                                intakeHpBackPos
+//                        )
+//                ).setLinearHeadingInterpolation(intakeHpPos.getHeading(), intakeHpBackPos.getHeading())
+//                .addPath(
+//                        new BezierLine(
+//                                intakeHpBackPos,
+//                                intakeHpPos
+//                        )
+//                ).setLinearHeadingInterpolation(intakeHpBackPos.getHeading(), intakeHpPos.getHeading())
                 .addPath(
                         new BezierLine(
                                 intakeHpPos,

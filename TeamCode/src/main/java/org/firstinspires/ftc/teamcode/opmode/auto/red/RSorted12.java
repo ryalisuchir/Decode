@@ -9,6 +9,7 @@ import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
 
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.RapidSlowerCmd;
+import org.firstinspires.ftc.teamcode.common.commandbase.commands.RapidSlowerSpikeCmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.utility.FollowPathCmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.inits.CloseInitCmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.ResetShooterAndReadCmd;
@@ -20,18 +21,19 @@ import org.firstinspires.ftc.teamcode.common.utility.peacock.util.telemetry.Peac
 import org.firstinspires.ftc.teamcode.opmode.auto.paths.reds.FriendlyRedClosePath18;
 import org.firstinspires.ftc.teamcode.opmode.auto.paths.reds.RedClosePath18;
 import org.firstinspires.ftc.teamcode.opmode.auto.paths.reds.RedClosePath21;
+import org.firstinspires.ftc.teamcode.opmode.auto.paths.reds.RedSortedPath12;
 
 @Autonomous
-public class RFriendly18 extends OpMode {
+public class RSorted12 extends OpMode {
     Halo r;
-    FriendlyRedClosePath18 p;
+    RedSortedPath12 p;
 
     @Override
     public void init() {
         CommandScheduler.getInstance().reset();
         r = new Halo(hardwareMap, G.RED_CUBE_START, G.Side.RED, true);
         r.init();
-        p = new FriendlyRedClosePath18(r);
+        p = new RedSortedPath12(r);
         CommandScheduler.getInstance().schedule(new CloseInitCmd(r));
         telemetry = new PeacockTelemetry(this);
 
@@ -39,7 +41,7 @@ public class RFriendly18 extends OpMode {
 
     public void init_loop() {
         telemetry.addLine("Created all subsystems.");
-        telemetry.addData("Initialized:", "18 Ball Friendly Auto (Red)");
+        telemetry.addData("Initialized:", "12 Ball Sorted Auto (Red)");
         telemetry.addData("Obelisk Reading:", G.obeliskOptions);
         r.initLoop(r);
         CommandScheduler.getInstance().run();
@@ -50,78 +52,54 @@ public class RFriendly18 extends OpMode {
         CommandScheduler.getInstance().schedule(
                 new SequentialCommandGroup(
                         new ParallelCommandGroup(
-                                r.turret.red18Pos1(),
                                 r.spinner.transfer(),
                                 new FollowPathCmd(r, p.next()), //shoot preloads
-                                new SequentialCommandGroup(
-                                        new WaitCommand(2000),
-                                        new RapidSlowerCmd(r)
-                                )
+                                new ResetShooterAndReadCmd(r, false, 0, G.Side.RED)
                         ),
-                        r.turret.red18Pos2(),
+                        new WaitCommand(300),
+                        r.turret.red12Pos(),
+                        new WaitCommand(800),
+                        new DeferredCommand(() -> new RapidSlowerSpikeCmd(r, G.obeliskOptions, 1)),
                         new ParallelCommandGroup(
-                                new DeferredCommand(() -> new ResetShooterCmd(r, 3)),
-                                r.spinner.intake(),
-                                new FollowPathCmd(r, p.next()), //intake mid and go to shoot
-                                new SequentialCommandGroup(
-                                        new WaitCommand(900),
-                                        new InstantCommand(() -> G.turretState = G.TurretState.FOLLOWING)
-                                )
-                        ),
-                        r.turret.red18Pos2(),
-                        new RapidSlowerCmd(r),
-                        //this is gate sequence 1:
-                        new ParallelCommandGroup(
-                                new DeferredCommand(() -> new ResetShooterCmd(r, 4)),
+                                new DeferredCommand(() -> new ResetShooterCmd(r, 4, r.turret.red12Pos())),
                                 r.spinner.intake(),
                                 new FollowPathCmd(r, p.next()).withStallTimeout(0.04, 1300) //this is gate intake
                         ),
-                        new FollowPathCmd(r, p.next()), //gate intake's shooting
-                        r.turret.red18Pos2(),
-                        new RapidSlowerCmd(r),
-                        //end of gate sequence 1 ^^
-                        //this is gate sequence 2:
-                        new ParallelCommandGroup(
-                                new DeferredCommand(() -> new ResetShooterCmd(r, 5)),
-                                r.spinner.intake(),
-                                new FollowPathCmd(r, p.next()).withStallTimeout(0.04, 1300) //this is gate intake
-                        ),
-                        new FollowPathCmd(r, p.next()), //gate intake's shooting
-                        r.turret.red18Pos2(),
-                        new RapidSlowerCmd(r),
-                        //end of gate sequence 2 ^^
-                        //this is gate sequence 3:
-                        new ParallelCommandGroup(
-                                new DeferredCommand(() -> new ResetShooterCmd(r, 5)),
-                                r.spinner.intake(),
-                                new FollowPathCmd(r, p.next()).withStallTimeout(0.04, 1300) //this is gate intake
-                        ),
-                        new FollowPathCmd(r, p.next()), //gate intake's shooting
-                        r.turret.red18Pos2(),
-                        new RapidSlowerCmd(r),
-                                                r.turret.clearCustom(),
-                                                new WaitCommand(800),
+                        new DeferredCommand(() -> new RapidSlowerSpikeCmd(r, G.obeliskOptions, 2)),
+                        new WaitCommand(800),
                         new ParallelCommandGroup(
                                 r.spinner.intake(),
-                                new FollowPathCmd(r, p.next()), //intakes spike closest to obelisk
-                                new DeferredCommand(() -> new ResetShooterCmd(r, 2.5))
+                                new FollowPathCmd(r, p.next()),
+                                new DeferredCommand(() -> new ResetShooterCmd(r, 6, r.turret.red12Pos()))
                         ),
+                        r.turret.red12Pos(),
                         new ParallelCommandGroup(
                                 new InstantCommand(() -> r.spinner.transferStart()),
-                                new RapidSlowerCmd(r)
+                                new DeferredCommand(() -> new RapidSlowerSpikeCmd(r, G.obeliskOptions, 3))
                         ),
-                        new FollowPathCmd(r, p.next())
+                        new WaitCommand(800),
+                        new ParallelCommandGroup(
+                                r.spinner.intake(),
+                                new FollowPathCmd(r, p.next()),
+                                new DeferredCommand(() -> new ResetShooterCmd(r, 4.5, r.turret.red12Pos()))
+                        ),
+                        new InstantCommand(() -> r.spinner.transferStart()),
+                        new ParallelCommandGroup(
+                                new InstantCommand(() -> r.spinner.transferStart()),
+                                new DeferredCommand(() -> new RapidSlowerSpikeCmd(r, G.obeliskOptions, 1))
+                        ),
+                        new ParallelCommandGroup(
+                                new FollowPathCmd(r, p.next()),
+                                new DeferredCommand(() -> new ResetShooterCmd(r))
+                        )
                 ));
     }
 
     @Override
     public void loop() {
-        telemetry.addData("1: ", G.ballColors[0]);
-        telemetry.addData("2: ", G.ballColors[1]);
-        telemetry.addData("3: ", G.ballColors[2]);
-        telemetry.addData("Intake state: ", G.intakeState);
+        telemetry.addData("Obelisk: ", G.obeliskOptions);
         telemetry.update();
-        r.loop(r);
+        r.sortedLoop();
     }
 
     @Override

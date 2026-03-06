@@ -12,7 +12,7 @@ public class RedClosePath18 {
     private final Follower f;
     private final G.Side side;
 
-    public Pose startPos, shoot0Pos, intakeMidHoldPos, intakeMidPos, shoot1Pos, gateIntakePos, shootGatePos, intakeAudHoldPos, intakeAudPos, shootAudPos, intakeObeliskHoldPos, intakeObeliskPos, shootObeliskPos;
+    public Pose startPos, shoot0Pos, intakeMidHoldPos, intakeMidPos, shoot1Pos, gateIntakePos, shootGatePos, intakeAudHoldPos, intakeAudPos, shootAudPos, intakeObeliskHoldPos, intakeObeliskPos, shootObeliskPos, initialPark, finalPark;
     private int index;
 
     public RedClosePath18(Halo r) {
@@ -24,14 +24,18 @@ public class RedClosePath18 {
         intakeMidHoldPos = alliancePose(new Pose(101.27012987012986, 61.11558441558441));
         intakeMidPos = alliancePose(new Pose(127, 58));
         shoot1Pos = alliancePose(new Pose(89, 75, Math.toRadians(-26)));
-        gateIntakePos = alliancePose(new Pose(133, 58, Math.toRadians(25)));
+        gateIntakePos = alliancePose(new Pose(134, 58, Math.toRadians(25)));
         shootGatePos = alliancePose(new Pose(89, 75, Math.toRadians(-26)));
-        intakeAudHoldPos = alliancePose(new Pose(95.34025974025975, 30.354545454545455));
-        intakeAudPos = alliancePose(new Pose(127, 32, Math.toRadians(-44)));
-        shootAudPos = alliancePose(new Pose(88, 77, Math.toRadians(0)));
-        intakeObeliskHoldPos = alliancePose(new Pose(108.93636363636365, 80.64155844155844));
-        intakeObeliskPos = alliancePose(new Pose(118, 81, Math.toRadians(360)));
-        shootObeliskPos = alliancePose(new Pose(90, 110, Math.toRadians(360)));
+
+        intakeAudHoldPos = alliancePose(new Pose(95.34025974025975, 33));
+        intakeAudPos = alliancePose(new Pose(127, 35, Math.toRadians(-44)));
+        shootAudPos = alliancePose(new Pose(88, 77, Math.toRadians(-26)));
+
+        intakeObeliskHoldPos = alliancePose(new Pose(108.93636363636365, 82));
+        intakeObeliskPos = alliancePose(new Pose(120.5, 84, Math.toRadians(0)));
+        shootObeliskPos = alliancePose(new Pose(90, 114, Math.toRadians(0)));
+
+        initialPark = alliancePose(new Pose(90, 120, Math.toRadians(0)));
 
         index = 0;
     }
@@ -127,9 +131,9 @@ public class RedClosePath18 {
                 .addPath(
                         new BezierLine(
                                 shoot1Pos,
-                                shootObeliskPos
+                                initialPark
                         )
-                ).setLinearHeadingInterpolation(shoot1Pos.getHeading(), shootObeliskPos.getHeading())
+                ).setLinearHeadingInterpolation(shoot1Pos.getHeading(), initialPark.getHeading())
                 .build();
     }
 

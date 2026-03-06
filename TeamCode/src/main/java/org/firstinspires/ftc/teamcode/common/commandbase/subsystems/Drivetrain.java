@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
+import com.seattlesolvers.solverslib.geometry.Pose2d;
 import com.seattlesolvers.solverslib.geometry.Vector2d;
 
 import org.firstinspires.ftc.teamcode.common.utility.C;
@@ -44,15 +45,15 @@ public class Drivetrain extends SubsystemBase {
     }
 
     public double getGoalDistance() {
-        Vector2d goal = (a == G.Side.BLUE)
+        Pose goal = (a == G.Side.BLUE)
                 ? G.BLUE_CASTLE
                 : G.RED_CASTLE;
 
         return TurretMath.getDistanceToGoalPinpoint(f, goal.getX(), goal.getY());
     }
 
-    public Vector getGoalVector() {
-        Vector2d goal = (a == G.Side.BLUE)
+    public Pose getGoalVector() {
+        Pose goal = (a == G.Side.BLUE)
                 ? G.BLUE_CASTLE
                 : G.RED_CASTLE;
 

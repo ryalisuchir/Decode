@@ -24,13 +24,16 @@ public class FriendlyRedClosePath18 {
         intakeMidHoldPos = alliancePose(new Pose(101.27012987012986, 61.11558441558441));
         intakeMidPos = alliancePose(new Pose(127, 58));
         shoot1Pos = alliancePose(new Pose(89, 75, Math.toRadians(-26)));
-        gateIntakePos = alliancePose(new Pose(133, 58, Math.toRadians(25)));
+        gateIntakePos = alliancePose(new Pose(134, 58, Math.toRadians(25)));
         shootGatePos = alliancePose(new Pose(89, 75, Math.toRadians(-26)));
-        intakeAudHoldPos = alliancePose(new Pose(95.34025974025975, 30.354545454545455));
-        intakeAudPos = alliancePose(new Pose(127, 32, Math.toRadians(-44)));
-        shootAudPos = alliancePose(new Pose(88, 77, Math.toRadians(0)));
-        intakeObeliskHoldPos = alliancePose(new Pose(108.93636363636365, 80.64155844155844));
-        intakeObeliskPos = alliancePose(new Pose(118, 81, Math.toRadians(360)));
+
+//        intakeAudHoldPos = alliancePose(new Pose(95.34025974025975, 33));
+//        intakeAudPos = alliancePose(new Pose(127, 35, Math.toRadians(-44)));
+//        shootAudPos = alliancePose(new Pose(88, 77, Math.toRadians(0)));
+
+        intakeObeliskHoldPos = alliancePose(new Pose(109.35134922714175, 81.88495677233429));
+        intakeObeliskPos = alliancePose(new Pose(123.18731988472624, 81, Math.toRadians(0)));
+
         shootObeliskPos = alliancePose(new Pose(90, 110, Math.toRadians(360)));
 
         index = 0;
@@ -86,28 +89,28 @@ public class FriendlyRedClosePath18 {
                 .build();
     }
 
-    public PathChain intakeFarSequence() {
-        return f.pathBuilder().addPath(
-                        new BezierCurve( //intake audience spike
-                                shootGatePos,
-                                intakeAudHoldPos,
-                                intakeAudPos
-                        )
-                ).setTangentHeadingInterpolation()
-                .addPath( //shoot audience spike
-                        new BezierLine(
-                                intakeAudPos,
-                                shootAudPos
-                        )
-                ).setLinearHeadingInterpolation(intakeAudPos.getHeading(), shootAudPos.getHeading())
-                // .setReversed()
-                .build();
-    }
+//    public PathChain intakeFarSequence() {
+//        return f.pathBuilder().addPath(
+//                        new BezierCurve( //intake audience spike
+//                                shootGatePos,
+//                                intakeAudHoldPos,
+//                                intakeAudPos
+//                        )
+//                ).setTangentHeadingInterpolation()
+//                .addPath( //shoot audience spike
+//                        new BezierLine(
+//                                intakeAudPos,
+//                                shootAudPos
+//                        )
+//                ).setLinearHeadingInterpolation(intakeAudPos.getHeading(), shootAudPos.getHeading())
+//                // .setReversed()
+//                .build();
+//    }
 
     public PathChain intakeCloseAndShoot() {
         return f.pathBuilder().addPath(
                         new BezierCurve(
-                                shootAudPos,
+                                shootGatePos,
                                 intakeObeliskHoldPos,
                                 intakeObeliskPos
                         )
@@ -127,9 +130,9 @@ public class FriendlyRedClosePath18 {
                 .addPath(
                         new BezierLine(
                                 shoot1Pos,
-                                shootObeliskPos
+                                G.RED_CUBE_START
                         )
-                ).setLinearHeadingInterpolation(shoot1Pos.getHeading(), shootObeliskPos.getHeading())
+                ).setLinearHeadingInterpolation(shoot1Pos.getHeading(), G.RED_CUBE_START.getHeading())
                 .build();
     }
 
@@ -142,9 +145,10 @@ public class FriendlyRedClosePath18 {
             case 3: return shootGateSequence();
             case 4: return gateSequence();
             case 5: return shootGateSequence();
-            case 6: return intakeCloseAndShoot();
-            case 7: return gateSequence();
-            case 8: return shootGateSequence();
+            case 6: return gateSequence();
+            case 7: return shootGateSequence();
+//            case 6: return intakeFarSequence();
+            case 8: return intakeCloseAndShoot();
             case 9: return park();
             default: return null;
         }

@@ -20,7 +20,7 @@ import org.firstinspires.ftc.teamcode.common.utility.G;
 import org.firstinspires.ftc.teamcode.common.utility.Halo;
 
 @TeleOp
-public class RedFailsafeTele extends CommandOpMode {
+public class FailsafeTele extends CommandOpMode {
 
     Halo r;
     private boolean hasStarted = false;
@@ -45,8 +45,6 @@ public class RedFailsafeTele extends CommandOpMode {
     public void initialize() {
         r = new Halo(hardwareMap, G.RED_CUBE_START, G.Side.RED, false);
         r.dt.startDrive();
-        r.shooter.setCustomDistance(99.80403458213259, 99.80403458213254);
-        r.turret.setPositionOnce(0.32);
         ahnaf = gamepad1;
         swetha = gamepad2;
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
@@ -107,7 +105,7 @@ public class RedFailsafeTele extends CommandOpMode {
         lastLoopTimeNs = now;
 
         if ((telemetryDivider++ & 0x3) == 0) {
-            telemetry.addLine("FAILSAFE BLUE SIDE TELE RUNNING ");
+            telemetry.addLine("FAILSAFE RED SIDE TELE RUNNING ");
             telemetry.update();
         }
 
@@ -168,10 +166,6 @@ public class RedFailsafeTele extends CommandOpMode {
             schedule(KickCommands.kickAndResetMany(r.kicker, 1, 2, 3));
         }
 
-        if (swetha.crossWasPressed()) {
-            G.turretState = G.TurretState.FOLLOWING;
-        }
-
         if (swetha.dpadLeftWasPressed()) {
             schedule(
                     new UninterruptibleCommand(KickCommands.kickAndReset(r.kicker, 1))
@@ -204,6 +198,6 @@ public class RedFailsafeTele extends CommandOpMode {
             threeBallRumbleLatched = false;
         }
 
-        r.loop(r);
+        r.friedLoop();
     }
 }

@@ -39,7 +39,7 @@ public class TurretTuner extends CommandOpMode {
 
     @Override
     public void initialize() {
-        r = new Halo(hardwareMap, G.BLUE_CUBE_START, G.Side.BLUE, true);
+        r = new Halo(hardwareMap, G.RED_CUBE_START, G.Side.RED, true);
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         r.initLoop(r);
         r.dt.startDrive();

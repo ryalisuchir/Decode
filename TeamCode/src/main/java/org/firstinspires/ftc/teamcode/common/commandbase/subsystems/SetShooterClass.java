@@ -9,13 +9,14 @@ import com.seattlesolvers.solverslib.geometry.Vector2d;
 import com.seattlesolvers.solverslib.hardware.motors.Motor;
 
 import org.firstinspires.ftc.teamcode.common.utility.G;
+import org.firstinspires.ftc.teamcode.common.utility.functions.TurretMath;
 import org.firstinspires.ftc.teamcode.common.utility.functions.luts.ShooterParams;
+import org.firstinspires.ftc.teamcode.common.utility.functions.luts.TimeOfFlightLUT;
 import org.firstinspires.ftc.teamcode.common.utility.peacock.follower.Follower;
-import org.firstinspires.ftc.teamcode.common.utility.peacock.geometry.Pose;
 import org.firstinspires.ftc.teamcode.common.utility.shooter.ShooterLUT;
 
 
-public class Shooter extends SubsystemBase { //new pidf system rather than relying on ramp down
+public class SetShooterClass extends SubsystemBase { //new pidf system rather than relying on ramp down
 
     private final PIDFController flywheelController = new PIDFController(
             new PIDFCoefficients(
@@ -33,13 +34,15 @@ public class Shooter extends SubsystemBase { //new pidf system rather than relyi
     private final Motor shooterMotor1, shooterMotor2;
     private final ServoImplEx hood;
     private final Follower follower;
+    private final double fixedGoalX;
+    private final double fixedGoalY;
 
     private Vector2d customPosition = null;
 
     private final ShooterLUT shooterLUT = new ShooterLUT();
-    public double hoodPose, velPos;
+    private final TimeOfFlightLUT timeOfFlightLUT = new TimeOfFlightLUT();
 
-    public Shooter(
+    public SetShooterClass(
             Motor shooterMotor1,
             Motor shooterMotor2,
             ServoImplEx hood,
@@ -51,6 +54,8 @@ public class Shooter extends SubsystemBase { //new pidf system rather than relyi
         this.shooterMotor2 = shooterMotor2;
         this.hood = hood;
         this.follower = follower;
+        this.fixedGoalX = gX;
+        this.fixedGoalY = gY;
         flywheelController.setTolerance(G.SHOOTER_VELOCITY_TOLERANCE);
     }
 
@@ -90,7 +95,7 @@ public class Shooter extends SubsystemBase { //new pidf system rather than relyi
         this.customPosition = null;
     }
 
-    public void loop() {
+    public void loop(double dub) {
 
         reached = flywheelController.atSetPoint();
 
@@ -100,24 +105,23 @@ public class Shooter extends SubsystemBase { //new pidf system rather than relyi
             return;
         }
 
-        double vx = follower.getVelocity().getXComponent();
-        double vy = follower.getVelocity().getYComponent();
-        Pose lutInputPose = (customPosition != null)
-                ? new Pose(customPosition.getX(), customPosition.getY())
-                : new Pose(follower.getPose().getX(), follower.getPose().getY());
-        ShooterParams params = shooterLUT.getShooterValue(lutInputPose, G.side);
+        if (dub==1) {
+            hood.setPosition(
+                    0.86
+            );
 
-        hood.setPosition(
-                clamp(params.hoodPos, G.HOOD_LOWERED, G.HOOD_MAX)
-        );
+            targetVelocity = 1600;
+        }
 
-        double velocityOffset = G.SHOOTER_SOTM_ENABLED ? shotVelocityOffset(vx, vy) * G.SHOOTER_SOTM_RPM_GAIN : 0.0;
-        targetVelocity = params.shooterVel + velocityOffset;
+        if (dub==2) {
+            hood.setPosition(
+                    0.83
+            );
+
+            targetVelocity = 1600;
+        }
 
         double flywheelVel = shooterMotor1.getCorrectedVelocity();
-
-        velPos = targetVelocity;
-        hoodPose = params.hoodPos;
 
         flywheelController.setSetPoint(Math.min(targetVelocity, 2700));
         double power = flywheelController.calculate(flywheelVel);

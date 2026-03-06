@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.common.utility.functions;
 
 import org.firstinspires.ftc.teamcode.common.utility.G;
 import org.firstinspires.ftc.teamcode.common.utility.peacock.follower.Follower;
+import org.firstinspires.ftc.teamcode.common.utility.peacock.geometry.Pose;
 import org.firstinspires.ftc.teamcode.common.utility.peacock.math.Vector;
 
 public final class TurretMath {
@@ -154,9 +155,15 @@ public final class TurretMath {
         return Math.hypot(dxOdo, dyOdo);
     }
 
-    public static Vector getVectorToGoalPinpoint(Follower f, double gX, double gY) {
+    public static double getDistanceToGoalPinpoint(double currX, double currY, double gX, double gY) {
+        double dxOdo = currX - gX;
+        double dyOdo = currY - gY;
+        return Math.hypot(dxOdo, dyOdo);
+    }
+
+    public static Pose getVectorToGoalPinpoint(Follower f, double gX, double gY) {
         double dxOdo = f.getPose().getX() - gX;
         double dyOdo = f.getPose().getY() - gY;
-        return new Vector(dxOdo, dyOdo);
+        return new Pose(dxOdo, dyOdo);
     }
 }

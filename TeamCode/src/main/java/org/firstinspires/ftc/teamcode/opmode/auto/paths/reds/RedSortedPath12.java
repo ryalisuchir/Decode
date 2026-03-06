@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.opmode.auto.paths.blues;
+package org.firstinspires.ftc.teamcode.opmode.auto.paths.reds;
 
 import org.firstinspires.ftc.teamcode.common.utility.G;
 import org.firstinspires.ftc.teamcode.common.utility.Halo;
@@ -8,32 +8,34 @@ import org.firstinspires.ftc.teamcode.common.utility.peacock.geometry.BezierLine
 import org.firstinspires.ftc.teamcode.common.utility.peacock.geometry.Pose;
 import org.firstinspires.ftc.teamcode.common.utility.peacock.paths.PathChain;
 
-public class BlueClosePath18 {
+public class RedSortedPath12 {
     private final Follower f;
     private final G.Side side;
 
-    public Pose startPos, shoot0Pos, intakeMidHoldPos, intakeMidPos, shoot1Pos, gateIntakePos, shootGatePos, intakeAudHoldPos, intakeAudPos, shootAudPos, intakeObeliskHoldPos, intakeObeliskPos, shootObeliskPos;
+    public Pose startPos, shootPos, intakeMidHoldPos, intakeMidPos, openGateHoldPos, openGatePos, shootMidHoldPos, shoot1Pos, intakeAudHoldPos, intakeAudPos, shootAudPos, intakeObeliskHoldPos, intakeObeliskPos, shootObeliskPos, initialPark, finalPark;
     private int index;
 
-    public BlueClosePath18(Halo r) {
+    public RedSortedPath12(Halo r) {
         this.f = r.dt.getFollower();
         this.side = G.side;
 
-        startPos = G.BLUE_CUBE_START;
-        shoot0Pos = alliancePose(new Pose(91, 92, Math.toRadians(0)));
+        startPos = G.RED_CUBE_START;
+
+        shootPos = alliancePose(new Pose(90, 77, Math.toRadians(0)));
         intakeMidHoldPos = alliancePose(new Pose(101.27012987012986, 61.11558441558441));
-        intakeMidPos = alliancePose(new Pose(127, 58));
-        shoot1Pos = alliancePose(new Pose(89, 75, Math.toRadians(-26)));
-        gateIntakePos = alliancePose(new Pose(134, 58, Math.toRadians(25)));
-        shootGatePos = alliancePose(new Pose(89, 75, Math.toRadians(-26)));
+        intakeMidPos = alliancePose(new Pose(130, 58, Math.toRadians(0)));
+
+        openGatePos = alliancePose(new Pose(129.72334293948126, 64.04322766570606, Math.toRadians(0)));
+        openGateHoldPos = alliancePose(new Pose(116.36599423631122, 59.90922190201727));
 
         intakeAudHoldPos = alliancePose(new Pose(95.34025974025975, 33));
-        intakeAudPos = alliancePose(new Pose(127, 35, Math.toRadians(-44)));
-        shootAudPos = alliancePose(new Pose(88, 77, Math.toRadians(0)));
+        intakeAudPos = alliancePose(new Pose(135, 35, Math.toRadians(-44)));
 
         intakeObeliskHoldPos = alliancePose(new Pose(108.93636363636365, 80.64155844155844));
-        intakeObeliskPos = alliancePose(new Pose(118, 81, Math.toRadians(360)));
-        shootObeliskPos = alliancePose(new Pose(90, 110, Math.toRadians(360)));
+        intakeObeliskPos = alliancePose(new Pose(124.5, 81, Math.toRadians(0)));
+
+        initialPark = alliancePose(new Pose(105, 120, Math.toRadians(-90)));
+        finalPark = alliancePose(new Pose(105, 135.0201729106628, Math.toRadians(-90)));
 
         index = 0;
     }
@@ -42,56 +44,41 @@ public class BlueClosePath18 {
         return f.pathBuilder().addPath(
                         new BezierLine(
                                 startPos,
-                                shoot0Pos
+                                shootPos
                         )
-                ).setLinearHeadingInterpolation(startPos.getHeading(), shoot0Pos.getHeading())
-
+                ).setLinearHeadingInterpolation(startPos.getHeading(), shootPos.getHeading())
+                .addParametricCallback(0, () -> f.setMaxPower(1))
                 .build();
     }
 
     public PathChain intakeMidAndShoot() {
         return f.pathBuilder().addPath(
                         new BezierCurve( //to get to the intake pos
-                                shoot0Pos,
+                                shootPos,
                                 intakeMidHoldPos,
                                 intakeMidPos
                         )
-                ).setTangentHeadingInterpolation()
+                ).setLinearHeadingInterpolation(shootPos.getHeading(), intakeMidPos.getHeading())
+                .addPath(
+                        new BezierCurve(
+                                intakeMidPos,
+                                openGateHoldPos,
+                                openGatePos
+                        )
+                ).setLinearHeadingInterpolation(intakeMidPos.getHeading(), openGatePos.getHeading())
                 .addPath(
                         new BezierLine( //to get to the shoot pos
-                                intakeMidPos,
-                                shoot1Pos
+                                openGatePos,
+                                shootPos
                         )
-                ).setTangentHeadingInterpolation()
-                .setReversed()
-                .build();
-    }
-
-    public PathChain gateSequence() {
-        return f.pathBuilder().addPath(
-                        new BezierLine(
-                                shoot1Pos,
-                                gateIntakePos
-                        )
-                ).setLinearHeadingInterpolation(shoot1Pos.getHeading(), gateIntakePos.getHeading())
-                .build();
-    }
-
-    public PathChain shootGateSequence() {
-        return f.pathBuilder().addPath(
-                        new BezierLine(
-                                gateIntakePos,
-                                shootGatePos
-                        )
-                ).setTangentHeadingInterpolation()
-                .setReversed()
+                ).setLinearHeadingInterpolation(openGatePos.getHeading(), shootPos.getHeading())
                 .build();
     }
 
     public PathChain intakeFarSequence() {
         return f.pathBuilder().addPath(
                         new BezierCurve( //intake audience spike
-                                shootGatePos,
+                                shootPos,
                                 intakeAudHoldPos,
                                 intakeAudPos
                         )
@@ -99,9 +86,9 @@ public class BlueClosePath18 {
                 .addPath( //shoot audience spike
                         new BezierLine(
                                 intakeAudPos,
-                                shootAudPos
+                                shootPos
                         )
-                ).setLinearHeadingInterpolation(intakeAudPos.getHeading(), shootAudPos.getHeading())
+                ).setLinearHeadingInterpolation(intakeAudPos.getHeading(), shootPos.getHeading())
                 // .setReversed()
                 .build();
     }
@@ -109,17 +96,19 @@ public class BlueClosePath18 {
     public PathChain intakeCloseAndShoot() {
         return f.pathBuilder().addPath(
                         new BezierCurve(
-                                shootAudPos,
+                                shootPos,
                                 intakeObeliskHoldPos,
                                 intakeObeliskPos
                         )
                 ).setTangentHeadingInterpolation()
+                .addParametricCallback(0, () -> f.setMaxPower(0.5))
                 .addPath(
                         new BezierLine(
                                 intakeObeliskPos,
-                                shoot1Pos
+                                shootPos
                         )
-                ).setLinearHeadingInterpolation(intakeObeliskPos.getHeading(), shoot1Pos.getHeading())
+                ).setLinearHeadingInterpolation(intakeObeliskPos.getHeading(), shootPos.getHeading())
+                .addParametricCallback(0.5, () -> f.setMaxPower(1))
                 //.setReversed()
                 .build();
     }
@@ -128,10 +117,17 @@ public class BlueClosePath18 {
         return f.pathBuilder()
                 .addPath(
                         new BezierLine(
-                                shoot1Pos,
-                                G.BLUE_CUBE_START
+                                shootPos,
+                                initialPark
                         )
-                ).setLinearHeadingInterpolation(shoot1Pos.getHeading(), G.BLUE_CUBE_START.getHeading())
+                ).setLinearHeadingInterpolation(shootPos.getHeading(), initialPark.getHeading())
+                .addPath(
+                        new BezierLine(
+                                initialPark,
+                                finalPark
+                        )
+                ).setLinearHeadingInterpolation(initialPark.getHeading(), finalPark.getHeading())
+                .addParametricCallback(0.8, () -> f.setMaxPower(0.5))
                 .build();
     }
 
@@ -140,13 +136,9 @@ public class BlueClosePath18 {
         switch (index++) {
             case 0: return score0();
             case 1: return intakeMidAndShoot();
-            case 2: return gateSequence();
-            case 3: return shootGateSequence();
-            case 4: return gateSequence();
-            case 5: return shootGateSequence();
-            case 6: return intakeFarSequence();
-            case 7: return intakeCloseAndShoot();
-            case 8: return park();
+            case 2: return intakeFarSequence();
+            case 3: return intakeCloseAndShoot();
+            case 4: return park();
             default: return null;
         }
     }

@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.common.utility;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
+import com.seattlesolvers.solverslib.geometry.Pose2d;
 import com.seattlesolvers.solverslib.geometry.Vector2d;
 
 import org.firstinspires.ftc.teamcode.common.utility.peacock.geometry.Pose;
@@ -32,13 +33,13 @@ public class G {
     public static Pose BLUE_CUBE_START = new Pose(32, 134, Math.toRadians(-90));
     public static Pose RED_CUBE_START = BLUE_CUBE_START.mirror();
     public static Pose RED_FAR_START = new Pose(80.71469740634006, 8.922190201729103, Math.toRadians(0));
-    public static Pose BLUE_FAR_START = new Pose(62.84726224783862, 8.922190201729103, Math.toRadians(180));
+    public static Pose BLUE_FAR_START = new Pose(52, 8.922190201729103, Math.toRadians(180));
 
     public static double pivotX = 0.0; //forward length for turret hole
-    public static double pivotY = 3.0; //left length for turret hole
+    public static double pivotY = 0; //left length for turret hole. used to be 3
 
-    public static Vector2d BLUE_CASTLE = new Vector2d(12.5, 132.5);
-    public static Vector2d RED_CASTLE = new Vector2d(131.5, 132.5);
+    public static Pose RED_CASTLE = new Pose(131.5, 132.5);
+    public static Pose BLUE_CASTLE = RED_CASTLE.mirror();
 
     public static double POWER_RAMP_PER_SEC = 4.2;
 
@@ -52,38 +53,35 @@ public class G {
     public static double TILT_RESET = 0;
     public static double TILT_ENGAGED = 0.8;
 
-    public static double GATE_OPEN = 0.55;
-    public static double GATE_CLOSED = 0.07;
+    public static double GATE_OPEN = 0.13;
+    public static double GATE_CLOSED = 0.36;
 
-    public static double TURRET_RESET = 0.32;
+    public static double TURRET_RESET = 0.5;
     public static double TURRET_BLUE_CLOSE_READ = 0.15;
-    public static double TURRET_RED_CLOSE_READ = 0.78;
+    public static double TURRET_RED_CLOSE_READ = 0;
 
     public static double TURRET_BLUE_FAR_READ = 0.03;
     public static double TURRET_RED_FAR_READ = 0.6;
 
-    public static double HOOD_LOWERED = 0.65;
-    public static double HOOD_MAX = 0.93;
+    public static double HOOD_LOWERED = 0.66;
+    public static double HOOD_MAX = 0.92;
 
     public static double MIN_SHOOTER_POWER = 0.4;
-
-    public static double MAX_TRANSFER_POWER = -1;
-
-    public static double TRANSFER_INTAKING = 0.15;
     public static double MAX_INTAKING_POWER = 1;
 
     public static double SHOOTER_VELOCITY_TOLERANCE = 100;
 
     // Red side goal-center offsets
-    public static double GOAL_CENTER_X_BIAS_CLOSE_RED = 0;
-    public static double GOAL_CENTER_Y_BIAS_CLOSE_RED = 5;
-    public static double GOAL_CENTER_X_BIAS_FAR_RED = 8;
-    public static double GOAL_CENTER_Y_BIAS_FAR_RED = -4;
+    public static double GOAL_CENTER_X_BIAS_CLOSE_RED = 12.5;
+    public static double GOAL_CENTER_Y_BIAS_CLOSE_RED = 8;
+
+    public static double GOAL_CENTER_X_BIAS_FAR_RED = 12.5;
+    public static double GOAL_CENTER_Y_BIAS_FAR_RED = 12.5;
 
     public static double GOAL_CENTER_X_BIAS_CLOSE_BLUE = 0;
     public static double GOAL_CENTER_Y_BIAS_CLOSE_BLUE = 5;
-    public static double GOAL_CENTER_X_BIAS_FAR_BLUE = 8;
-    public static double GOAL_CENTER_Y_BIAS_FAR_BLUE = 8;
+    public static double GOAL_CENTER_X_BIAS_FAR_BLUE = GOAL_CENTER_X_BIAS_CLOSE_BLUE;
+    public static double GOAL_CENTER_Y_BIAS_FAR_BLUE = GOAL_CENTER_Y_BIAS_CLOSE_BLUE;
 
     public static long KICK_WAIT_TELE = 140;
     public static long KICK_WAIT_RAPID = 70; //65
@@ -95,6 +93,11 @@ public class G {
     public static boolean TURRET_TOF_COMP_ENABLED = true;
     public static double TURRET_TOF_COMP_GAIN = 2;
     public static double TURRET_SOTM_MIN_SPEED = 2.3;
+
+    public static boolean TURRET_RED_FAR_MODEL_ENABLED = true;
+    public static double TURRET_RED_FAR_MODEL_MAX_SPEED = 3;
+    public static double TURRET_RED_FAR_MODEL_BLEND = 0.6;
+    public static double TURRET_RED_FAR_MODEL_MAX_CORRECTION = 0.16;
 
     public static boolean SHOOTER_SOTM_ENABLED = true;
     public static double SHOOTER_SOTM_RPM_GAIN = 0.6;
