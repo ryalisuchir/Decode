@@ -60,8 +60,8 @@ public class G {
     public static double TURRET_BLUE_CLOSE_READ = 0.15;
     public static double TURRET_RED_CLOSE_READ = 0;
 
-    public static double TURRET_BLUE_FAR_READ = 0.03;
-    public static double TURRET_RED_FAR_READ = 0.6;
+    public static double TURRET_BLUE_FAR_READ = 0.22;
+    public static double TURRET_RED_FAR_READ = 0.8;
 
     public static double HOOD_LOWERED = 0.66;
     public static double HOOD_MAX = 0.92;
@@ -72,16 +72,17 @@ public class G {
     public static double SHOOTER_VELOCITY_TOLERANCE = 100;
 
     // Red side goal-center offsets
-    public static double GOAL_CENTER_X_BIAS_CLOSE_RED = 12.5;
+    public static double GOAL_CENTER_X_BIAS_CLOSE_RED = 8;
     public static double GOAL_CENTER_Y_BIAS_CLOSE_RED = 8;
 
     public static double GOAL_CENTER_X_BIAS_FAR_RED = 12.5;
     public static double GOAL_CENTER_Y_BIAS_FAR_RED = 12.5;
 
-    public static double GOAL_CENTER_X_BIAS_CLOSE_BLUE = 0;
-    public static double GOAL_CENTER_Y_BIAS_CLOSE_BLUE = 5;
-    public static double GOAL_CENTER_X_BIAS_FAR_BLUE = GOAL_CENTER_X_BIAS_CLOSE_BLUE;
-    public static double GOAL_CENTER_Y_BIAS_FAR_BLUE = GOAL_CENTER_Y_BIAS_CLOSE_BLUE;
+    public static double GOAL_CENTER_X_BIAS_CLOSE_BLUE = 8;
+    public static double GOAL_CENTER_Y_BIAS_CLOSE_BLUE = 8;
+
+    public static double GOAL_CENTER_X_BIAS_FAR_BLUE = 5;
+    public static double GOAL_CENTER_Y_BIAS_FAR_BLUE = 5;
 
     public static long KICK_WAIT_TELE = 140;
     public static long KICK_WAIT_RAPID = 70; //65
@@ -91,16 +92,31 @@ public class G {
     public static long GATE_WAIT_TELE = 600;
 
     public static boolean TURRET_TOF_COMP_ENABLED = true;
-    public static double TURRET_TOF_COMP_GAIN = 2;
-    public static double TURRET_SOTM_MIN_SPEED = 2.3;
+    public static double TURRET_TOF_COMP_GAIN = 2.2; //used to be 2
+    public static double TURRET_SOTM_MIN_SPEED = 1;
+
+    public static boolean TURRET_RED_CLOSE_MODEL_ENABLED = true;
+    public static double TURRET_RED_CLOSE_MODEL_MAX_SPEED = 1.0;
+    public static double TURRET_RED_CLOSE_MODEL_BLEND = 1.0;
+    public static double TURRET_RED_CLOSE_MODEL_MAX_CORRECTION = 0.16;
 
     public static boolean TURRET_RED_FAR_MODEL_ENABLED = true;
     public static double TURRET_RED_FAR_MODEL_MAX_SPEED = 3;
     public static double TURRET_RED_FAR_MODEL_BLEND = 0.6;
     public static double TURRET_RED_FAR_MODEL_MAX_CORRECTION = 0.16;
 
+    public static boolean TURRET_BLUE_CLOSE_MODEL_ENABLED = false;
+    public static double TURRET_BLUE_CLOSE_MODEL_MAX_SPEED = 1.0;
+    public static double TURRET_BLUE_CLOSE_MODEL_BLEND = 6;
+    public static double TURRET_BLUE_CLOSE_MODEL_MAX_CORRECTION = 0.16;
+
+    public static boolean TURRET_BLUE_FAR_MODEL_ENABLED = false;
+    public static double TURRET_BLUE_FAR_MODEL_MAX_SPEED = 3;
+    public static double TURRET_BLUE_FAR_MODEL_BLEND = 6;
+    public static double TURRET_BLUE_FAR_MODEL_MAX_CORRECTION = 0.16;
+
     public static boolean SHOOTER_SOTM_ENABLED = true;
-    public static double SHOOTER_SOTM_RPM_GAIN = 0.6;
+    public static double SHOOTER_SOTM_RPM_GAIN = 0.2; //used to be 1.5
     public static double SHOOTER_SOTM_WHEEL_DIAMETER_MM = 72.0;
 
 

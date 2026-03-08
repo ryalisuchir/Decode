@@ -48,7 +48,7 @@ public class SubTest extends CommandOpMode {
 
     @Override
     public void initialize() {
-        r = new Halo(hardwareMap, G.RED_FAR_START, G.Side.RED, true);
+        r = new Halo(hardwareMap, G.BLUE_CUBE_START, G.Side.BLUE, true);
         r.init();
         r.dt.startDrive();
         suchir = gamepad1;

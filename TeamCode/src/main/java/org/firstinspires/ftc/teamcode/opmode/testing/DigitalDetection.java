@@ -10,7 +10,7 @@ import com.qualcomm.robotcore.hardware.DigitalChannel;
 
 import org.firstinspires.ftc.teamcode.common.utility.peacock.util.telemetry.PeacockTelemetry;
 
-@TeleOp
+//@TeleOp
 public class DigitalDetection extends OpMode {
 
     int color1 = 0;

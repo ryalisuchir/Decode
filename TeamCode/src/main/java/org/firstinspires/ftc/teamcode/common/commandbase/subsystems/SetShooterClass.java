@@ -107,10 +107,10 @@ public class SetShooterClass extends SubsystemBase { //new pidf system rather th
 
         if (dub==1) {
             hood.setPosition(
-                    0.86
+                    0.835
             );
 
-            targetVelocity = 1600;
+            targetVelocity = 1530;
         }
 
         if (dub==2) {
@@ -119,6 +119,14 @@ public class SetShooterClass extends SubsystemBase { //new pidf system rather th
             );
 
             targetVelocity = 1600;
+        }
+
+        if (dub==3) {
+            hood.setPosition(
+                    0.845
+            );
+
+            targetVelocity = 2050;
         }
 
         double flywheelVel = shooterMotor1.getCorrectedVelocity();

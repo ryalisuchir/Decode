@@ -11,7 +11,7 @@ import org.firstinspires.ftc.teamcode.common.utility.G;
 import org.firstinspires.ftc.teamcode.common.utility.camera.BallZoneCamera;
 import org.firstinspires.ftc.teamcode.common.utility.camera.CameraConfig;
 
-@TeleOp(name = "Camera Zone Tuner", group = "Tuning")
+//@TeleOp(name = "Camera Zone Tuner", group = "Tuning")
 @Config
 public class CameraZoneTuner extends OpMode {
     private BallZoneCamera camera;

@@ -18,9 +18,8 @@ import org.firstinspires.ftc.teamcode.common.utility.G;
 import org.firstinspires.ftc.teamcode.common.utility.Halo;
 import org.firstinspires.ftc.teamcode.common.utility.peacock.util.telemetry.PeacockTelemetry;
 import org.firstinspires.ftc.teamcode.opmode.auto.paths.reds.RedClosePath18;
-import org.firstinspires.ftc.teamcode.opmode.auto.paths.reds.RedClosePath21;
 
-@Autonomous
+@Autonomous(preselectTeleOp = "Red")
 public class RClose18 extends OpMode {
     Halo r;
     RedClosePath18 p;
@@ -53,7 +52,6 @@ public class RClose18 extends OpMode {
                                 r.spinner.transfer(),
                                 new FollowPathCmd(r, p.next())
                         ),
-                        new WaitCommand(800),
                         new RapidSlowerCmd(r),
                         new ParallelCommandGroup(
                                 new DeferredCommand(() -> new ResetShooterCmd(r, 3, r.turret.red18Pos2())),

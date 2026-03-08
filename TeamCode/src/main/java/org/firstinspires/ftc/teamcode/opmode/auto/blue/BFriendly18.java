@@ -20,7 +20,6 @@ import org.firstinspires.ftc.teamcode.common.utility.peacock.util.telemetry.Peac
 import org.firstinspires.ftc.teamcode.opmode.auto.paths.blues.FriendlyBlueClosePath18;
 import org.firstinspires.ftc.teamcode.opmode.auto.paths.reds.FriendlyRedClosePath18;
 import org.firstinspires.ftc.teamcode.opmode.auto.paths.reds.RedClosePath18;
-import org.firstinspires.ftc.teamcode.opmode.auto.paths.reds.RedClosePath21;
 
 @Autonomous
 public class BFriendly18 extends OpMode {
@@ -51,7 +50,7 @@ public class BFriendly18 extends OpMode {
         CommandScheduler.getInstance().schedule(
                 new SequentialCommandGroup(
                         new ParallelCommandGroup(
-                                r.turret.clearCustom(),
+                                r.turret.blue18Pos1(),
                                 r.spinner.transfer(),
                                 new FollowPathCmd(r, p.next()), //shoot preloads
                                 new SequentialCommandGroup(
@@ -60,7 +59,7 @@ public class BFriendly18 extends OpMode {
                                 )
                         ),
                         new ParallelCommandGroup(
-                                new DeferredCommand(() -> new ResetShooterCmd(r, 3)),
+                                new DeferredCommand(() -> new ResetShooterCmd(r, 3, r.turret.blue18Pos2())),
                                 new InstantCommand(() -> r.i.setPower(1)),
                                 new FollowPathCmd(r, p.next()), //intake mid and go to shoot
                                 new SequentialCommandGroup(
@@ -71,7 +70,7 @@ public class BFriendly18 extends OpMode {
                         new RapidSlowerCmd(r),
                         //this is gate sequence 1:
                         new ParallelCommandGroup(
-                                new DeferredCommand(() -> new ResetShooterCmd(r, 3.5)),
+                                new DeferredCommand(() -> new ResetShooterCmd(r, 3.5, r.turret.blue18Pos2())),
                                 new InstantCommand(() -> r.i.setPower(1)),
                                 new FollowPathCmd(r, p.next()).withStallTimeout(0.04, 1300) //this is gate intake
                         ),
@@ -80,7 +79,7 @@ public class BFriendly18 extends OpMode {
                         //end of gate sequence 1 ^^
                         //this is gate sequence 2:
                         new ParallelCommandGroup(
-                                new DeferredCommand(() -> new ResetShooterCmd(r, 5)),
+                                new DeferredCommand(() -> new ResetShooterCmd(r, 5, r.turret.blue18Pos2())),
                                 new InstantCommand(() -> r.i.setPower(1)),
                                 new FollowPathCmd(r, p.next()).withStallTimeout(0.04, 1300) //this is gate intake
                         ),
@@ -90,7 +89,7 @@ public class BFriendly18 extends OpMode {
                         new ParallelCommandGroup(
                                 new FollowPathCmd(r, p.next()), //intakes spike closest to audience
                                 new InstantCommand(() -> r.i.setPower(1)),
-                                new DeferredCommand(() -> new ResetShooterCmd(r, 2.5))
+                                new DeferredCommand(() -> new ResetShooterCmd(r, 2.5, r.turret.blue18Pos2()))
 
                         ),
                         new ParallelCommandGroup(
@@ -100,7 +99,7 @@ public class BFriendly18 extends OpMode {
                         ),
                         new WaitCommand(800),
                         new ParallelCommandGroup(
-                                new DeferredCommand(() -> new ResetShooterCmd(r, 5)),
+                                new DeferredCommand(() -> new ResetShooterCmd(r, 5, r.turret.blue18Pos2())),
                                 new InstantCommand(() -> r.i.setPower(1)),
                                 new FollowPathCmd(r, p.next()).withStallTimeout(0.04, 1300) //this is gate intake
                         ),
@@ -116,7 +115,7 @@ public class BFriendly18 extends OpMode {
         telemetry.addData("2: ", G.ballColors[1]);
         telemetry.addData("3: ", G.ballColors[2]);
         telemetry.update();
-        r.loop(r);
+        r.unsortedLoop();
     }
 
     @Override

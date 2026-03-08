@@ -13,19 +13,29 @@ public class BlueFarPath {
     private final Follower follower;
     private final G.Side side;
 
-    public static Pose startPos, shootPos, intakeSpikeHoldPos, intakeSpikePos, intakeHpControlPos, intakeHpPos, intakeHpBackPos;
+    public static Pose startPos, shootPos, intakeSpikeHoldPos, intakeSpikePos, intakeHpControlPos, intakeHpPos, intakeHpMidPos, intakeHpMidderPos, wiggle1, intakeSweep1, intakeSweep2, park;
 
     public BlueFarPath(Halo r) {
         this.follower = r.dt.getFollower();
         this.side = G.side;
 
         startPos = G.BLUE_FAR_START;
-        shootPos = alliancePose(new Pose(88.847, 17.911, Math.toRadians(0)));
-        intakeSpikeHoldPos = alliancePose(new Pose(103.68299711815563, 37.26512968299712));
-        intakeSpikePos = alliancePose(new Pose(134.78962536023056, 36.63688760806917, Math.toRadians(0)));
+        shootPos = alliancePose(new Pose(98, 21, Math.toRadians(8)));
+
+        wiggle1 = alliancePose(new Pose(88.847, 17.911, Math.toRadians(-15)));
+
+        intakeSpikeHoldPos = alliancePose(new Pose(103.06051873198848, 37));
+        intakeSpikePos = alliancePose(new Pose(134.78962536023056, 34, Math.toRadians(0)));
+
         intakeHpControlPos = alliancePose(new Pose(113.303, 10.568));
-        intakeHpPos = alliancePose(new Pose(135, 10.686));
-        intakeHpBackPos = alliancePose(new Pose(127, 10.686));
+        intakeHpPos = alliancePose(new Pose(135, 10.686, Math.toRadians(0)));
+
+        intakeHpMidPos = alliancePose(new Pose(119.14094812680115, 12.308694524495676, Math.toRadians(8)));
+        intakeHpMidderPos = alliancePose(new Pose(102.70317002881845, 16.028818443804035, Math.toRadians(-8)));
+
+        intakeSweep1 = alliancePose(new Pose(134, 43.469740634005746, Math.toRadians(-8)));
+        intakeSweep2 = alliancePose(new Pose(139, 13.158501440922175, Math.toRadians(-20)));
+        park = alliancePose(new Pose(114.87031700288189, 45.76657060518731, Math.toRadians(0)));
     }
 
     public PathChain shoot0() {
@@ -45,7 +55,7 @@ public class BlueFarPath {
                                 intakeSpikeHoldPos,
                                 intakeSpikePos
                         )
-                ).setTangentHeadingInterpolation()
+                ).setLinearHeadingInterpolation(shootPos.getHeading(), intakeSpikePos.getHeading())
                 .addPath(
                         new BezierLine(
                                 intakeSpikePos,
@@ -62,93 +72,59 @@ public class BlueFarPath {
                                 intakeHpControlPos,
                                 intakeHpPos
                         )
-                ).setLinearHeadingInterpolation(intakeHpPos.getHeading(), shootPos.getHeading())
+                ).setLinearHeadingInterpolation(shootPos.getHeading(), intakeHpPos.getHeading())
                 .addPath(
                         new BezierLine(
                                 intakeHpPos,
-                                intakeHpBackPos
+                                intakeHpMidPos
                         )
-                ).setLinearHeadingInterpolation(intakeHpPos.getHeading(), shootPos.getHeading())
+                ).setLinearHeadingInterpolation(intakeHpPos.getHeading(), intakeHpMidPos.getHeading())
                 .addPath(
                         new BezierLine(
-                                intakeHpBackPos,
-                                intakeHpPos
+                                intakeHpMidPos,
+                                intakeHpMidderPos
                         )
-                ).setLinearHeadingInterpolation(intakeHpPos.getHeading(), shootPos.getHeading())
+                ).setLinearHeadingInterpolation(intakeHpMidPos.getHeading(), intakeHpMidderPos.getHeading())
                 .addPath(
                         new BezierLine(
-                                intakeHpPos,
+                                intakeHpMidderPos,
                                 shootPos
                         )
-                ).setLinearHeadingInterpolation(intakeHpPos.getHeading(), shootPos.getHeading())
+                ).setLinearHeadingInterpolation(intakeHpMidderPos.getHeading(), shootPos.getHeading())
                 .build();
     }
 
-    public PathChain cameraIntakePath(double blend) {
-        Pose intake = intakePoseForBlend(blend);
-        Pose control = controlPoseForBlend(blend);
-        return follower.pathBuilder().addPath(
-                        new BezierCurve(
+    public PathChain intakeSweepAndShoot() {
+        return follower.pathBuilder()
+                .addPath(
+                        new BezierLine(
                                 shootPos,
-                                control,
-                                intake
+                                intakeSweep1
                         )
-                ).setLinearHeadingInterpolation(shootPos.getHeading(), intake.getHeading())
-                .build();
-    }
-
-    public PathChain cameraShootPath(double blend) {
-        Pose source = intakePoseForBlend(blend);
-        Pose control = controlPoseForBlend(blend);
-        return follower.pathBuilder().addPath(
-                        new BezierCurve(
-                                source,
-                                control,
+                ).setLinearHeadingInterpolation(shootPos.getHeading(), intakeSweep1.getHeading())
+                .addPath(
+                        new BezierLine(
+                                intakeSweep1,
+                                intakeSweep2
+                        )
+                ).setLinearHeadingInterpolation(intakeSweep1.getHeading(), intakeSweep2.getHeading())
+                .addPath(
+                        new BezierLine(
+                                intakeSweep2,
                                 shootPos
                         )
-                ).setLinearHeadingInterpolation(source.getHeading(), shootPos.getHeading())
+                ).setLinearHeadingInterpolation(intakeSweep2.getHeading(), shootPos.getHeading())
                 .build();
     }
 
-    private Pose intakePoseForBlend(double blend) {
-        return interpolateThree(
-                alliancePose(CameraConfig.Y_LEFT2_POSE),
-                alliancePose(CameraConfig.Y_CENTER_POSE),
-                alliancePose(CameraConfig.Y_RIGHT2_POSE),
-                clamp01(blend)
-        );
-    }
-
-    private Pose controlPoseForBlend(double blend) {
-        return interpolateThree(
-                alliancePose(CameraConfig.Y_LEFT2_CONTROL_POSE),
-                alliancePose(CameraConfig.Y_CENTER_CONTROL_POSE),
-                alliancePose(CameraConfig.Y_RIGHT2_CONTROL_POSE),
-                clamp01(blend)
-        );
-    }
-
-    private Pose interpolateThree(Pose left, Pose center, Pose right, double blend) {
-        if (blend <= 0.5) {
-            return lerpPose(left, center, blend * 2.0);
-        }
-        return lerpPose(center, right, (blend - 0.5) * 2.0);
-    }
-
-    private Pose lerpPose(Pose a, Pose b, double t) {
-        double clamped = clamp01(t);
-        double x = lerp(a.getX(), b.getX(), clamped);
-        double y = lerp(a.getY(), b.getY(), clamped);
-        double heading = lerp(a.getHeading(), b.getHeading(), clamped);
-        return new Pose(x, y, heading);
-    }
-
-    private double lerp(double a, double b, double t) {
-        return a + (b - a) * t;
-    }
-
-    private double clamp01(double value) {
-        return Math.max(0.0, Math.min(1.0, value));
+    public PathChain park() {
+        return follower.pathBuilder().addPath(
+                        new BezierLine(
+                                shootPos,
+                                park
+                        )
+                ).setLinearHeadingInterpolation(shootPos.getHeading(), park.getHeading())
+                .build();
     }
 
     private Pose alliancePose(Pose pose) {

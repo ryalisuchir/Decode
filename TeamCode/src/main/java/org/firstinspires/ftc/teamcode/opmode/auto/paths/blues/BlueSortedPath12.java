@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.opmode.auto.paths.reds;
+package org.firstinspires.ftc.teamcode.opmode.auto.paths.blues;
 
 import org.firstinspires.ftc.teamcode.common.utility.G;
 import org.firstinspires.ftc.teamcode.common.utility.Halo;
@@ -8,31 +8,32 @@ import org.firstinspires.ftc.teamcode.common.utility.peacock.geometry.BezierLine
 import org.firstinspires.ftc.teamcode.common.utility.peacock.geometry.Pose;
 import org.firstinspires.ftc.teamcode.common.utility.peacock.paths.PathChain;
 
-public class RedSortedPath12 {
+public class BlueSortedPath12 {
     private final Follower f;
     private final G.Side side;
 
     public Pose startPos, shootPos, intakeMidHoldPos, intakeMidPos, openGateHoldPos, openGatePos, shootMidHoldPos, shoot1Pos, intakeAudHoldPos, intakeAudPos, shootAudPos, intakeObeliskHoldPos, intakeObeliskPos, shootObeliskPos, initialPark, finalPark;
     private int index;
 
-    public RedSortedPath12(Halo r) {
+    public BlueSortedPath12(Halo r) {
         this.f = r.dt.getFollower();
         this.side = G.side;
 
-        startPos = G.RED_CUBE_START;
+        startPos = G.BLUE_CUBE_START;
 
         shootPos = alliancePose(new Pose(90, 77, Math.toRadians(0)));
-        intakeMidHoldPos = alliancePose(new Pose(101.27012987012986, 61.11558441558441));
-        intakeMidPos = alliancePose(new Pose(130, 58, Math.toRadians(0)));
+
+        intakeMidHoldPos = alliancePose(new Pose(101.27012987012986, 55));
+        intakeMidPos = alliancePose(new Pose(130, 52, Math.toRadians(0)));
 
         openGatePos = alliancePose(new Pose(127, 64.04322766570606, Math.toRadians(-5)));
         openGateHoldPos = alliancePose(new Pose(111.92507204610952, 62.81412103746395));
 
-        intakeAudHoldPos = alliancePose(new Pose(95.34025974025975, 33));
-        intakeAudPos = alliancePose(new Pose(135, 35, Math.toRadians(-44)));
+        intakeAudHoldPos = alliancePose(new Pose(95.34025974025975, 30));
+        intakeAudPos = alliancePose(new Pose(133, 32, Math.toRadians(-44)));
 
-        intakeObeliskHoldPos = alliancePose(new Pose(108.93636363636365, 80.64155844155844));
-        intakeObeliskPos = alliancePose(new Pose(124.5, 81, Math.toRadians(0)));
+        intakeObeliskHoldPos = alliancePose(new Pose(108.93636363636365, 79));
+        intakeObeliskPos = alliancePose(new Pose(124.5, 79, Math.toRadians(0)));
 
         initialPark = alliancePose(new Pose(105, 120, Math.toRadians(-90)));
         finalPark = alliancePose(new Pose(105, 135.0201729106628, Math.toRadians(-90)));
@@ -69,14 +70,16 @@ public class RedSortedPath12 {
                 .build();
     }
 
-    public PathChain shootGate() {
-        return f.pathBuilder().addPath(
-                new BezierLine( //to get to the shoot pos
-                        openGatePos,
-                        shootPos
-                )
-        ).setLinearHeadingInterpolation(openGatePos.getHeading(), shootPos.getHeading())
+    public PathChain shootGateOpen() {
+        return f.pathBuilder()
+                .addPath(
+                        new BezierLine( //to get to the shoot pos
+                                openGatePos,
+                                shootPos
+                        )
+                ).setLinearHeadingInterpolation(openGatePos.getHeading(), shootPos.getHeading())
                 .build();
+
     }
 
     public PathChain intakeFarSequence() {
@@ -140,7 +143,7 @@ public class RedSortedPath12 {
         switch (index++) {
             case 0: return score0();
             case 1: return intakeMidAndShoot();
-            case 2: return shootGate();
+            case 2: return shootGateOpen();
             case 3: return intakeFarSequence();
             case 4: return intakeCloseAndShoot();
             case 5: return park();

@@ -309,6 +309,28 @@ public class Halo {
         CommandScheduler.getInstance().run();
     }
 
+    public void farRedLoop() {
+        clearCache();
+        dt.loop();
+        spinner.periodic();
+        setShooterClass.loop(3);
+        turret.setPositionOnce(0.7);
+        updateVision();
+        readColors();
+        CommandScheduler.getInstance().run();
+    }
+
+    public void farBlueLoop() {
+        clearCache();
+        dt.loop();
+        spinner.periodic();
+        setShooterClass.loop(3);
+        turret.setPositionOnce(0.31);
+        updateVision();
+        readColors();
+        CommandScheduler.getInstance().run();
+    }
+
     public void noSubsystemLoop(Halo r) {
         clearCache();
         readColors();

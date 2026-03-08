@@ -12,7 +12,7 @@ public class FriendlyRedClosePath18 {
     private final Follower f;
     private final G.Side side;
 
-    public Pose startPos, shoot0Pos, intakeMidHoldPos, intakeMidPos, shoot1Pos, gateIntakePos, shootGatePos, intakeAudHoldPos, intakeAudPos, shootAudPos, intakeObeliskHoldPos, intakeObeliskPos, shootObeliskPos;
+    public Pose startPos, shoot0Pos, intakeMidHoldPos, intakeMidPos, shoot1Pos, gateIntakePos, shootGatePos, intakeAudHoldPos, intakeAudPos, shootAudPos, intakeObeliskHoldPos, intakeObeliskPos, shootObeliskPos, initialPark, finalPark;
     private int index;
 
     public FriendlyRedClosePath18(Halo r) {
@@ -23,18 +23,20 @@ public class FriendlyRedClosePath18 {
         shoot0Pos = alliancePose(new Pose(91, 92, Math.toRadians(-111)));
         intakeMidHoldPos = alliancePose(new Pose(101.27012987012986, 61.11558441558441));
         intakeMidPos = alliancePose(new Pose(127, 58));
-        shoot1Pos = alliancePose(new Pose(89, 75, Math.toRadians(-26)));
-        gateIntakePos = alliancePose(new Pose(134, 58, Math.toRadians(25)));
-        shootGatePos = alliancePose(new Pose(89, 75, Math.toRadians(-26)));
 
-//        intakeAudHoldPos = alliancePose(new Pose(95.34025974025975, 33));
-//        intakeAudPos = alliancePose(new Pose(127, 35, Math.toRadians(-44)));
-//        shootAudPos = alliancePose(new Pose(88, 77, Math.toRadians(0)));
+        shoot1Pos = alliancePose(new Pose(86, 75, Math.toRadians(-26)));
+        gateIntakePos = alliancePose(new Pose(134, 60, Math.toRadians(25)));
+        shootGatePos = alliancePose(new Pose(89, 77, Math.toRadians(-26)));
 
-        intakeObeliskHoldPos = alliancePose(new Pose(109.35134922714175, 81.88495677233429));
-        intakeObeliskPos = alliancePose(new Pose(123.18731988472624, 81, Math.toRadians(0)));
+        intakeAudHoldPos = alliancePose(new Pose(95.34025974025975, 33));
+        intakeAudPos = alliancePose(new Pose(127, 35, Math.toRadians(-44)));
+        shootAudPos = alliancePose(new Pose(88, 77, Math.toRadians(-26)));
 
-        shootObeliskPos = alliancePose(new Pose(90, 110, Math.toRadians(360)));
+        intakeObeliskHoldPos = alliancePose(new Pose(108.93636363636365, 82));
+        intakeObeliskPos = alliancePose(new Pose(120.5, 84, Math.toRadians(0)));
+        shootObeliskPos = alliancePose(new Pose(90, 114, Math.toRadians(0)));
+
+        initialPark = alliancePose(new Pose(90, 110, Math.toRadians(0)));
 
         index = 0;
     }
@@ -89,28 +91,10 @@ public class FriendlyRedClosePath18 {
                 .build();
     }
 
-//    public PathChain intakeFarSequence() {
-//        return f.pathBuilder().addPath(
-//                        new BezierCurve( //intake audience spike
-//                                shootGatePos,
-//                                intakeAudHoldPos,
-//                                intakeAudPos
-//                        )
-//                ).setTangentHeadingInterpolation()
-//                .addPath( //shoot audience spike
-//                        new BezierLine(
-//                                intakeAudPos,
-//                                shootAudPos
-//                        )
-//                ).setLinearHeadingInterpolation(intakeAudPos.getHeading(), shootAudPos.getHeading())
-//                // .setReversed()
-//                .build();
-//    }
-
     public PathChain intakeCloseAndShoot() {
         return f.pathBuilder().addPath(
                         new BezierCurve(
-                                shootGatePos,
+                                shootAudPos,
                                 intakeObeliskHoldPos,
                                 intakeObeliskPos
                         )
@@ -130,9 +114,9 @@ public class FriendlyRedClosePath18 {
                 .addPath(
                         new BezierLine(
                                 shoot1Pos,
-                                G.RED_CUBE_START
+                                initialPark
                         )
-                ).setLinearHeadingInterpolation(shoot1Pos.getHeading(), G.RED_CUBE_START.getHeading())
+                ).setLinearHeadingInterpolation(shoot1Pos.getHeading(), initialPark.getHeading())
                 .build();
     }
 
@@ -145,10 +129,9 @@ public class FriendlyRedClosePath18 {
             case 3: return shootGateSequence();
             case 4: return gateSequence();
             case 5: return shootGateSequence();
-            case 6: return gateSequence();
-            case 7: return shootGateSequence();
-//            case 6: return intakeFarSequence();
-            case 8: return intakeCloseAndShoot();
+            case 6: return intakeCloseAndShoot();
+            case 7: return gateSequence();
+            case 8: return shootGateSequence();
             case 9: return park();
             default: return null;
         }

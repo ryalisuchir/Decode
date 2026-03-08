@@ -28,7 +28,7 @@ import com.seattlesolvers.solverslib.geometry.Vector2d;
 import com.seattlesolvers.solverslib.hardware.motors.Motor;
 import com.seattlesolvers.solverslib.hardware.servos.ServoEx;
 
-@TeleOp
+//@TeleOp
 @Config
 public class ShooterPositionTuner extends CommandOpMode {
 
@@ -51,7 +51,7 @@ public class ShooterPositionTuner extends CommandOpMode {
     @Override
     public void initialize() {
         launcherPIDF.setTolerance(POS_TOLERANCE, 0);
-        r = new Halo(hardwareMap, G.RED_CUBE_START, G.Side.RED, true);
+        r = new Halo(hardwareMap, G.BLUE_CASTLE, G.Side.BLUE, true);
 
         r.initLoop(r);
         r.dt.startDrive();

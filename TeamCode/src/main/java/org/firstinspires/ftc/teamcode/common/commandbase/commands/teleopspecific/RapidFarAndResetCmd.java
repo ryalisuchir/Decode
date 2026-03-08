@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.common.commandbase.commands;
+package org.firstinspires.ftc.teamcode.common.commandbase.commands.teleopspecific;
 
 import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.InstantCommand;
@@ -6,6 +6,7 @@ import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
 
+import org.firstinspires.ftc.teamcode.common.commandbase.commands.teleopspecific.Reset;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.utility.KickCommands;
 import org.firstinspires.ftc.teamcode.common.commandbase.subsystems.Kicker;
 import org.firstinspires.ftc.teamcode.common.utility.G;
@@ -14,9 +15,9 @@ import org.firstinspires.ftc.teamcode.common.utility.Halo;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RapidSlowerCmd extends SequentialCommandGroup {
+public class RapidFarAndResetCmd extends SequentialCommandGroup {
 
-    public RapidSlowerCmd(Halo r) {
+    public RapidFarAndResetCmd(Halo r) {
         List<Integer> firingOrder = computeFiringOrder();
 
         if (firingOrder.isEmpty()) {
@@ -34,11 +35,13 @@ public class RapidSlowerCmd extends SequentialCommandGroup {
 
         sequence.add(new WaitCommand(G.KICK_WAIT_RAPID));
 
+        sequence.add(new Reset(r));
+
         addCommands(sequence.toArray(new Command[0]));
     }
 
     private Command kickCommand(Kicker kicker, int slot) {
-        return new SequentialCommandGroup(new InstantCommand(() -> G.shooterKicking = true), KickCommands.kickOnce(kicker, slot), new WaitCommand(G.KICK_WAIT_RAPID+100));
+        return new SequentialCommandGroup(new InstantCommand(() -> G.shooterKicking = true), KickCommands.kickOnce(kicker, slot), new WaitCommand(G.KICK_WAIT_RAPID+200));
     }
 
     private List<Integer> computeFiringOrder() {

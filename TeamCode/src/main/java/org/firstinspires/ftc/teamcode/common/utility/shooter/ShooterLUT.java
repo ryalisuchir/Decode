@@ -3,7 +3,9 @@ package org.firstinspires.ftc.teamcode.common.utility.shooter;
 import org.firstinspires.ftc.teamcode.common.utility.G;
 import org.firstinspires.ftc.teamcode.common.utility.functions.luts.ShooterParamLUT2D;
 import org.firstinspires.ftc.teamcode.common.utility.functions.luts.ShooterParams;
+import org.firstinspires.ftc.teamcode.common.utility.peacock.geometry.PeacockCoordinates;
 import org.firstinspires.ftc.teamcode.common.utility.peacock.geometry.Pose;
+import org.firstinspires.ftc.teamcode.common.utility.peacock.math.MathFunctions;
 
 public class ShooterLUT {
     private final ShooterParamLUT2D redShooterLUT = new ShooterParamLUT2D();
@@ -39,20 +41,21 @@ public class ShooterLUT {
         addMirroredPoint(78.27325775867372, 51.106029120017226, 1800, 0.865);
 
         // Far
-        addMirroredPoint(98.72, 11.519, 2000, 0.87);
-        addMirroredPoint(89.589, 10, 2050, 0.86);
-        addMirroredPoint(87.04158272330217, 16.882499634750246, 2050, 0.875);
-        addMirroredPoint(75.729, 17.5947, 2050, 0.885);
-        addMirroredPoint(72.03863669568159, 11.376966341273992, 2100, 0.895);
-        addMirroredPoint(65.43902059239666, 21.24958428810901, 2130, 0.88);
-        addMirroredPoint(71.56, 28.29, 2000, 0.87);
-        addMirroredPoint(56.795322688545774, 16.238613579216903, 2150, 0.87);
-        addMirroredPoint(52.20891516978347, 11.979338878721704, 2200, 0.88);
+        double x = 0.05;
+        addMirroredPoint(98.72, 11.519, 2000, 0.87-x);
+        addMirroredPoint(89.589, 10, 2050, 0.86-x);
+        addMirroredPoint(87.04158272330217, 16.882499634750246, 2050, 0.875-x);
+        addMirroredPoint(75.729, 17.5947, 2050, 0.885-x);
+        addMirroredPoint(72.03863669568159, 11.376966341273992, 2100, 0.895-x);
+        addMirroredPoint(65.43902059239666, 21.24958428810901, 2130, 0.88-x);
+        addMirroredPoint(71.56, 28.29, 2000, 0.87-x);
+        addMirroredPoint(56.795322688545774, 16.238613579216903, 2150, 0.87-x);
+        addMirroredPoint(52.20891516978347, 11.979338878721704, 2200, 0.88-x);
     }
 
     private void addMirroredPoint(double x, double y, double shooterVel, double hoodPos) {
         Pose redPose = new Pose(x, y);
-        Pose bluePose = redPose.mirror();
+        Pose bluePose = redPose.differentMirror();
 
         redShooterLUT.addPoint(redPose, new ShooterParams(hoodPos, shooterVel));
         blueShooterLUT.addPoint(bluePose, new ShooterParams(hoodPos, shooterVel));

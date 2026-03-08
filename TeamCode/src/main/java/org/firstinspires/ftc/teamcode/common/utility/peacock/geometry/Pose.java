@@ -306,6 +306,11 @@ public final class Pose implements FuturePose {
         return new Pose(144 - k.getX(), k.getY(), MathFunctions.normalizeAngle(Math.PI - k.getHeading()), PeacockCoordinates.INSTANCE);
     }
 
+    public Pose differentMirror() {
+        Pose k = getAsCoordinateSystem(PeacockCoordinates.INSTANCE);
+        return new Pose(140 - k.getX(), k.getY(), MathFunctions.normalizeAngle(Math.PI - k.getHeading()), PeacockCoordinates.INSTANCE);
+    }
+
     /**
      * Converts this pose to the specified coordinate system.
      *

@@ -19,9 +19,8 @@ import org.firstinspires.ftc.teamcode.common.utility.Halo;
 import org.firstinspires.ftc.teamcode.common.utility.peacock.util.telemetry.PeacockTelemetry;
 import org.firstinspires.ftc.teamcode.opmode.auto.paths.reds.FriendlyRedClosePath18;
 import org.firstinspires.ftc.teamcode.opmode.auto.paths.reds.RedClosePath18;
-import org.firstinspires.ftc.teamcode.opmode.auto.paths.reds.RedClosePath21;
 
-@Autonomous
+@Autonomous(preselectTeleOp = "Red")
 public class RFriendly18 extends OpMode {
     Halo r;
     FriendlyRedClosePath18 p;
@@ -52,64 +51,50 @@ public class RFriendly18 extends OpMode {
                         new ParallelCommandGroup(
                                 r.turret.red18Pos1(),
                                 r.spinner.transfer(),
-                                new FollowPathCmd(r, p.next()), //shoot preloads
-                                new SequentialCommandGroup(
-                                        new WaitCommand(2000),
-                                        new RapidSlowerCmd(r)
-                                )
+                                new FollowPathCmd(r, p.next())
                         ),
-                        r.turret.red18Pos2(),
+                        new RapidSlowerCmd(r),
                         new ParallelCommandGroup(
-                                new DeferredCommand(() -> new ResetShooterCmd(r, 3)),
+                                new DeferredCommand(() -> new ResetShooterCmd(r, 4.5, r.turret.red18Pos2())),
                                 r.spinner.intake(),
-                                new FollowPathCmd(r, p.next()), //intake mid and go to shoot
-                                new SequentialCommandGroup(
-                                        new WaitCommand(900),
-                                        new InstantCommand(() -> G.turretState = G.TurretState.FOLLOWING)
-                                )
+                                new FollowPathCmd(r, p.next())
                         ),
-                        r.turret.red18Pos2(),
                         new RapidSlowerCmd(r),
                         //this is gate sequence 1:
                         new ParallelCommandGroup(
-                                new DeferredCommand(() -> new ResetShooterCmd(r, 4)),
+                                new DeferredCommand(() -> new ResetShooterCmd(r, 3, r.turret.red18Pos2())),
                                 r.spinner.intake(),
                                 new FollowPathCmd(r, p.next()).withStallTimeout(0.04, 1300) //this is gate intake
                         ),
                         new FollowPathCmd(r, p.next()), //gate intake's shooting
-                        r.turret.red18Pos2(),
                         new RapidSlowerCmd(r),
                         //end of gate sequence 1 ^^
                         //this is gate sequence 2:
                         new ParallelCommandGroup(
-                                new DeferredCommand(() -> new ResetShooterCmd(r, 5)),
+                                new DeferredCommand(() -> new ResetShooterCmd(r, 4.5, r.turret.red18Pos2())),
                                 r.spinner.intake(),
                                 new FollowPathCmd(r, p.next()).withStallTimeout(0.04, 1300) //this is gate intake
                         ),
                         new FollowPathCmd(r, p.next()), //gate intake's shooting
-                        r.turret.red18Pos2(),
                         new RapidSlowerCmd(r),
                         //end of gate sequence 2 ^^
-                        //this is gate sequence 3:
-                        new ParallelCommandGroup(
-                                new DeferredCommand(() -> new ResetShooterCmd(r, 5)),
-                                r.spinner.intake(),
-                                new FollowPathCmd(r, p.next()).withStallTimeout(0.04, 1300) //this is gate intake
-                        ),
-                        new FollowPathCmd(r, p.next()), //gate intake's shooting
-                        r.turret.red18Pos2(),
-                        new RapidSlowerCmd(r),
-                                                r.turret.clearCustom(),
-                                                new WaitCommand(800),
+                        new WaitCommand(800),
                         new ParallelCommandGroup(
                                 r.spinner.intake(),
                                 new FollowPathCmd(r, p.next()), //intakes spike closest to obelisk
-                                new DeferredCommand(() -> new ResetShooterCmd(r, 2.5))
+                                new DeferredCommand(() -> new ResetShooterCmd(r, 3, r.turret.clearCustom()))
                         ),
+                        new InstantCommand(() -> r.spinner.transferStart()),
+                        new RapidSlowerCmd(r),
+                        //this is gate sequence 3:
                         new ParallelCommandGroup(
-                                new InstantCommand(() -> r.spinner.transferStart()),
-                                new RapidSlowerCmd(r)
+                                new DeferredCommand(() -> new ResetShooterCmd(r, 4.5, r.turret.red18Pos2())),
+                                r.spinner.intake(),
+                                new FollowPathCmd(r, p.next()).withStallTimeout(0.04, 1300) //this is gate intake
                         ),
+                        new FollowPathCmd(r, p.next()), //gate intake's shooting
+                        new RapidSlowerCmd(r),
+                        //end of gate sequence 3 ^^
                         new FollowPathCmd(r, p.next())
                 ));
     }
@@ -121,7 +106,7 @@ public class RFriendly18 extends OpMode {
         telemetry.addData("3: ", G.ballColors[2]);
         telemetry.addData("Intake state: ", G.intakeState);
         telemetry.update();
-        r.loop(r);
+        r.unsortedLoop();
     }
 
     @Override

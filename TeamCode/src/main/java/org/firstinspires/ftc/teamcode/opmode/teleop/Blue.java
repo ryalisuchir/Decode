@@ -14,9 +14,13 @@ import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.command.button.Trigger;
 
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.KickOrderACmd;
+import org.firstinspires.ftc.teamcode.common.commandbase.commands.RapidAllCmd;
+import org.firstinspires.ftc.teamcode.common.commandbase.commands.RapidSlowerCmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.teleopspecific.KickOneGreenTCmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.teleopspecific.KickOnePurpleTCmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.teleopspecific.KickOrderTCmd;
+import org.firstinspires.ftc.teamcode.common.commandbase.commands.teleopspecific.RapidAllAndResetCmd;
+import org.firstinspires.ftc.teamcode.common.commandbase.commands.teleopspecific.RapidFarAndResetCmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.teleopspecific.Reset;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.utility.FollowPathCmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.utility.KickCommands;
@@ -50,6 +54,8 @@ public class Blue extends CommandOpMode {
                 Math.abs(gp.left_stick_y)  > 0.05 ||
                 Math.abs(gp.right_stick_x) > 0.05;
     }
+
+
 
     @Override
     public void initialize() {
@@ -132,7 +138,7 @@ public class Blue extends CommandOpMode {
             telemetry.update();
         }
 
-        if (ahnaf.leftBumperWasPressed()) {
+        if (ahnaf.rightBumperWasPressed()) {
             schedule(
                     new UninterruptibleCommand(new KickOrderTCmd(r))
             );
@@ -153,10 +159,14 @@ public class Blue extends CommandOpMode {
         }
         psLatch = psPressed;
 
-        if (ahnaf.crossWasPressed()) { //rapid fire
-            schedule(
-                    RapidKickCommands.kickAndResetMany(r,1,2,3)
-            );
+        if (ahnaf.left_bumper) { //rapid fire
+            if (r.dt.getFollower().getPose().getY() < 40) {
+                schedule(new RapidFarAndResetCmd(r));
+            } else {
+                schedule(
+                        new RapidAllAndResetCmd(r)
+                );
+            }
         }
 
         if (swetha.circleWasPressed()) {
