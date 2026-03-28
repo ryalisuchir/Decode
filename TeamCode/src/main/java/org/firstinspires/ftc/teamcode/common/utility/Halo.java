@@ -247,7 +247,7 @@ public class Halo {
         kicker = new Kicker(k1, k2, k3);
         spinner = new Spinner(i, t, g);
         shooter = new Shooter(s1, s2, r, dt.getFollower(), gX, gY);
-        setShooterClass = new SetShooterClass(s1, s2, r, dt.getFollower(), gX, gY);
+        setShooterClass = new SetShooterClass(s1, s2, r);
         turret = new Turret(s, t1, t2, dt.getFollower());
     }
 
@@ -277,11 +277,22 @@ public class Halo {
         CommandScheduler.getInstance().run();
     }
 
+    public void failsafeAutoLoop() {
+        clearCache();
+        dt.loop();
+        spinner.periodic();
+        setShooterClass.loop();
+        turret.loop();
+        readColors();
+        updateVision();
+        CommandScheduler.getInstance().run();
+    }
+
     public void friedLoop() {
         clearCache();
         dt.loop();
         spinner.periodic();
-        setShooterClass.loop(2);
+        setShooterClass.loop();
         turret.setPositionOnce(0.5);
         readColors();
         CommandScheduler.getInstance().run();
@@ -291,7 +302,7 @@ public class Halo {
         clearCache();
         dt.loop();
         spinner.periodic();
-        setShooterClass.loop(1);
+        setShooterClass.loop();
         turret.loop();
         updateVision();
         readColors();
@@ -302,7 +313,7 @@ public class Halo {
         clearCache();
         dt.loop();
         spinner.periodic();
-        setShooterClass.loop(2);
+        setShooterClass.loop();
         turret.loop();
         updateVision();
         readColors();
@@ -313,7 +324,7 @@ public class Halo {
         clearCache();
         dt.loop();
         spinner.periodic();
-        setShooterClass.loop(3);
+        setShooterClass.loop();
         turret.setPositionOnce(0.7);
         updateVision();
         readColors();
@@ -324,7 +335,7 @@ public class Halo {
         clearCache();
         dt.loop();
         spinner.periodic();
-        setShooterClass.loop(3);
+        setShooterClass.loop();
         turret.setPositionOnce(0.31);
         updateVision();
         readColors();

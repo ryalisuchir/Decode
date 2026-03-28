@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.common.utility.shooter;
 
+import com.acmerobotics.dashboard.config.Config;
+
 import org.firstinspires.ftc.teamcode.common.utility.G;
 import org.firstinspires.ftc.teamcode.common.utility.functions.luts.ShooterParamLUT2D;
 import org.firstinspires.ftc.teamcode.common.utility.functions.luts.ShooterParams;
@@ -7,9 +9,14 @@ import org.firstinspires.ftc.teamcode.common.utility.peacock.geometry.PeacockCoo
 import org.firstinspires.ftc.teamcode.common.utility.peacock.geometry.Pose;
 import org.firstinspires.ftc.teamcode.common.utility.peacock.math.MathFunctions;
 
+@Config
 public class ShooterLUT {
     private final ShooterParamLUT2D redShooterLUT = new ShooterParamLUT2D();
     private final ShooterParamLUT2D blueShooterLUT = new ShooterParamLUT2D();
+    public static double x = 0;
+    public static double y = 0;
+    public static double addlPowerUp = 50;
+    public static double powerUp = 120;
 
     public ShooterLUT() {
         // Close
@@ -41,7 +48,7 @@ public class ShooterLUT {
         addMirroredPoint(78.27325775867372, 51.106029120017226, 1800, 0.865);
 
         // Far
-        double x = 0.05;
+        double x = 0.02;
         addMirroredPoint(98.72, 11.519, 2000, 0.87-x);
         addMirroredPoint(89.589, 10, 2050, 0.86-x);
         addMirroredPoint(87.04158272330217, 16.882499634750246, 2050, 0.875-x);
@@ -51,6 +58,21 @@ public class ShooterLUT {
         addMirroredPoint(71.56, 28.29, 2000, 0.87-x);
         addMirroredPoint(56.795322688545774, 16.238613579216903, 2150, 0.87-x);
         addMirroredPoint(52.20891516978347, 11.979338878721704, 2200, 0.88-x);
+
+//        double vel = 2250;
+//        double hood = 0.87;
+//
+//        addMirroredPoint(98.72, 11.519, vel, hood);
+//        addMirroredPoint(89.589, 10, vel, hood);
+//        addMirroredPoint(87.04158272330217, 16.882499634750246, vel, hood);
+//        addMirroredPoint(75.729, 17.5947, vel, hood);
+//        addMirroredPoint(72.03863669568159, 11.376966341273992, vel, hood);
+//
+//        //super far
+//        addMirroredPoint(65.43902059239666, 21.24958428810901, vel, hood);
+//        addMirroredPoint(71.56, 28.29, vel, hood);
+//        addMirroredPoint(56.795322688545774, 16.238613579216903, vel, hood);
+//        addMirroredPoint(52.20891516978347, 11.979338878721704, vel, hood);
     }
 
     private void addMirroredPoint(double x, double y, double shooterVel, double hoodPos) {

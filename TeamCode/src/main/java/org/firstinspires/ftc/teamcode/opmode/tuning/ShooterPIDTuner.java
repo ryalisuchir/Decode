@@ -27,7 +27,7 @@ import org.firstinspires.ftc.teamcode.common.utility.G;
 import org.firstinspires.ftc.teamcode.common.utility.Halo;
 
 @Config
-//@TeleOp
+@TeleOp
 public class ShooterPIDTuner extends CommandOpMode {
     public static double P = 0.0023;
     public static double I = 0;

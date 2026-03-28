@@ -16,7 +16,12 @@ import org.firstinspires.ftc.teamcode.common.utility.peacock.follower.Follower;
 import org.firstinspires.ftc.teamcode.common.utility.shooter.ShooterLUT;
 
 
-public class SetShooterClass extends SubsystemBase { //new pidf system rather than relying on ramp down
+public class SetShooterClass extends SubsystemBase {
+
+    double optimalHood = G.HOOD_LOWERED;
+    public double optimalVelocity = 0.0;
+    double currentFlywheelVelocity = 0.0;
+    double powerSupplied = 0.0;
 
     private final PIDFController flywheelController = new PIDFController(
             new PIDFCoefficients(
@@ -29,33 +34,17 @@ public class SetShooterClass extends SubsystemBase { //new pidf system rather th
 
     public boolean reached = false;
 
-    private double targetVelocity = 0.0;
-
     private final Motor shooterMotor1, shooterMotor2;
     private final ServoImplEx hood;
-    private final Follower follower;
-    private final double fixedGoalX;
-    private final double fixedGoalY;
-
-    private Vector2d customPosition = null;
-
-    private final ShooterLUT shooterLUT = new ShooterLUT();
-    private final TimeOfFlightLUT timeOfFlightLUT = new TimeOfFlightLUT();
 
     public SetShooterClass(
             Motor shooterMotor1,
             Motor shooterMotor2,
-            ServoImplEx hood,
-            Follower follower,
-            double gX,
-            double gY
+            ServoImplEx hood
     ) {
         this.shooterMotor1 = shooterMotor1;
         this.shooterMotor2 = shooterMotor2;
         this.hood = hood;
-        this.follower = follower;
-        this.fixedGoalX = gX;
-        this.fixedGoalY = gY;
         flywheelController.setTolerance(G.SHOOTER_VELOCITY_TOLERANCE);
     }
 
@@ -72,102 +61,36 @@ public class SetShooterClass extends SubsystemBase { //new pidf system rather th
         });
     }
 
-    public InstantCommand stopShooter() {
-        return new InstantCommand(() -> {
-            G.shooterState = G.ShooterState.STOPPED;
-            G.turretState = G.TurretState.RESET;
-            targetVelocity = 0;
-        });
-    }
-
-    public InstantCommand stopShooterFollow() {
-        return new InstantCommand(() -> {
-            G.shooterState = G.ShooterState.STOPPED;
-            targetVelocity = 0;
-        });
-    }
-
-    public void setCustomDistance(double x, double y) {
-        this.customPosition = new Vector2d(x, y);
-    }
-
-    public void clearCustomDistance() {
-        this.customPosition = null;
-    }
-
-    public void loop(double dub) {
-
+    public void loop() {
         reached = flywheelController.atSetPoint();
-
-        if (G.shooterState != G.ShooterState.SHOOTING &&
-                G.match != G.Match.AUTO) {
-            setShooterPower(G.MIN_SHOOTER_POWER);
-            return;
+        if (G.setShooterState == G.SetShooterState.far) {
+            optimalHood = 0.845;
+            optimalVelocity = 2150;
+        } else if (G.setShooterState == G.SetShooterState.reg_18) {
+            optimalHood = 0.82;
+            optimalVelocity = 1630;
+        } else if (G.setShooterState == G.SetShooterState.sort_12) {
+            optimalHood = 0.835;
+            optimalVelocity = 1530;
+        } else if (G.setShooterState == G.SetShooterState.test) {
+            optimalHood = 0.835;
+            optimalVelocity = 800;
+        } else if (G.setShooterState == G.SetShooterState.very_very_close) {
+            optimalHood = 0.74;
+            optimalVelocity = 1400;
         }
 
-        if (dub==1) {
-            hood.setPosition(
-                    0.835
-            );
+        currentFlywheelVelocity = shooterMotor1.getCorrectedVelocity();
 
-            targetVelocity = 1530;
-        }
+        flywheelController.setSetPoint(Math.min(optimalVelocity, 2700));
+        powerSupplied = flywheelController.calculate(currentFlywheelVelocity);
 
-        if (dub==2) {
-            hood.setPosition(
-                    0.83
-            );
-
-            targetVelocity = 1600;
-        }
-
-        if (dub==3) {
-            hood.setPosition(
-                    0.845
-            );
-
-            targetVelocity = 2050;
-        }
-
-        double flywheelVel = shooterMotor1.getCorrectedVelocity();
-
-        flywheelController.setSetPoint(Math.min(targetVelocity, 2700));
-        double power = flywheelController.calculate(flywheelVel);
-
-        setShooterPower(power);
+        setShooterPower(powerSupplied);
     }
 
     private void setShooterPower(double power) {
         shooterMotor1.set(power);
         shooterMotor2.set(power);
-    }
-
-    public boolean shooterIsSpunUp() {
-        return flywheelController.atSetPoint();
-    }
-
-    public double getShooterVelocity() {
-        return shooterMotor1.getCorrectedVelocity();
-    }
-
-    public double getShooterGoal() {
-        return targetVelocity;
-    }
-
-    public double getShooterRPM() {
-        return getShooterVelocity() / 28.0 * 60.0;
-    }
-
-    public double getShooterPower() {
-        return shooterMotor1.get();
-    }
-
-    private double shotVelocityOffset(double xVelInPerSec, double yVelInPerSec) {
-        double velVectorMagnitudeMps = Math.hypot(
-                Math.max(xVelInPerSec, 0.0),
-                Math.min(yVelInPerSec, 0.0)
-        ) * 0.0254;
-        return ((velVectorMagnitudeMps * 1000.0) / (G.SHOOTER_SOTM_WHEEL_DIAMETER_MM * Math.PI)) * 60.0;
     }
 
     private double clamp(double v, double min, double max) {

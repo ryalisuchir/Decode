@@ -265,6 +265,13 @@ public class Turret {
         });
     }
 
+    public InstantCommand redCloseClose() {
+        return new InstantCommand(() -> {
+            G.turretState = G.TurretState.SET_POSITION;
+            setPositionOnce(0.97);
+        });
+    }
+
     public InstantCommand red18Pos1() {
         return new InstantCommand(() -> {
             G.turretState = G.TurretState.SET_POSITION;
@@ -273,6 +280,20 @@ public class Turret {
     }
 
     public InstantCommand red18Pos2() {
+        return new InstantCommand(() -> {
+            G.turretState = G.TurretState.SET_POSITION;
+            setPositionOnce(0.725); //0.58
+        });
+    }
+
+    public InstantCommand redFarNot() {
+        return new InstantCommand(() -> {
+            G.turretState = G.TurretState.SET_POSITION;
+            setPositionOnce(0.62); //0.58
+        });
+    }
+
+    public InstantCommand redFar() {
         return new InstantCommand(() -> {
             G.turretState = G.TurretState.SET_POSITION;
             setPositionOnce(0.71); //0.58

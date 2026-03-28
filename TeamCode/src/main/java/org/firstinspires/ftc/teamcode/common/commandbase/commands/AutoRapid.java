@@ -14,9 +14,9 @@ import org.firstinspires.ftc.teamcode.common.utility.Halo;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RapidSlowerCmd extends SequentialCommandGroup {
+public class AutoRapid extends SequentialCommandGroup {
 
-    public RapidSlowerCmd(Halo r) {
+    public AutoRapid(Halo r) {
         List<Integer> firingOrder = computeFiringOrder();
 
         if (firingOrder.isEmpty()) {
@@ -32,13 +32,13 @@ public class RapidSlowerCmd extends SequentialCommandGroup {
         sequence.add(kickCommand(r.kicker, 3));
         sequence.add(kickCommand(r.kicker, 2));
 
-        sequence.add(new WaitCommand(G.KICK_WAIT_RAPID));
+        sequence.add(new WaitCommand(G.KICK_WAIT_RAPID+100));
 
         addCommands(sequence.toArray(new Command[0]));
     }
 
     private Command kickCommand(Kicker kicker, int slot) {
-        return new SequentialCommandGroup(new InstantCommand(() -> G.shooterKicking = true), KickCommands.kickOnce(kicker, slot), new WaitCommand(G.KICK_WAIT_RAPID+120));
+        return new SequentialCommandGroup(new InstantCommand(() -> G.shooterKicking = true), KickCommands.kickOnce(kicker, slot), new WaitCommand(G.KICK_WAIT_RAPID));
     }
 
     private List<Integer> computeFiringOrder() {

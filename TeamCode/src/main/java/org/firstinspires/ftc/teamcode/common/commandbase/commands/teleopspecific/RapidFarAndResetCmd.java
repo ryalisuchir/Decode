@@ -33,7 +33,7 @@ public class RapidFarAndResetCmd extends SequentialCommandGroup {
         sequence.add(kickCommand(r.kicker, 3));
         sequence.add(kickCommand(r.kicker, 2));
 
-        sequence.add(new WaitCommand(G.KICK_WAIT_RAPID));
+        sequence.add(new WaitCommand(G.KICK_WAIT_RAPID+150));
 
         sequence.add(new Reset(r));
 

@@ -27,6 +27,7 @@ public class G {
     public static G.HoodState hoodState;
     public static G.GateState gateState;
     public static G.FailsafeState failsafeState;
+    public static G.SetShooterState setShooterState;
 
     public static Pose DEFAULT_START_POSE = new Pose(8.069164265129686, 9.037463976945268, Math.toRadians(90));
 
@@ -124,6 +125,15 @@ public class G {
     public enum Side {
         RED,
         BLUE
+    }
+
+    public enum SetShooterState {
+        sort_12,
+        reg_18,
+        end_18,
+        far,
+        test,
+        very_very_close
     }
 
     public enum Match {

@@ -44,6 +44,32 @@ public class ResetShooterCmd extends ParallelCommandGroup {
         );
     }
 
+    public ResetShooterCmd(Halo r, double x, InstantCommand instant, InstantCommand instant2) {
+        super(
+                new ParallelCommandGroup(
+                        KickCommands.resetAll(r.kicker),
+                        new InstantCommand(() -> G.shooterKicking = false),
+                        instant,
+                        instant2,
+                        new IntakeCmd(r, x)
+                )
+        );
+    }
+
+    public ResetShooterCmd(Halo r, double x, InstantCommand instant, InstantCommand instant2, InstantCommand instant3, InstantCommand instant4) {
+        super(
+                new ParallelCommandGroup(
+                        KickCommands.resetAll(r.kicker),
+                        new InstantCommand(() -> G.shooterKicking = false),
+                        instant,
+                        instant2,
+                        instant3,
+                        instant4,
+                        new IntakeCmd(r, x)
+                )
+        );
+    }
+
     public ResetShooterCmd(Halo r) {
         super(
                 new ParallelCommandGroup(
@@ -66,6 +92,21 @@ public class ResetShooterCmd extends ParallelCommandGroup {
                         KickCommands.resetAll(r.kicker),
                         new InstantCommand(() -> G.shooterKicking = false),
                         instant,
+                        new SequentialCommandGroup(
+                                new WaitCommand(800),
+                                new InstantCommand(() -> r.spinner.transferStop())
+                        )
+                )
+        );
+    }
+
+    public ResetShooterCmd(Halo r, InstantCommand instant, InstantCommand instant2) {
+        super(
+                new ParallelCommandGroup(
+                        KickCommands.resetAll(r.kicker),
+                        new InstantCommand(() -> G.shooterKicking = false),
+                        instant,
+                        instant2,
                         new SequentialCommandGroup(
                                 new WaitCommand(800),
                                 new InstantCommand(() -> r.spinner.transferStop())

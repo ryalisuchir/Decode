@@ -48,7 +48,7 @@ public class SubTest extends CommandOpMode {
 
     @Override
     public void initialize() {
-        r = new Halo(hardwareMap, G.BLUE_CUBE_START, G.Side.BLUE, true);
+        r = new Halo(hardwareMap, G.RED_CUBE_START, G.Side.RED, true);
         r.init();
         r.dt.startDrive();
         suchir = gamepad1;
@@ -85,6 +85,12 @@ public class SubTest extends CommandOpMode {
     @Override
     public void run() {
 //        r.profiler.start("Full Loop");
+
+        telemetry.addData("Curr Pos: ", r.dt.getPose());
+        telemetry.update();
+        r.dt.periodic();
+        r.dt.loop();
+
         r.dt.drive(gamepad1);
 
         if (!hasStarted) {
