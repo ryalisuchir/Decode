@@ -37,6 +37,11 @@ public class RapidResetTCmd extends SequentialCommandGroup {
     }
 
     private Command kickCommand(Kicker kicker, int slot) {
-        return new SequentialCommandGroup(new InstantCommand(() -> Globals.shooterKicking = true), KickCommands.kickOnce(kicker, slot), new WaitCommand(Globals.Timings.KICK_RAPID));
+        return new SequentialCommandGroup(
+                new InstantCommand(() -> Globals.shooterKicking = true),
+                KickCommands.kickOnce(kicker, slot),
+                new WaitCommand(Globals.Timings.KICK_RAPID),
+                KickCommands.clearBallSlot(slot)
+        );
     }
 }

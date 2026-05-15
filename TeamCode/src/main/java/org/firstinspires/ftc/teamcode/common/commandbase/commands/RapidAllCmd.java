@@ -47,8 +47,8 @@ public class RapidAllCmd extends SequentialCommandGroup {
                 }), r.shooter.startShooter()
         ));
 
-        sequence.add(kickCommand(r.kicker, 1, extraTime));
         sequence.add(kickCommand(r.kicker, 3, extraTime));
+        sequence.add(kickCommand(r.kicker, 1, extraTime));
         sequence.add(kickCommand(r.kicker, 2, extraTime));
 
         sequence.add(new WaitCommand(Globals.Timings.KICK_RAPID));
@@ -57,10 +57,20 @@ public class RapidAllCmd extends SequentialCommandGroup {
     }
 
     private Command kickCommand(Kicker kicker, int slot) {
-        return new SequentialCommandGroup(new InstantCommand(() -> Globals.shooterKicking = true), KickCommands.kickOnce(kicker, slot), new WaitCommand(Globals.Timings.KICK_RAPID));
+        return new SequentialCommandGroup(
+                new InstantCommand(() -> Globals.shooterKicking = true),
+                KickCommands.kickOnce(kicker, slot),
+                new WaitCommand(Globals.Timings.KICK_RAPID),
+                KickCommands.clearBallSlot(slot)
+        );
     }
 
     private Command kickCommand(Kicker kicker, int slot, long extraTime) {
-        return new SequentialCommandGroup(new InstantCommand(() -> Globals.shooterKicking = true), KickCommands.kickOnce(kicker, slot), new WaitCommand(Globals.Timings.KICK_RAPID + extraTime));
+        return new SequentialCommandGroup(
+                new InstantCommand(() -> Globals.shooterKicking = true),
+                KickCommands.kickOnce(kicker, slot),
+                new WaitCommand(Globals.Timings.KICK_RAPID + extraTime),
+                KickCommands.clearBallSlot(slot)
+        );
     }
 }

@@ -13,8 +13,8 @@ public class ColorConfiguration extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         ColorRangefinder crf = new ColorRangefinder(hardwareMap.get(RevColorSensorV3.class, "tc"));
         waitForStart();
-        crf.setPin0Analog(ColorRangefinder.AnalogMode.DISTANCE);
-        crf.setPin1Digital(ColorRangefinder.DigitalMode.HSV, 110 / 360.0 * 255, 140 / 360 * 255);
+        crf.setPin0Analog(ColorRangefinder.AnalogMode.HSV);
+        crf.setPin1Digital(ColorRangefinder.DigitalMode.HSV, 110 / 360.0 * 255, 140 / 360.0 * 255); // green
     }
 }
 

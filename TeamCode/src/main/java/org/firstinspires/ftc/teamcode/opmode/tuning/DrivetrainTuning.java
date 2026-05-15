@@ -8,13 +8,6 @@ import com.bylazar.field.PanelsField;
 import com.bylazar.field.Style;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
-import com.pedropathing.follower.Follower;
-import com.pedropathing.geometry.*;
-import com.pedropathing.math.*;
-import com.pedropathing.paths.*;
-import com.pedropathing.telemetry.SelectableOpMode;
-import com.pedropathing.util.*;
-import static com.pedropathing.math.MathFunctions.quadraticFit;
 
 import static org.firstinspires.ftc.teamcode.opmode.tuning.DrivetrainTuning.changes;
 import static org.firstinspires.ftc.teamcode.opmode.tuning.DrivetrainTuning.drawCurrent;
@@ -22,16 +15,32 @@ import static org.firstinspires.ftc.teamcode.opmode.tuning.DrivetrainTuning.draw
 import static org.firstinspires.ftc.teamcode.opmode.tuning.DrivetrainTuning.follower;
 import static org.firstinspires.ftc.teamcode.opmode.tuning.DrivetrainTuning.stopRobot;
 import static org.firstinspires.ftc.teamcode.opmode.tuning.DrivetrainTuning.telemetryM;
+import static com.pedropathing.math.MathFunctions.quadraticFit;
 
 import android.annotation.SuppressLint;
 
 import com.qualcomm.hardware.lynx.LynxModule;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.common.pathing.Constants;
+import com.pedropathing.follower.Follower;
+import com.pedropathing.geometry.BezierCurve;
+import com.pedropathing.geometry.BezierLine;
+import com.pedropathing.geometry.BezierPoint;
+import com.pedropathing.geometry.Pose;
+import com.pedropathing.math.MathFunctions;
+import com.pedropathing.math.Vector;
+import com.pedropathing.paths.HeadingInterpolator;
+import com.pedropathing.paths.Path;
+import com.pedropathing.paths.PathBuilder;
+import com.pedropathing.paths.PathChain;
+import com.pedropathing.paths.PathConstraints;
+import com.pedropathing.telemetry.SelectableOpMode;
+import com.pedropathing.util.PoseHistory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,6 +51,7 @@ import java.util.List;
  * @author Baron Henderson - 20077 The Indubitables
  * @version 1.0, 6/26/2025
  */
+@Disabled
 @Configurable
 @TeleOp(name = "DrivetrainTuning", group = "Pedro Pathing")
 public class DrivetrainTuning extends SelectableOpMode {

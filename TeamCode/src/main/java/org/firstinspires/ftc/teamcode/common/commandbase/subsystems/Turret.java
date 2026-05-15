@@ -1,600 +1,416 @@
 package org.firstinspires.ftc.teamcode.common.commandbase.subsystems;
 
+import static org.firstinspires.ftc.teamcode.common.TurretConfig.GEAR_RATIO;
+import static org.firstinspires.ftc.teamcode.common.TurretConfig.MAX_SERVO_DEG;
+import static org.firstinspires.ftc.teamcode.common.TurretConfig.MAX_SIDE_ROTATION;
 
-import com.pedropathing.follower.Follower;
-import com.pedropathing.math.Vector;
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
+import com.qualcomm.robotcore.util.Range;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.common.Globals;
+import org.firstinspires.ftc.teamcode.common.TurretConfig;
+import com.pedropathing.follower.Follower;
+import com.pedropathing.geometry.Pose;
 import org.firstinspires.ftc.teamcode.common.utility.turret.TurretMath;
-import org.firstinspires.ftc.teamcode.common.utility.tables.TimeOfFlightLUT;
-import org.firstinspires.ftc.teamcode.common.utility.turret.BlueTurretLUT;
-import org.firstinspires.ftc.teamcode.common.utility.turret.RedTurretLUT;
 
+@Config
 public class Turret {
-    private final ServoImplEx turret1, turret2;
-    private final BlueTurretLUT blueTurretLUT = new BlueTurretLUT();
-    private final RedTurretLUT redTurretLUT = new RedTurretLUT();
-    private final TimeOfFlightLUT timeOfFlightLUT = new TimeOfFlightLUT();
-    private double lastPos = -1;
+    private static final double SERVO_UNITS_PER_DEGREE = 1.0 / (MAX_SERVO_DEG * GEAR_RATIO);
+    private static final double CACHE_TOLERANCE = 0.001;
+    public static double BACKLASH_PRELOAD_DEG = 8;
+    private static final double BACKLASH_PRELOAD = BACKLASH_PRELOAD_DEG * SERVO_UNITS_PER_DEGREE;
 
+    private final ServoImplEx s1;
+    private final ServoImplEx s2;
     private final Follower follower;
     private final Globals.Alliance alliance;
-    private final TurretMath.CornerGoal cornerGoal;
-    public static double virtualGoalX, virtualGoalY;
-    public static double baseGoalX, baseGoalY;
-    public double originalGoalX, originalGoalY;
+    private final Shooter shooter;
 
-    // Red far regression training points: {x, y, headingDeg, targetServo}
-    private static final double[][] RED_FAR_MODEL_POINTS = {
-            {97.83, 7.32, 81.74, 0.03},
-            {97.98, 8.08, 70.63, 0.07},
-            {95.90, 8.27, 60.02, 0.1},
-            {94.15, 8.32, 43.81, 0.15},
-            {92.19, 7.72, 22.22, 0.2},
-            {89.66, 8.33, 5.67, 0.25},
-            {87.26, 9.06, -17.92, 0.3},
-            {85.89, 10.10, -32.60, 0.35},
-            {84.95, 11.23, -50.09, 0.4},
-            {85.00, 12.08, -69.23, 0.45},
-            {86.35, 12.09, -94.73, 0.5},
-            {86.52, 12.82, -111.32, 0.55},
-            {87.84, 14.11, -130.98, 0.6},
-            {87.35, 14.08, -150.63, 0.65},
-            {87.71, 13.01, -173.12, 0.7},
-            {88.07, 12.25, 167.80, 0.75},
-            {88.45, 12.29, 149.58, 0.8},
-            {89.65, 10.89, 131.89, 0.85},
-            {90.54, 9.61, 112.47, 0.9},
-            {91.00, 9.84, 92.91, 0.95},
-            {91.60, 9.00, 76.89, 1.0},
-            {74.42, 23.69, 70.75, 0.03},
-            {74.51, 21.82, 54.02, 0.07},
-            {74.23, 21.78, 47.67, 0.1},
-            {73.57, 20.76, 30.59, 0.15},
-            {72.15, 19.15, 9.22, 0.2},
-            {71.05, 18.01, -8.79, 0.25},
-            {70.99, 17.88, -27.69, 0.3},
-            {71.10, 18.89, -46.23, 0.35},
-            {71.74, 18.84, -60.80, 0.4},
-            {71.90, 18.97, -77.35, 0.45},
-            {73.11, 20.47, -100.97, 0.5},
-            {73.38, 20.86, -120.00, 0.55},
-            {73.92, 21.82, -136.59, 0.6},
-            {74.41, 22.37, -156.54, 0.65},
-            {74.91, 22.29, -175.04, 0.7},
-            {72.41, 19.65, 162.67, 0.75},
-            {72.63, 19.02, 143.31, 0.8},
-            {73.88, 18.68, 124.06, 0.85},
-            {73.72, 18.21, 104.25, 0.9},
-            {73.95, 17.43, 88.32, 0.95},
-            {72.71, 16.90, 65.00, 1.0},
-            {49.60, 7.05, 69.82, 0.03},
-            {50.12, 7.77, 55.96, 0.07},
-            {50.22, 7.24, 51.16, 0.1},
-            {49.29, 7.22, 37.87, 0.15},
-            {48.78, 3.79, 23.39, 0.2},
-            {46.33, 4.37, 13.45, 0.25},
-            {46.22, 6.27, -2.09, 0.3},
-            {46.42, 7.46, -15.55, 0.35},
-            {46.83, 7.67, -27.60, 0.4},
-            {45.42, 9.91, -40.45, 0.45},
-            {44.10, 11.64, -60.61, 0.5},
-            {45.29, 11.34, -76.12, 0.55},
-            {46.00, 9.53, -93.46, 0.6},
-            {46.71, 9.38, -99.18, 0.65},
-            {45.96, 9.55, -115.02, 0.7},
-            {46.72, 9.89, -131.45, 0.75},
-            {47.11, 10.80, -146.42, 0.8},
-            {48.73, 10.91, -162.03, 0.85},
-            {49.56, 11.58, -179.22, 0.9},
-            {48.91, 12.33, 163.27, 0.95},
-            {48.51, 13.03, 150.48, 1.0}
-    };
+    private double targetDeg = 0;
+    private double manualOffsetDeg = 1.0;
+    private double cachedServoPos = Double.NaN;
 
-    // Red close regression training points: {x, y, headingDeg, targetServo}
-    private static final double[][] RED_CLOSE_MODEL_POINTS = {
-            //Close:
-            {87.86, 87.65, 46.53, 0.03},
-            {87.13, 88.16, 30.65, 0.08},
-            {85.93, 88.46, 26.05, 0.12},
-            {84.46, 90.18, 2.55, 0.17},
-            {85.7, 93.07, -8.78, 0.22},
-            {81.69, 90.03, -38.12, 0.27},
-            {83.15, 91.25, -51.93, 0.32},
-            {86.95, 90.26, -75.47, 0.37},
-            {85.92, 90.19, -88.05, 0.42},
-            {90.23, 91.25, -113.79, 0.47},
-            {85.95, 86.96, -126.19, 0.52},
-            {86.55, 87.26, -148.01, 0.57},
-            {87.79, 87.46, -166.93, 0.62},
-            {86.67, 87.85, 174.12, 0.67},
-            {85.63, 89.13, 152.69, 0.72},
-            {85.66, 88.7, 132.32, 0.77},
-            {86.46, 88.51, 113.91, 0.82},
-            {88.22, 85.92, 93.41, 0.85},
-            {86.01, 83.81, 80.89, 0.9},
-            {85.073, 85.94, 61.43, 0.95},
-            {88.45, 85.18, 43.94, 1.0},
-            {71.02, 69.82, 55.03, 0.03},
-            {70.24, 75.47, 33.16, 0.08},
-            {66.8, 70.52, 21.62, 0.13},
-            {67.83, 73.55, -7.81, 0.18},
-            {67.85, 71.46, -19.83, 0.23},
-            {67.26, 71.22, -37.34, 0.28},
-            {67.21, 72.24, -56.15, 0.33},
-            {66.64, 73.75, -72.1, 0.38},
-            {68.2, 74.09, -89.69, 0.43},
-            {68.51, 72.66, -107.41, 0.48},
-            {68.11, 72.23, -125.36, 0.53},
-            {67.94, 72.16, -148.95, 0.58},
-            {67.98, 72.14, -165.68, 0.63},
-            {69.94, 72.47, 173.4, 0.68},
-            {68.65, 71.08, 153.92, 0.73},
-            {70.4, 70.32, 140.71, 0.78},
-            {71.24, 69.42, 128.25, 0.83},
-            {71.32, 68.48, 99.3, 0.88},
-            {71.69, 67.95, 86.07, 0.92},
-            {71.4, 66.47, 64.46, 0.97},
-            {71.27, 66.58, 56.68, 1.0},
-            {48.63, 88.04, 34.29, 0.03},
-            {48.13, 88.49, 19.81, 0.08},
-            {43.71, 87.69, 13.11, 0.1},
-            {49.76, 89.29, -8.21, 0.15},
-            {38.05, 89.41, -26.96, 0.2},
-            {39.28, 88.76, -41.23, 0.25},
-            {40.18, 89.12, -59.12, 0.3},
-            {42.33, 87.81, -76.2, 0.35},
-            {42.6, 87.02, -90.56, 0.4},
-            {43.4, 85.16, -109.16, 0.45},
-            {45.23, 86.24, -134.58, 0.5},
-            {45.94, 84.33, -157.98, 0.55},
-            {45.47, 83.92, -173.99, 0.6},
-            {46.23, 84.24, 167.37, 0.65},
-            {46.94, 84.46, 149.05, 0.7},
-            {47.74, 83.54, 129.36, 0.75},
-            {47.89, 82.89, 110.98, 0.8},
-            {47.82, 81.65, 91.2, 0.85},
-            {43.83, 90.02, 50.27, 0.9},
-            {47.13, 84.32, 61.75, 0.95},
-            {42.45, 89.01, 20.01, 1.0},
-            {28.34, 106.03, 22.71, 0.03},
-            {24.98, 105.15, 5.06, 0.07},
-            {25.15, 105.58, -1.55, 0.1},
-            {25.92, 106.06, -17.29, 0.15},
-            {24.81, 106.105, -38.09, 0.2},
-            {25.29, 104.86, -53.74, 0.25},
-            {25.57, 105.12, -71.84, 0.3},
-            {26.39, 103.37, -88.63, 0.35},
-            {27.65, 103.41, -103.46, 0.4},
-            {28.78, 102.18, -120.09, 0.45},
-            {30.03, 101.15, -145.12, 0.5},
-            {31.78, 101.42, -164.15, 0.55},
-            {33.45, 100.65, 177.89, 0.6},
-            {33.34, 99.48, 162.79, 0.65},
-            {34.36, 99.48, 141.91, 0.7},
-            {34.4, 99.58, 119.9, 0.75},
-            {34.03, 99.46, 103.77, 0.8},
-            {34.2, 98.95, 83.55, 0.85},
-            {32.66, 99.78, 44.86, 0.9},
-            {32.11, 98.9, 28.6, 0.95},
-            {31.87, 100.27, 11.77, 1.0},
-            {70.62, 115.97, 21.15, 0.03},
-            {69.95, 115.03, 11.35, 0.07},
-            {70.06, 114.28, 2.03, 0.1},
-            {70.93, 115.5, -17.24, 0.15},
-            {71.19, 115.97, -35.35, 0.2},
-            {72.31, 116.95, -53.49, 0.25},
-            {72.74, 116.78, -69.42, 0.3},
-            {71.55, 118.35, -92.98, 0.35},
-            {70.73, 116.74, -105.25, 0.4},
-            {71.54, 116.31, -120.13, 0.45},
-            {72.4, 115.33, -140.96, 0.5},
-            {72.87, 117.25, -165.22, 0.55},
-            {72.85, 116.89, 175.53, 0.6},
-            {74.02, 116.4, 153.05, 0.65},
-            {74.1, 116.78, 132.08, 0.7},
-            {73.89, 116.97, 111.57, 0.75},
-            {74.4, 116.47, 95.52, 0.8},
-            {74.56, 116.6, 76.61, 0.85},
-            {73.57, 116.22, 60.97, 0.9},
-            {74.1, 116.1, 46.09, 0.95},
-            {74.17, 115.78, 21.36, 1.0}
-    };
-
-    private static final double[][] BLUE_FAR_MODEL_POINTS = mirrorModelPoints(RED_FAR_MODEL_POINTS);
-    private static final double[][] BLUE_CLOSE_MODEL_POINTS = mirrorModelPoints(RED_CLOSE_MODEL_POINTS);
-
-    public Turret(
-            Globals.Alliance alliance,
-            ServoImplEx turret1,
-            ServoImplEx turret2,
-            Follower follower
-    ) {
+    public Turret(Globals.Alliance alliance, ServoImplEx s1, ServoImplEx s2,
+                  Follower follower, Shooter shooter) {
         this.alliance = alliance;
-        this.turret1 = turret1;
-        this.turret2 = turret2;
+        this.s1 = s1;
+        this.s2 = s2;
         this.follower = follower;
-        this.cornerGoal = (alliance == Globals.Alliance.BLUE)
-                ? TurretMath.CornerGoal.LEFT_BLUE
-                : TurretMath.CornerGoal.RIGHT_RED;
-
-        double[] g = TurretMath.getCornerGoalCenter(cornerGoal);
-        this.baseGoalX = g[0];
-        this.baseGoalY = g[1];
-        this.virtualGoalX = g[0];
-        this.virtualGoalY = g[1];
-        this.originalGoalX = g[0];
-        this.originalGoalY = g[1];
+        this.shooter = shooter;
     }
 
-    public void setPositionOnce(double pos) {
-        if (Math.abs(pos - lastPos) > 0.001) {
-            turret1.setPosition(pos);
-            turret2.setPosition(pos);
-            lastPos = pos;
+    public void resetTurret() {
+        s1.setPosition(TurretConfig.TURRET_FORWARD);
+        s2.setPosition(TurretConfig.TURRET_FORWARD);
+        cachedServoPos = TurretConfig.TURRET_FORWARD;
+    }
+
+    /** Directly sets the turret target angle in degrees. Used by DBZ teleop. */
+    public void setTargetDeg(double deg) {
+        targetDeg = deg;
+    }
+
+    public InstantCommand farB() {
+        if (alliance == Globals.Alliance.RED) {
+            return new InstantCommand(() -> {
+                Globals.turretState = Globals.TurretState.SET_POSITION;
+                targetDeg = 90;
+            });
+        } else {
+            return new InstantCommand(() -> {
+                Globals.turretState = Globals.TurretState.SET_POSITION;
+                targetDeg = -90;
+            });
         }
     }
 
-    public InstantCommand clearCustom() {
-        return new InstantCommand(() -> {
-            Globals.turretState = Globals.TurretState.RESET;
-            setPositionOnce(Globals.Turret.TURRET_FORWARD);
-        });
+    public InstantCommand farBoi() {
+        if (alliance == Globals.Alliance.RED) {
+            return new InstantCommand(() -> {
+                Globals.turretState = Globals.TurretState.SET_POSITION;
+                targetDeg = 65;
+            });
+        } else {
+            return new InstantCommand(() -> {
+                Globals.turretState = Globals.TurretState.SET_POSITION;
+                targetDeg = -65;
+            });
+        }
     }
 
-    public InstantCommand setCustom(double servoPosition) {
+    //Red 21s:
+    public InstantCommand redCloseClose() {
+        if (alliance == Globals.Alliance.RED) {
+            return new InstantCommand(() -> {
+                Globals.turretState = Globals.TurretState.SET_POSITION;
+                targetDeg = 88;
+            });
+        } else {
+            return new InstantCommand(() -> {
+                Globals.turretState = Globals.TurretState.SET_POSITION;
+                targetDeg = -88-10;
+            });
+        }
+    }
+
+    public InstantCommand redFirstSpike() {
+        if (alliance == Globals.Alliance.RED) {
+            return new InstantCommand(() -> {
+                Globals.turretState = Globals.TurretState.SET_POSITION;
+                targetDeg = 42;
+            });
+        } else {
+            return new InstantCommand(() -> {
+                Globals.turretState = Globals.TurretState.SET_POSITION;
+                targetDeg = -42-10;
+            });
+        }
+    }
+
+    public InstantCommand redShootSpec1() {
+        if (alliance == Globals.Alliance.RED) {
+            return new InstantCommand(() -> {
+                Globals.turretState = Globals.TurretState.SET_POSITION;
+                targetDeg = 68;
+            });
+        } else {
+            return new InstantCommand(() -> {
+                Globals.turretState = Globals.TurretState.SET_POSITION;
+                targetDeg = -68-10;
+            });
+        }
+    }
+
+    public InstantCommand redLarperShot() {
+        if (alliance == Globals.Alliance.RED) {
+            return new InstantCommand(() -> {
+                Globals.turretState = Globals.TurretState.SET_POSITION;
+                targetDeg = 75;
+            });
+        } else {
+            return new InstantCommand(() -> {
+                Globals.turretState = Globals.TurretState.SET_POSITION;
+                targetDeg = -75-10;
+            });
+        }
+    }
+
+    public InstantCommand redShootGateShoot() {
+        if (alliance == Globals.Alliance.RED) {
+            return new InstantCommand(() -> {
+                Globals.turretState = Globals.TurretState.SET_POSITION;
+                targetDeg = 63;
+            });
+        } else {
+            return new InstantCommand(() -> {
+                Globals.turretState = Globals.TurretState.SET_POSITION;
+                targetDeg = -63-10;
+            });
+        }
+    }
+
+    //Red Push 21s:
+    public InstantCommand redPush21() {
+        if (alliance == Globals.Alliance.RED) {
+            return new InstantCommand(() -> {
+                Globals.turretState = Globals.TurretState.SET_POSITION;
+                targetDeg = 88;
+            });
+        } else {
+            return new InstantCommand(() -> {
+                Globals.turretState = Globals.TurretState.SET_POSITION;
+                targetDeg = -88;
+            });
+        }
+    }
+
+    public InstantCommand redPushFirstSpike() {
+        if (alliance == Globals.Alliance.RED) {
+            return new InstantCommand(() -> {
+                Globals.turretState = Globals.TurretState.SET_POSITION;
+                targetDeg = 42;
+            });
+        } else {
+            return new InstantCommand(() -> {
+                Globals.turretState = Globals.TurretState.SET_POSITION;
+                targetDeg = -42;
+            });
+        }
+    }
+
+    //Red Sorted 18s:
+    public InstantCommand redSorted1() {
+        if (alliance == Globals.Alliance.RED) {
+            return new InstantCommand(() -> {
+                Globals.turretState = Globals.TurretState.SET_POSITION;
+                targetDeg = -6;
+            });
+        } else {
+            return new InstantCommand(() -> {
+                Globals.turretState = Globals.TurretState.SET_POSITION;
+                targetDeg = +6;
+            });
+        }
+    }
+
+    public InstantCommand redSorted2() {
+        if (alliance == Globals.Alliance.RED) {
+            return new InstantCommand(() -> {
+                Globals.turretState = Globals.TurretState.SET_POSITION;
+                targetDeg = 67;
+            });
+        } else {
+            return new InstantCommand(() -> {
+                Globals.turretState = Globals.TurretState.SET_POSITION;
+                targetDeg = -67;
+            });
+        }
+    }
+
+    public InstantCommand redSortedGate() {
+        if (alliance == Globals.Alliance.RED) {
+            return new InstantCommand(() -> {
+                Globals.turretState = Globals.TurretState.SET_POSITION;
+                targetDeg = 67;
+            });
+        } else {
+            return new InstantCommand(() -> {
+                Globals.turretState = Globals.TurretState.SET_POSITION;
+                targetDeg = -67;
+            });
+        }
+    }
+
+    public InstantCommand redSortedFar() {
+        if (alliance == Globals.Alliance.RED) {
+            return new InstantCommand(() -> {
+                Globals.turretState = Globals.TurretState.SET_POSITION;
+                targetDeg = 83;
+            });
+        } else {
+            return new InstantCommand(() -> {
+                Globals.turretState = Globals.TurretState.SET_POSITION;
+                targetDeg = -83;
+            });
+        }
+    }
+
+    public InstantCommand redSortedClose() {
+        if (alliance == Globals.Alliance.RED) {
+            return new InstantCommand(() -> {
+                Globals.turretState = Globals.TurretState.SET_POSITION;
+                targetDeg = 42;
+            });
+        } else {
+            return new InstantCommand(() -> {
+                Globals.turretState = Globals.TurretState.SET_POSITION;
+                targetDeg = -42;
+            });
+        }
+    }
+
+    //Sorted Pusher:
+    public InstantCommand redPushShoot0() {
+        if (alliance == Globals.Alliance.RED) {
+            return new InstantCommand(() -> {
+                Globals.turretState = Globals.TurretState.SET_POSITION;
+                targetDeg = 88;
+            });
+        } else {
+            return new InstantCommand(() -> {
+                Globals.turretState = Globals.TurretState.SET_POSITION;
+                targetDeg = -88;
+            });
+        }
+    }
+
+    //Far:
+    public InstantCommand redFarReset() {
+        if (alliance == Globals.Alliance.RED) {
+            return new InstantCommand(() -> {
+                Globals.turretState = Globals.TurretState.SET_POSITION;
+                targetDeg = 45;
+            });
+        } else {
+            return new InstantCommand(() -> {
+                Globals.turretState = Globals.TurretState.SET_POSITION;
+                targetDeg = -45;
+            });
+        }
+    }
+
+    public InstantCommand redFar0() {
+        if (alliance == Globals.Alliance.RED) {
+            return new InstantCommand(() -> {
+                Globals.turretState = Globals.TurretState.SET_POSITION;
+                targetDeg = 20;
+            });
+        } else {
+            return new InstantCommand(() -> {
+                Globals.turretState = Globals.TurretState.SET_POSITION;
+                targetDeg = -20;
+            });
+        }
+    }
+
+    public InstantCommand redFar1() {
+        if (alliance == Globals.Alliance.RED) {
+            return new InstantCommand(() -> {
+                Globals.turretState = Globals.TurretState.SET_POSITION;
+                targetDeg = 10;
+            });
+        } else {
+            return new InstantCommand(() -> {
+                Globals.turretState = Globals.TurretState.SET_POSITION;
+                targetDeg = -10;
+            });
+        }
+    }
+
+    public InstantCommand redFar2() {
+        if (alliance == Globals.Alliance.RED) {
+            return new InstantCommand(() -> {
+                Globals.turretState = Globals.TurretState.SET_POSITION;
+                targetDeg = 30;
+            });
+        } else {
+            return new InstantCommand(() -> {
+                Globals.turretState = Globals.TurretState.SET_POSITION;
+                targetDeg = -30;
+            });
+        }
+    }
+
+    public InstantCommand redFarRest() {
+        if (alliance == Globals.Alliance.RED) {
+            return new InstantCommand(() -> {
+                Globals.turretState = Globals.TurretState.SET_POSITION;
+                targetDeg = 10;
+            });
+        } else {
+            return new InstantCommand(() -> {
+                Globals.turretState = Globals.TurretState.SET_POSITION;
+                targetDeg = -10;
+            });
+        }
+    }
+
+    public InstantCommand followObeliskCmd() {
         return new InstantCommand(() -> {
-            Globals.turretState = Globals.TurretState.FOLLOWING_GOAL;
-            setPositionOnce(servoPosition);
+            Globals.turretState = Globals.TurretState.FOLLOWING_OBELISK;
         });
     }
 
     public InstantCommand reset() {
-        return new InstantCommand(() -> {
-            Globals.turretState = Globals.TurretState.RESET;
-            setPositionOnce(Globals.Turret.TURRET_FORWARD);
-        });
+        return new InstantCommand(this::resetTurret);
     }
 
-    public double getAngleToGoal() {
-        return TurretMath.getTurretAngleToCornerGoal(
-                follower.getPose().getX(),
-                follower.getPose().getY(),
-                follower.getPose().getHeading(),
-                Globals.Turret.pivotX,
-                Globals.Turret.pivotY,
-                cornerGoal
-        );
+    public void incrementOffset(boolean up) {
+        manualOffsetDeg = up ? manualOffsetDeg + 1 : manualOffsetDeg - 1;
     }
 
-    public double getBestTurretPosition() {
-        double turretAngle = TurretMath.getTurretAngleToGoal(
-                follower.getPose().getX(),
-                follower.getPose().getY(),
-                follower.getPose().getHeading(),
-                Globals.Turret.pivotX,
-                Globals.Turret.pivotY,
-                virtualGoalX,
-                virtualGoalY
+    private void followGoal() {
+        Pose pose = follower.getPose();
+
+        TurretMath.CornerGoal cornerGoal = (alliance == Globals.Alliance.BLUE)
+                ? TurretMath.CornerGoal.LEFT_BLUE
+                : TurretMath.CornerGoal.RIGHT_RED;
+
+        double turretRad = TurretMath.getTurretAngleSOTM(
+                pose.getX(), pose.getY(), pose.getHeading(),
+                TurretConfig.pivotX, TurretConfig.pivotY,
+                cornerGoal,
+                shooter.compensatedTurretDelta
         );
 
-        double servoPosition;
-        if (alliance == Globals.Alliance.BLUE) {
-            servoPosition = blueTurretLUT.getServoValue(turretAngle);
-        } else {
-            servoPosition = redTurretLUT.getServoValue(turretAngle);
+        targetDeg = Math.toDegrees(turretRad);
+    }
+
+    private void followObelisk() {
+        Pose pose = follower.getPose();
+
+        double turretRad = TurretMath.getTurretAngleToObelisk(
+                pose.getX(), pose.getY(), pose.getHeading(),
+                TurretConfig.pivotX, TurretConfig.pivotY
+        );
+
+        targetDeg = Math.toDegrees(turretRad);
+    }
+
+    private double calculateServoPos(double angleDeg) {
+        double inputAngle = AngleUnit.normalizeDegrees(angleDeg) + manualOffsetDeg;
+        inputAngle = Range.clip(inputAngle, -MAX_SIDE_ROTATION + manualOffsetDeg, MAX_SIDE_ROTATION + manualOffsetDeg);
+        return TurretConfig.TURRET_FORWARD + (SERVO_UNITS_PER_DEGREE * inputAngle);
+    }
+
+    private void applyTarget() {
+        double pos = calculateServoPos(targetDeg);
+        if (Double.isNaN(cachedServoPos) || Math.abs(pos - cachedServoPos) > CACHE_TOLERANCE) {
+            s1.setPosition(pos - BACKLASH_PRELOAD);
+            s2.setPosition(pos + BACKLASH_PRELOAD);
+            cachedServoPos = pos;
         }
-
-        return servoPosition;
-    }
-
-    public void followGoal() {
-        double turretAngle = TurretMath.getTurretAngleToGoal(
-                follower.getPose().getX(),
-                follower.getPose().getY(),
-                follower.getPose().getHeading(),
-                Globals.Turret.pivotX,
-                Globals.Turret.pivotY,
-                virtualGoalX,
-                virtualGoalY
-        );
-
-        double servoPosition = alliance == Globals.Alliance.BLUE
-                ? blueTurretLUT.getServoValue(turretAngle)
-                : redTurretLUT.getServoValue(turretAngle);
-
-        double y = follower.getPose().getY();
-        boolean closeZone = y >= TurretMath.CLOSE_ZONE_MIN_Y;
-
-        if (alliance == Globals.Alliance.RED) {
-            if (closeZone && Globals.Turret.TURRET_RED_CLOSE_MODEL_ENABLED) {
-                servoPosition = applySampleRegressionCorrection(
-                        servoPosition,
-                        RED_CLOSE_MODEL_POINTS,
-                        Globals.Turret.TURRET_RED_CLOSE_MODEL_BLEND,
-                        Globals.Turret.TURRET_RED_CLOSE_MODEL_MAX_CORRECTION,
-                        virtualGoalX,
-                        virtualGoalY
-                );
-            } else if (!closeZone && Globals.Turret.TURRET_RED_FAR_MODEL_ENABLED) {
-                servoPosition = applySampleRegressionCorrection(
-                        servoPosition,
-                        RED_FAR_MODEL_POINTS,
-                        Globals.Turret.TURRET_RED_FAR_MODEL_BLEND,
-                        Globals.Turret.TURRET_RED_FAR_MODEL_MAX_CORRECTION,
-                        virtualGoalX,
-                        virtualGoalY
-                );
-            }
-        } else {
-            if (closeZone && Globals.Turret.TURRET_BLUE_CLOSE_MODEL_ENABLED) {
-                servoPosition = applySampleRegressionCorrection(
-                        servoPosition,
-                        BLUE_CLOSE_MODEL_POINTS,
-                        Globals.Turret.TURRET_BLUE_CLOSE_MODEL_BLEND,
-                        Globals.Turret.TURRET_BLUE_CLOSE_MODEL_MAX_CORRECTION,
-                        virtualGoalX,
-                        virtualGoalY
-                );
-            } else if (!closeZone && Globals.Turret.TURRET_BLUE_FAR_MODEL_ENABLED) {
-                servoPosition = applySampleRegressionCorrection(
-                        servoPosition,
-                        BLUE_FAR_MODEL_POINTS,
-                        Globals.Turret.TURRET_BLUE_FAR_MODEL_BLEND,
-                        Globals.Turret.TURRET_BLUE_FAR_MODEL_MAX_CORRECTION,
-                        virtualGoalX,
-                        virtualGoalY
-                );
-            }
-        }
-
-        setPositionOnce(servoPosition);
-    }
-
-    public void followObelisk() {
-        double turretAngle = TurretMath.getTurretAngleToObelisk(
-                follower.getPose().getX(),
-                follower.getPose().getY(),
-                follower.getPose().getHeading(),
-                Globals.Turret.pivotX,
-                Globals.Turret.pivotY
-        );
-
-        double servoPosition;
-        if (alliance == Globals.Alliance.BLUE) {
-            servoPosition = blueTurretLUT.getServoValue(turretAngle);
-        } else {
-            servoPosition = redTurretLUT.getServoValue(turretAngle);
-        }
-
-        setPositionOnce(servoPosition);
     }
 
     public void loop() {
-        double robotY = follower.getPose().getY();
-
-        double[] goalCenter = TurretMath.getCornerGoalCenter(cornerGoal, robotY);
-        baseGoalX = goalCenter[0];
-        baseGoalY = goalCenter[1];
-        originalGoalX = baseGoalX;
-        originalGoalY = baseGoalY;
-
-        virtualGoalX = baseGoalX;
-        virtualGoalY = baseGoalY;
-
-        if (Globals.SOTM.TURRET_TOF_COMP_ENABLED) {
-            Vector velocity = follower.getVelocity();
-            double speed = velocity.getMagnitude();
-            if (speed >= Globals.SOTM.TURRET_MIN_SPEED) {
-                double distance = TurretMath.getDistanceToGoalPinpoint(follower, baseGoalX, baseGoalY);
-                double tof = timeOfFlightLUT.get(distance) * Globals.SOTM.TURRET_LINEAR_GAIN;
-
-                virtualGoalX = baseGoalX - velocity.getXComponent() * tof;
-                virtualGoalY = baseGoalY - velocity.getYComponent() * tof;
-            }
-
-            // Add rotational lead for in-place turns: v_rot = omega x r (field frame).
-            double omega = follower.getAngularVelocity(); // rad/s
-            if (Math.abs(omega) > 1e-6) {
-                double heading = follower.getPose().getHeading();
-                double cosH = Math.cos(heading);
-                double sinH = Math.sin(heading);
-
-                double pivotFieldXFromCenter = Globals.Turret.pivotX * cosH - Globals.Turret.pivotY * sinH;
-                double pivotFieldYFromCenter = Globals.Turret.pivotX * sinH + Globals.Turret.pivotY * cosH;
-
-                double vRotX = -omega * pivotFieldYFromCenter;
-                double vRotY = omega * pivotFieldXFromCenter;
-
-                double distance = TurretMath.getDistanceToGoalPinpoint(follower, baseGoalX, baseGoalY);
-                double tof = timeOfFlightLUT.get(distance) * Globals.SOTM.TURRET_LINEAR_GAIN;
-
-                virtualGoalX -= vRotX * tof * Globals.SOTM.TURRET_ROTATIONAL_GAIN;
-                virtualGoalY -= vRotY * tof * Globals.SOTM.TURRET_ROTATIONAL_GAIN;
-            }
-        }
-
-        if (Globals.turretState == Globals.TurretState.FOLLOWING_GOAL) {
-            followGoal();
-        }
-
-        if (Globals.turretState == Globals.TurretState.SET_POSITION) {
-            return;
-        }
-
-        if (Globals.turretState == Globals.TurretState.FOLLOWING_OBELISK) {
-            followObelisk();
+        switch (Globals.turretState) {
+            case FOLLOWING_GOAL:
+                followGoal();
+                applyTarget();
+                break;
+            case FOLLOWING_OBELISK:
+                followObelisk();
+                applyTarget();
+                break;
+            case RESET:
+                resetTurret();
+                break;
+            case SET_POSITION:
+                applyTarget();
+                break;
         }
     }
-
-    private double applySampleRegressionCorrection(
-            double baseServo,
-            double[][] modelPoints,
-            double blend,
-            double maxCorrection,
-            double vGoalX,
-            double vGoalY
-    ) {
-        final int m = 6;
-        double[][] ata = new double[m][m];
-        double[] atb = new double[m];
-
-        for (double[] p : modelPoints) {
-            double[] phi = featuresFor(p[0], p[1], p[2]);
-            double[] trainingGoal = TurretMath.getCornerGoalCenter(cornerGoal, p[1]);
-            double sampleBase = getBaseServoForPose(p[0], p[1], Math.toRadians(p[2]),
-                    trainingGoal[0], trainingGoal[1]);
-            double delta = p[3] - sampleBase;
-
-            for (int i = 0; i < m; i++) {
-                atb[i] += phi[i] * delta;
-                for (int j = 0; j < m; j++) {
-                    ata[i][j] += phi[i] * phi[j];
-                }
-            }
-        }
-
-        for (int i = 0; i < m; i++) {
-            ata[i][i] += 1e-3; // ridge stabilization
-        }
-
-        double[] coeff = solveLinearSystem(ata, atb);
-        if (coeff == null) {
-            return clamp(baseServo, 0.0, 1.0);
-        }
-
-        double headingDeg = Math.toDegrees(follower.getPose().getHeading());
-        double[] phiNow = featuresFor(follower.getPose().getX(), follower.getPose().getY(), headingDeg);
-        double deltaNow = 0.0;
-        for (int i = 0; i < m; i++) {
-            deltaNow += coeff[i] * phiNow[i];
-        }
-
-        deltaNow *= blend;
-        deltaNow = clamp(deltaNow, -maxCorrection, maxCorrection);
-        return clamp(baseServo + deltaNow, 0.0, 1.0);
-    }
-
-    private static double[][] mirrorModelPoints(double[][] src) {
-        // Turret pivot offset in robot-local frame (forward = +y, left = +x)
-        // Offset is (-2.5, 0): 2.5 inches toward the back of the robot
-        final double TURRET_LOCAL_X = -2.5;
-        final double TURRET_LOCAL_Y = 0.0;
-
-        double[][] out = new double[src.length][4];
-        for (int i = 0; i < src.length; i++) {
-            double robotX     = src[i][0];
-            double robotY     = src[i][1];
-            double headingDeg = src[i][2];
-            double servo      = src[i][3];
-
-            double headingRad = Math.toRadians(headingDeg);
-            double cosH = Math.cos(headingRad);
-            double sinH = Math.sin(headingRad);
-
-            // Rotate turret offset into field frame and find turret pivot position
-            double turretFieldX = robotX + (TURRET_LOCAL_X * cosH - TURRET_LOCAL_Y * sinH);
-            double turretFieldY = robotY + (TURRET_LOCAL_X * sinH + TURRET_LOCAL_Y * cosH);
-
-            // Mirror turret pivot across x = 72
-            double mirroredTurretX = 144.0 - turretFieldX;
-            double mirroredTurretY = turretFieldY;
-
-            // Mirror heading
-            double mirroredHeadingDeg = wrapDegStatic(180.0 - headingDeg);
-            double mirroredHeadingRad = Math.toRadians(mirroredHeadingDeg);
-            double cosMH = Math.cos(mirroredHeadingRad);
-            double sinMH = Math.sin(mirroredHeadingRad);
-
-            // Back-calculate robot center from mirrored turret position and mirrored heading
-            double rotatedOffsetX = TURRET_LOCAL_X * cosMH - TURRET_LOCAL_Y * sinMH;
-            double rotatedOffsetY = TURRET_LOCAL_X * sinMH + TURRET_LOCAL_Y * cosMH;
-
-            double mirroredRobotX = mirroredTurretX - rotatedOffsetX;
-            double mirroredRobotY = mirroredTurretY - rotatedOffsetY;
-
-            // Servo inverts because turret now aims at the opposite corner
-            double mirroredServo = clampStatic(1.0 - servo, 0.0, 1.0);
-
-            out[i][0] = mirroredRobotX;
-            out[i][1] = mirroredRobotY;
-            out[i][2] = mirroredHeadingDeg;
-            out[i][3] = mirroredServo;
-        }
-        return out;
-    }
-
-    private static double wrapDegStatic(double a) {
-        while (a > 180.0) a -= 360.0;
-        while (a < -180.0) a += 360.0;
-        return a;
-    }
-
-    private static double clampStatic(double v, double min, double max) {
-        return Math.max(min, Math.min(max, v));
-    }
-
-    private double[] featuresFor(double x, double y, double headingDeg) {
-        double xN = (x - 75.0) / 25.0;
-        double yN = (y - 18.0) / 12.0;
-        double h = Math.toRadians(headingDeg);
-        return new double[]{1.0, xN, yN, Math.sin(h), Math.cos(h), xN * yN};
-    }
-
-    private double getBaseServoForPose(double robotX, double robotY, double headingRad,
-                                       double goalX, double goalY) {
-        double angle = TurretMath.getTurretAngleToGoal(
-                robotX, robotY, headingRad,
-                Globals.Turret.pivotX, Globals.Turret.pivotY,
-                goalX, goalY
-        );
-        return alliance == Globals.Alliance.BLUE
-                ? blueTurretLUT.getServoValue(angle)
-                : redTurretLUT.getServoValue(angle);
-    }
-
-    private double[] solveLinearSystem(double[][] a, double[] b) {
-        int n = b.length;
-        double[][] m = new double[n][n + 1];
-        for (int i = 0; i < n; i++) {
-            System.arraycopy(a[i], 0, m[i], 0, n);
-            m[i][n] = b[i];
-        }
-
-        for (int col = 0; col < n; col++) {
-            int pivot = col;
-            for (int row = col + 1; row < n; row++) {
-                if (Math.abs(m[row][col]) > Math.abs(m[pivot][col])) pivot = row;
-            }
-            if (Math.abs(m[pivot][col]) < 1e-10) return null;
-
-            if (pivot != col) {
-                double[] tmp = m[pivot];
-                m[pivot] = m[col];
-                m[col] = tmp;
-            }
-
-            double inv = 1.0 / m[col][col];
-            for (int j = col; j <= n; j++) m[col][j] *= inv;
-
-            for (int row = 0; row < n; row++) {
-                if (row == col) continue;
-                double factor = m[row][col];
-                for (int j = col; j <= n; j++) {
-                    m[row][j] -= factor * m[col][j];
-                }
-            }
-        }
-
-        double[] x = new double[n];
-        for (int i = 0; i < n; i++) x[i] = m[i][n];
-        return x;
-    }
-
-    private double clamp(double v, double min, double max) {
-        return Math.max(min, Math.min(max, v));
-    }
-
 }

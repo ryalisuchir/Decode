@@ -51,7 +51,8 @@ public class KickOrderTCmd extends SequentialCommandGroup {
         return new SequentialCommandGroup(
                 new InstantCommand(() -> Globals.shooterKicking = true),
                 KickCommands.kickOnce(kicker, slot),
-                new WaitCommand(Globals.Timings.KICK_SORT)
+                new WaitCommand(Globals.Timings.KICK_SORT),
+                KickCommands.clearBallSlot(slot)
         );
     }
 

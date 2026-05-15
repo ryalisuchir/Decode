@@ -1,4 +1,5 @@
-package org.firstinspires.ftc.teamcode.opmode.auto.paths.red;
+package org.firstinspires.ftc.teamcode.opmode.auto.paths.red.close;
+
 
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierCurve;
@@ -9,29 +10,34 @@ import com.pedropathing.paths.PathChain;
 import org.firstinspires.ftc.teamcode.common.Globals;
 import org.firstinspires.ftc.teamcode.common.Halo;
 
-public class Red24Pathing {
+public class Red18OpenPathing {
     private final Follower f;
-    private final Globals.Alliance alliance;
+    private final Globals.Alliance side;
 
-    public Pose startPos, intakeFarPose, shootClosePose, intakeMidPose, shootGatePos, gateIntakePos, intakeAudHoldPos, intakeAudPos, shootAudPos, initialPark;
+    public Pose startPos, intakeFarPose, gateHoldPos, gateOpenPos, intakeFarHoldPose, shootClosePose, shootClose2Pose, intakeMidHoldPose, intakeMidPose, shootGatePos, gateIntakePos, intakeAud1HoldPos, intakeAud2HoldPos, intakeAudPos, shootAudPos, initialPark;
     private int index;
 
-    public Red24Pathing(Halo r) {
+    public Red18OpenPathing(Halo r) {
         this.f = r.dt.getFollower();
-        this.alliance = Globals.alliance;
+        this.side = Globals.alliance;
 
-        startPos = Globals.Positions.RED_EXODUS_START;
+        startPos = alliancePose(Globals.Positions.RED_EXODUS_START);
 
-        shootClosePose = alliancePose(new Pose(119.49279538904898, 106.13256484149855, Math.toRadians(-90)));
-        intakeFarPose = alliancePose(new Pose(118, 88, Math.toRadians(-80)));
-        intakeMidPose = alliancePose(new Pose(118, 64, Math.toRadians(-80)));
+        shootClosePose = alliancePose(new Pose(104.96829971181555, 100.9452449567723, Math.toRadians(-50)));
 
-        gateIntakePos = alliancePose(new Pose(132.8, 58, Math.toRadians(22.5)));
+        intakeFarPose = alliancePose(new Pose(122, 85.73487031700286, Math.toRadians(0)));
+        intakeFarHoldPose = alliancePose(new Pose(111.79, 85.73487031700286));
+
+        shootClose2Pose = alliancePose(new Pose(90.24207492795388, 86.22190201729106, Math.toRadians(0)));
+
+        intakeMidPose = alliancePose(new Pose(126.77233429394813, 59.59077809798269));
+        intakeMidHoldPose = alliancePose(new Pose(111.79538904899135, 59.265129682997106));
+
+        gateHoldPos = alliancePose(new Pose(117.16426512968303, 62.62536023054753));
+        gateOpenPos = alliancePose(new Pose(127.90778097982712, 62.43227665706051, Math.toRadians(0)));
+
+        gateIntakePos = alliancePose(new Pose(131.5, 57.5, Math.toRadians(22.5)));
         shootGatePos = alliancePose(new Pose(89, 75, Math.toRadians(-26)));
-
-        intakeAudHoldPos = alliancePose(new Pose(97, 33));
-        intakeAudPos = alliancePose(new Pose(129, 35, Math.toRadians(-44)));
-        shootAudPos = alliancePose(new Pose(89, 75, Math.toRadians(-26)));
 
         initialPark = alliancePose(new Pose(97, 75, Math.toRadians(0)));
 
@@ -45,38 +51,55 @@ public class Red24Pathing {
                                 shootClosePose
                         )
                 ).setLinearHeadingInterpolation(startPos.getHeading(), shootClosePose.getHeading())
+
                 .build();
     }
 
     public PathChain intakeFarSequence() {
         return f.pathBuilder().addPath(
-                        new BezierLine(
+                        new BezierCurve(
                                 shootClosePose,
+                                intakeFarHoldPose,
                                 intakeFarPose
                         )
                 ).setLinearHeadingInterpolation(shootClosePose.getHeading(), intakeFarPose.getHeading())
+
                 .addPath(
                         new BezierLine(
                                 intakeFarPose,
-                                shootClosePose
+                                shootClose2Pose
                         )
-                ).setLinearHeadingInterpolation(intakeFarPose.getHeading(), shootClosePose.getHeading())
+                ).setTangentHeadingInterpolation()
+                .setReversed()
                 .build();
     }
 
-    public PathChain intakeMidAndShoot() {
+    public PathChain intakeMidAndOpen() {
         return f.pathBuilder().addPath(
-                        new BezierLine(
-                                shootClosePose,
+                        new BezierCurve(
+                                shootClose2Pose,
+                                intakeMidHoldPose,
                                 intakeMidPose
                         )
-                ).setLinearHeadingInterpolation(shootClosePose.getHeading(), intakeMidPose.getHeading())
+                ).setTangentHeadingInterpolation()
+                .addPath(
+                        new BezierCurve(
+                                intakeMidPose,
+                                gateHoldPos,
+                                gateOpenPos
+                        )
+                ).setLinearHeadingInterpolation(intakeMidPose.getHeading(), gateOpenPos.getHeading())
+                .build();
+    }
+
+    public PathChain shootMiddle() {
+        return f.pathBuilder()
                 .addPath(
                         new BezierLine(
-                                intakeMidPose,
+                                gateOpenPos,
                                 shootGatePos
                         )
-                ).setLinearHeadingInterpolation(intakeMidPose.getHeading(), shootGatePos.getHeading())
+                ).setLinearHeadingInterpolation(gateOpenPos.getHeading(), shootGatePos.getHeading())
                 .build();
     }
 
@@ -101,31 +124,14 @@ public class Red24Pathing {
                 .build();
     }
 
-    public PathChain intakeCloseAndShoot() {
-        return f.pathBuilder().addPath(
-                        new BezierCurve( //intake audience spike
-                                shootGatePos,
-                                intakeAudHoldPos,
-                                intakeAudPos
-                        )
-                ).setTangentHeadingInterpolation()
-                .addPath( //shoot audience spike
-                        new BezierLine(
-                                intakeAudPos,
-                                shootAudPos
-                        )
-                ).setLinearHeadingInterpolation(intakeAudPos.getHeading(), shootAudPos.getHeading())
-                .build();
-    }
-
     public PathChain park() {
         return f.pathBuilder()
                 .addPath(
                         new BezierLine(
-                                shootAudPos,
+                                shootGatePos,
                                 initialPark
                         )
-                ).setLinearHeadingInterpolation(shootAudPos.getHeading(), initialPark.getHeading())
+                ).setLinearHeadingInterpolation(shootGatePos.getHeading(), initialPark.getHeading())
                 .build();
     }
 
@@ -134,17 +140,17 @@ public class Red24Pathing {
         switch (index++) {
             case 0: return score0();
             case 1: return intakeFarSequence();
-            case 2: return intakeMidAndShoot();
-            case 3: return gateSequence();
-            case 4: return shootGateSequence();
-            case 5: return gateSequence();
-            case 6: return shootGateSequence();
-            case 7: return intakeCloseAndShoot();
+            case 2: return intakeMidAndOpen();
+            case 3: return shootMiddle();
+            case 4: return gateSequence();
+            case 5: return shootGateSequence();
+            case 6: return gateSequence();
+            case 7: return shootGateSequence();
             case 8: return gateSequence();
             case 9: return shootGateSequence();
             case 10: return gateSequence();
             case 11: return shootGateSequence();
-            case 12: return park();
+            case 14: return park();
             default: return null;
         }
     }
@@ -154,6 +160,6 @@ public class Red24Pathing {
     }
 
     private Pose alliancePose(Pose pose) {
-        return alliance == Globals.Alliance.BLUE ? pose.mirror() : pose;
+        return side == Globals.Alliance.BLUE ? pose.mirror() : pose;
     }
 }

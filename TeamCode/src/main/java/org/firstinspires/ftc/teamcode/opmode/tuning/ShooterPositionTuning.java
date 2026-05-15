@@ -19,6 +19,7 @@ import com.seattlesolvers.solverslib.controller.PIDFController;
 
 import org.firstinspires.ftc.teamcode.common.Globals;
 import org.firstinspires.ftc.teamcode.common.Halo;
+import org.firstinspires.ftc.teamcode.common.TurretConfig;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.utility.KickCommands;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.utility.RapidKickCommands;
 
@@ -30,11 +31,11 @@ public class ShooterPositionTuning extends CommandOpMode {
     Halo r;
     Trigger intakeTrigger;
 
-    public static double turretPosition = Globals.Turret.TURRET_FORWARD;
+    public static double turretPosition = TurretConfig.TURRET_FORWARD;
 
-    public static double hoodPosition = Globals.HOOD.getMax();
+    public static double hoodPosition = 0.8;
 
-    public static double TARGET_VEL = 0.0;
+    public static double TARGET_VEL = 100;
     public static double POS_TOLERANCE = 0;
 
     private static final PIDFController launcherPIDF = new PIDFController(Globals.shooterCoefficients);
@@ -99,6 +100,7 @@ public class ShooterPositionTuning extends CommandOpMode {
                     new UninterruptibleCommand(KickCommands.kickAndReset(r.kicker, 2))
             );
         }
+
         if (gamepad1.dpadDownWasPressed()) {
             schedule(
                     new UninterruptibleCommand(KickCommands.kickAndReset(r.kicker, 3))
@@ -119,24 +121,15 @@ public class ShooterPositionTuning extends CommandOpMode {
         if (hoodPosition > Globals.HOOD.getMax()) hoodPosition = Globals.HOOD.getMax();
 
         r.hood.setPosition(hoodPosition);
-//        r.turret.followGoal();
-        r.dt.drive(gamepad1);
-
+//        r.turret.loop();
         r.t1.setPosition(turretPosition);
         r.t2.setPosition(turretPosition);
 
-        telemetry.addData("Distance: ", r.dt.getGoalDistance());
-        telemetry.addData("Pose: ", r.dt.getPose());
-        telemetry.addData("Best Turret Value: ", r.turret.getBestTurretPosition());
-        telemetry.addData("Best Shooting Value: ", r.shooter.velPos);
-        telemetry.addData("Best Hood Value: ", r.shooter.hoodPose);
-        telemetry.addData("Shooter Velocity: ", r.shooter1.getCorrectedVelocity());
-        telemetry.addData("Shooter Motor RPM: ", r.shooter1.getCorrectedVelocity() / 28 * 60);
-        telemetry.addData("Hood Value: ", r.hood.getPosition());
-        telemetry.addData("Section 1: ", Globals.ballColors[0]);
-        telemetry.addData("Section 2: ", Globals.ballColors[1]);
-        telemetry.addData("Section 3: ", Globals.ballColors[2]);
-        telemetry.addData("Three Detected:", r.spinner.threeBallsDetected());
+        Globals.turretState = Globals.TurretState.FOLLOWING_GOAL;
+        r.dt.drive(gamepad1);
+
+        telemetry.addData("Vel: ", r.shooter.getShooterVelocity());
+        telemetry.addData("Pose: ", r.shooter.getPivotFieldPose(r.dt.getPose()));
         telemetry.update();
 
         r.noOuttakeLoop(r);

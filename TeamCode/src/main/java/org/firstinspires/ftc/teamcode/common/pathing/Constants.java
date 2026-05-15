@@ -37,11 +37,22 @@ public class Constants {
             .leftFrontMotorDirection(DcMotorEx.Direction.FORWARD)
             .leftRearMotorDirection(DcMotorEx.Direction.FORWARD)
             .rightFrontMotorDirection(DcMotorEx.Direction.REVERSE)
-            .rightRearMotorDirection(DcMotorEx.Direction.REVERSE);
+            .rightRearMotorDirection(DcMotorEx.Direction.REVERSE)
+            .useBrakeModeInTeleOp(true);
+            ;
 
     public static PinpointConstants localizerConstants = new PinpointConstants()
             .forwardPodY(-7.00)
             .strafePodX(2.68)
+            .distanceUnit(DistanceUnit.INCH)
+            .hardwareMapName("pinpoint")
+            .encoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD)
+            .forwardEncoderDirection(GoBildaPinpointDriver.EncoderDirection.REVERSED)
+            .strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD);
+
+    public static PinpointConstants teleLocalizerConstants = new PinpointConstants()
+            .forwardPodY(-10.5)
+            .strafePodX(0.2)
             .distanceUnit(DistanceUnit.INCH)
             .hardwareMapName("pinpoint")
             .encoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD)
@@ -53,6 +64,14 @@ public class Constants {
                 .pathConstraints(pathConstraints)
                 .mecanumDrivetrain(driveConstants)
                 .pinpointLocalizer(localizerConstants)
+                .build();
+    }
+
+    public static Follower createFollower2(HardwareMap hardwareMap) {
+        return new FollowerBuilder(followerConstants, hardwareMap)
+                .pathConstraints(pathConstraints)
+                .mecanumDrivetrain(driveConstants)
+                .pinpointLocalizer(teleLocalizerConstants)
                 .build();
     }
 }

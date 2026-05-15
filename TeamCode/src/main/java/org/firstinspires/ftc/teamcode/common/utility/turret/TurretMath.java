@@ -1,164 +1,107 @@
 package org.firstinspires.ftc.teamcode.common.utility.turret;
 
+import static org.firstinspires.ftc.teamcode.common.TurretConfig.closeOffsetX;
+import static org.firstinspires.ftc.teamcode.common.TurretConfig.closeOffsetY;
+import static org.firstinspires.ftc.teamcode.common.TurretConfig.farOffsetX;
+import static org.firstinspires.ftc.teamcode.common.TurretConfig.farOffsetY;
+
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 
-import org.firstinspires.ftc.teamcode.common.Globals;
+import org.firstinspires.ftc.teamcode.common.TurretConfig;
 
 public final class TurretMath {
 
     private TurretMath() {}
 
-    public static final double FIELD_SIZE = 144;
-    public static final double GOAL_W = 23.0; // along X
-    public static final double GOAL_H = 22.20; // along Y
-    public static final double CLOSE_ZONE_MIN_Y = 50.0;
+    public static final double FIELD_SIZE = 144.0;
+
+    public static final double OBELISK_X  = 72.0;
+    public static final double OBELISK_Y  = 144.0;
 
     public enum CornerGoal {
         LEFT_BLUE,
         RIGHT_RED
     }
 
-    /**
-     * Computes turret angle that aims the TURRET PIVOT at the goal,
-     * accounting only for turret pivot offset.
-     *
-     * @param robotX field X position (center of robot)
-     * @param robotY field Y position (center of robot)
-     * @param robotHeading robot heading (radians)
-     *
-     * @param pivotX turret pivot offset from robot center (robot frame, inches)
-     * @param pivotY turret pivot offset from robot center (robot frame, inches)
-     *
-     * @param goalX goal field X
-     * @param goalY goal field Y
-     *
-     * @return turret angle relative to robot (radians, [-pi, pi])
-     */
+    public static double[] getCornerGoalCenter(CornerGoal goal, double robotX, double robotY) {
+
+        if (goal == CornerGoal.RIGHT_RED) {
+//            return new double[]{ 128.82997118155623, 133.3256484149856 };
+            return new double[]{ 144, 144 };
+        } else {
+            return new double[]{ 13.463976945244935, 136.02305475504323 };
+        }
+    }
+
     public static double getTurretAngleToGoal(
-            double robotX,
-            double robotY,
-            double robotHeading,
-            double pivotX,
-            double pivotY,
-            double goalX,
-            double goalY
+            double robotX, double robotY, double robotHeading,
+            double pivotX,  double pivotY,
+            double goalX,   double goalY
     ) {
         double cosH = Math.cos(robotHeading);
         double sinH = Math.sin(robotHeading);
 
-        // Pivot position in field coordinates
         double pivotFieldX = robotX + pivotX * cosH - pivotY * sinH;
         double pivotFieldY = robotY + pivotX * sinH + pivotY * cosH;
 
-        // Vector from pivot to goal
         double dx = goalX - pivotFieldX;
         double dy = goalY - pivotFieldY;
 
-        // Absolute angle to goal
-        double angleToGoal = Math.atan2(dy, dx);
-
-        // Turret angle relative to robot
-        double turretAngle = angleToGoal - robotHeading;
-
-        // Normalize to [-pi, pi]
-        return Math.atan2(
-                Math.sin(turretAngle),
-                Math.cos(turretAngle)
-        );
+        double turretAngle = Math.atan2(dy, dx) - robotHeading;
+        return normalizeRadians(turretAngle);
     }
 
     public static double getTurretAngleToCornerGoal(
-            double robotX,
-            double robotY,
-            double robotHeading,
-            double pivotX,
-            double pivotY,
+            double robotX, double robotY, double robotHeading,
+            double pivotX,  double pivotY,
             CornerGoal goal
     ) {
-        double[] g = getCornerGoalCenter(goal, robotY);
-        return getTurretAngleToGoal(
-                robotX,
-                robotY,
-                robotHeading,
-                pivotX,
-                pivotY,
-                g[0],
-                g[1]
-        );
+        double[] g = getCornerGoalCenter(goal, robotX, robotY);
+        return getTurretAngleToGoal(robotX, robotY, robotHeading, pivotX, pivotY, g[0], g[1]);
     }
 
     public static double getTurretAngleToObelisk(
-            double robotX,
-            double robotY,
-            double robotHeading,
-            double pivotX,
-            double pivotY
+            double robotX, double robotY, double robotHeading,
+            double pivotX,  double pivotY
     ) {
-        double cosH = Math.cos(robotHeading);
-        double sinH = Math.sin(robotHeading);
-
-        // Pivot position in field coordinates
-        double pivotFieldX = robotX + pivotX * cosH - pivotY * sinH;
-        double pivotFieldY = robotY + pivotX * sinH + pivotY * cosH;
-
-        // Obelisk field position (72, 144)
-        double dx = 72 - pivotFieldX;
-        double dy = 144 - pivotFieldY;
-
-        double angleToGoal = Math.atan2(dy, dx);
-        double turretAngle = angleToGoal - robotHeading;
-
-        return Math.atan2(
-                Math.sin(turretAngle),
-                Math.cos(turretAngle)
+        return getTurretAngleToGoal(
+                robotX, robotY, robotHeading,
+                pivotX, pivotY,
+                OBELISK_X, OBELISK_Y
         );
     }
 
-    public static double[] getCornerGoalCenter(CornerGoal goal) {
-        return getCornerGoalCenter(goal, CLOSE_ZONE_MIN_Y);
+    public static double applyLeadAngle(double staticTurretAngleRad, double leadAngleRad) {
+        return normalizeRadians(staticTurretAngleRad + leadAngleRad);
     }
 
-    public static double[] getCornerGoalCenter(CornerGoal goal, double robotY) {
-        boolean closeZone = robotY >= CLOSE_ZONE_MIN_Y;
-        boolean blueGoal = goal == CornerGoal.LEFT_BLUE;
-
-        double xBias;
-        double yBias;
-        if (blueGoal) {
-            xBias = closeZone ? Globals.GOAL_CENTER_X_BIAS_CLOSE_BLUE : Globals.GOAL_CENTER_X_BIAS_FAR_BLUE;
-            yBias = closeZone ? Globals.GOAL_CENTER_Y_BIAS_CLOSE_BLUE : Globals.GOAL_CENTER_Y_BIAS_FAR_BLUE;
-        } else {
-            xBias = closeZone ? Globals.GOAL_CENTER_X_BIAS_CLOSE_RED : Globals.GOAL_CENTER_X_BIAS_FAR_RED;
-            yBias = closeZone ? Globals.GOAL_CENTER_Y_BIAS_CLOSE_RED : Globals.GOAL_CENTER_Y_BIAS_FAR_RED;
-        }
-
-        if (blueGoal) {
-            double gx = (GOAL_W / 2.0) + xBias;
-            double gy = FIELD_SIZE - GOAL_H / 2.0 + yBias;
-            return new double[]{gx, gy};
-        } else {
-            double gx = FIELD_SIZE - (GOAL_W / 2.0) - xBias;
-            double gy = FIELD_SIZE - GOAL_H / 2.0 + yBias;
-            return new double[]{gx, gy};
-        }
+    public static double getTurretAngleSOTM(
+            double robotX, double robotY, double robotHeading,
+            double pivotX,  double pivotY,
+            CornerGoal goal,
+            double leadAngleRad
+    ) {
+        double staticAngle = getTurretAngleToCornerGoal(
+                robotX, robotY, robotHeading, pivotX, pivotY, goal
+        );
+        return applyLeadAngle(staticAngle, leadAngleRad);
     }
 
-    public static double getDistanceToGoalPinpoint(Follower f, double gX, double gY) {
-        double dxOdo = f.getPose().getX() - gX;
-        double dyOdo = f.getPose().getY() - gY;
-        return Math.hypot(dxOdo, dyOdo);
+    public static double getDistanceToGoal(Follower f, double gX, double gY) {
+        return Math.hypot(f.getPose().getX() - gX, f.getPose().getY() - gY);
     }
 
-    public static double getDistanceToGoalPinpoint(double currX, double currY, double gX, double gY) {
-        double dxOdo = currX - gX;
-        double dyOdo = currY - gY;
-        return Math.hypot(dxOdo, dyOdo);
+    public static double getDistanceToGoal(double currX, double currY, double gX, double gY) {
+        return Math.hypot(currX - gX, currY - gY);
     }
 
-    public static Pose getVectorToGoalPinpoint(Follower f, double gX, double gY) {
-        double dxOdo = f.getPose().getX() - gX;
-        double dyOdo = f.getPose().getY() - gY;
-        return new Pose(dxOdo, dyOdo);
+    public static double[] getVectorToGoal(Follower f, double gX, double gY) {
+        return new double[]{ gX - f.getPose().getX(), gY - f.getPose().getY() };
     }
+
+    public static double normalizeRadians(double angleRad) {
+        return Math.atan2(Math.sin(angleRad), Math.cos(angleRad));
+    }
+
 }

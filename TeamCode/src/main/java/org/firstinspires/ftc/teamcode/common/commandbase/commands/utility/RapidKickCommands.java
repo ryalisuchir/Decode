@@ -26,6 +26,7 @@ public class RapidKickCommands {
         return new SequentialCommandGroup(
                 new InstantCommand(() -> robot.kicker.kick(slot), robot.kicker),
                 new WaitCommand(Globals.Timings.KICK_RAPID),
+                KickCommands.clearBallSlot(slot),
                 new InstantCommand(() -> robot.kicker.reset(slot), robot.kicker)
         );
     }

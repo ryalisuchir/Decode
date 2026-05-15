@@ -3,21 +3,24 @@ package org.firstinspires.ftc.teamcode.opmode.testing;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import org.firstinspires.ftc.teamcode.common.Globals;
 import org.firstinspires.ftc.teamcode.common.Halo;
+import org.firstinspires.ftc.teamcode.common.TurretConfig;
 import org.firstinspires.ftc.teamcode.common.utility.Vision;
 
 @Autonomous
 @Config
+@Configurable
 public class HardwareTest extends OpMode {
     Halo robot;
     public static double kicker1 = Globals.Kicker.KICKER1.getMin();
     public static double kicker2 = Globals.Kicker.KICKER2.getMin();
     public static double kicker3 = Globals.Kicker.KICKER3.getMin();
-    public static double turret = Globals.Turret.TURRET_FORWARD;
+    public static double turret = TurretConfig.TURRET_FORWARD;
     public static double hood = Globals.HOOD.getMin();
     public static double gate = Globals.Gate.GATE_OPEN;
     public static double pivot = Globals.Pivot.PIVOT_RAISED;
@@ -33,11 +36,12 @@ public class HardwareTest extends OpMode {
 
     @Override
     public void init() {
-        robot = new Halo(hardwareMap, Globals.Positions.RED_CUBE_START, Globals.Alliance.RED, Globals.Match.TESTING);
+        robot = new Halo(hardwareMap, Globals.Positions.BLUE_CUBE_START, Globals.Alliance.RED, Globals.Match.TESTING);
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         telemetry.addLine("Reset all encoders.");
         telemetry.update();
-//        Vision.switchToRegular();
+        Vision.switchToRegular();
+        FtcDashboard.getInstance().startCameraStream(Halo.ll, 0);
     }
 
     @Override

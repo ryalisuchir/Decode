@@ -15,14 +15,13 @@ public class Spinner {
     private final ServoImplEx g, pivot;
 
     private double intakeTargetPower = 0.0;
-    private double currentIntakePower = 0.0;
 
     private double transferTargetPower = 0.0;
-    private long lastUpdateTimeNs = 0;
 
     private boolean transferLocked = false;
 
     private boolean autoTransferTriggered = false;
+    private boolean threeBallLatched = false;
     private int intakeActionVersion = 0;
 
     public Spinner(DcMotorEx i, DcMotorEx t, ServoImplEx g, ServoImplEx pivot) {
@@ -43,25 +42,25 @@ public class Spinner {
     }
 
     public void pivotIntake() {
-        if (Math.abs(Globals.Pivot.PIVOT_INTAKE - pivot.getPosition()) < 0.05) return;
+        if (Globals.pivotState == Globals.PivotState.LOWERED) return;
         Globals.pivotState = Globals.PivotState.LOWERED;
         pivot.setPosition(Globals.Pivot.PIVOT_INTAKE);
     }
 
     public void pivotUp() {
-        if (Math.abs(Globals.Pivot.PIVOT_RAISED - pivot.getPosition()) < 0.05) return;
+        if (Math.abs(Globals.Pivot.PIVOT_RAISED - pivot.getPosition()) < 0.001) return;
         Globals.pivotState = Globals.PivotState.RAISED;
         pivot.setPosition(Globals.Pivot.PIVOT_RAISED);
     }
 
     public void pivotReady() {
-        if (Math.abs(Globals.Pivot.PIVOT_RESTING - pivot.getPosition()) < 0.05) return;
+        if (Math.abs(Globals.Pivot.PIVOT_RESTING - pivot.getPosition()) < 0.001) return;
         Globals.pivotState = Globals.PivotState.RESTING;
         pivot.setPosition(Globals.Pivot.PIVOT_RESTING);
     }
 
     public void openGate() {
-        if (Math.abs(Globals.Gate.GATE_OPEN - g.getPosition()) < 0.05) return;
+        if (Math.abs(Globals.Gate.GATE_OPEN - g.getPosition()) < 0.001) return;
         g.setPosition(Globals.Gate.GATE_OPEN);
     }
 
@@ -116,11 +115,6 @@ public class Spinner {
         );
     }
 
-    public void intakeStop() {
-        nextIntakeActionVersion();
-        applyIntakeStop();
-    }
-
     public ParallelCommandGroup intake() {
         return new ParallelCommandGroup(
                 new InstantCommand(this::intakeIn),
@@ -130,23 +124,25 @@ public class Spinner {
     }
 
     public ParallelCommandGroup transfer() {
-        nextIntakeActionVersion(); // invalidate any running intakeOut sequence
+        nextIntakeActionVersion();
         Globals.intakeState = Globals.IntakeState.STOPPED; // kill immediately
-        autoTransferTriggered = true; // prevent periodic() re-entry
+        autoTransferTriggered = true;
         transferLocked = true;
 
-        return new ParallelCommandGroup(
-                new SequentialCommandGroup(
-                        new InstantCommand(() -> {
-                            closeGate();
-                            setIntakeTarget(Globals.Intake.OUT_POWER);
-                        }),
-                        new WaitCommand(300),
-                        new InstantCommand(() -> setIntakeTarget(0))
-                ),
-                new InstantCommand(this::transferStart),
-                new InstantCommand(this::pivotUp)
-        );
+            return new ParallelCommandGroup(
+                    new SequentialCommandGroup(
+                            new InstantCommand(() -> {
+                                closeGate();
+                                setIntakeTarget(Globals.Intake.OUT_POWER);
+                            }),
+                            new WaitCommand(300),
+                            new InstantCommand(() -> setIntakeTarget(0))
+                    ),
+                    new InstantCommand(this::transferStart),
+                    new InstantCommand(this::pivotUp)
+            );
+
+
     }
 
     public ParallelCommandGroup stop() {
@@ -177,9 +173,33 @@ public class Spinner {
     }
 
     public boolean threeBallsDetected() {
-        return Globals.ballColors[0] != Globals.BallColor.NONE
-                && Globals.ballColors[1] != Globals.BallColor.NONE
-                && Globals.ballColors[2] != Globals.BallColor.NONE;
+        if (threeBallLatched) return true;
+
+        return rawThreeBallColorsDetected();
+    }
+
+    private boolean rawThreeBallPresenceDetected() {
+        boolean slot1Filled = Globals.ballPresent[0];
+        boolean slot2Filled = Globals.ballPresent[1];
+        boolean slot3Filled = Globals.ballPresent[2];
+
+        return (slot1Filled && slot2Filled && slot3Filled)
+                || (slot1Filled && slot3Filled);
+    }
+
+    private boolean rawThreeBallColorsDetected() {
+        boolean slot1Filled = Globals.ballColors[0] != Globals.BallColor.NONE;
+        boolean slot2Filled = Globals.ballColors[1] != Globals.BallColor.NONE;
+        boolean slot3Filled = Globals.ballColors[2] != Globals.BallColor.NONE;
+
+        return (slot1Filled && slot2Filled && slot3Filled)
+                || (slot1Filled && slot3Filled);
+    }
+
+    private boolean physicalBallDetected() {
+        return Globals.ballPresent[0]
+                || Globals.ballPresent[1]
+                || Globals.ballPresent[2];
     }
 
     public boolean oneBallDetected() {
@@ -189,23 +209,42 @@ public class Spinner {
     }
 
     public ParallelCommandGroup toggleIn() {
-        // Block intake entirely while shoot order is locked
         if (Globals.shootOrderLocked) return new ParallelCommandGroup();
+
+        if (threeBallsDetected()) {
+            return new ParallelCommandGroup(
+                    new InstantCommand(this::pivotIntake)
+            );
+        }
 
         if (Globals.intakeState != Globals.IntakeState.INTAKING) {
             return intake();
-        } else if (threeBallsDetected()) {
+        } else if (oneBallDetected()) {
             return transfer();
         } else {
             return stop();
         }
     }
 
+    public void resetBallState() {
+        threeBallLatched = false;
+        transferLocked = false;
+        autoTransferTriggered = false;
+    }
+
     public void periodic() {
         i.setPower(intakeTargetPower);
         t.setPower(transferTargetPower);
 
-        if (oneBallDetected()) {
+        if (Globals.pivotState == Globals.PivotState.LOWERED) {
+            pivot.setPosition(0.89);
+        }
+
+        boolean oneBallDetected = oneBallDetected();
+        boolean physicalBallDetected = physicalBallDetected();
+        boolean threeBallsDetected = rawThreeBallPresenceDetected();
+
+        if (oneBallDetected) {
             Globals.shooterState = Globals.ShooterState.SHOOTING;
             if ((Globals.match == Globals.Match.AUTO || Globals.match == Globals.Match.TESTING)
                     && (Globals.turretState != Globals.TurretState.SET_POSITION)) {
@@ -213,9 +252,12 @@ public class Spinner {
             }
         }
 
-        // Auto-transfer on three balls while intaking
+        if (threeBallsDetected) {
+            threeBallLatched = true;
+        }
+
         if (Globals.intakeState == Globals.IntakeState.INTAKING
-                && threeBallsDetected()
+                && threeBallsDetected
                 && !autoTransferTriggered
                 && !transferLocked) {
             autoTransferTriggered = true;
@@ -227,15 +269,21 @@ public class Spinner {
             autoTransferTriggered = false;
         }
 
-        // Unlock everything only once all balls are fully gone
-        if (!oneBallDetected() && !Globals.shootOrderLocked) {
-            transferLocked = false;
+        if (!physicalBallDetected
+                && Globals.intakeState != Globals.IntakeState.INTAKING
+                && Globals.pivotState != Globals.PivotState.LOWERED) {  // add this
+            pivotReady();
         }
 
-        // Clear shoot order lock once all balls have been shot/cleared
-        if (!oneBallDetected() && Globals.shootOrderLocked) {
+        if (!physicalBallDetected && !Globals.shootOrderLocked) {
+            transferLocked = false;
+            threeBallLatched = false;
+        }
+
+        if (!physicalBallDetected && Globals.shootOrderLocked) {
             Globals.shootOrderLocked = false;
             transferLocked = false;
+            threeBallLatched = false;
         }
     }
 }

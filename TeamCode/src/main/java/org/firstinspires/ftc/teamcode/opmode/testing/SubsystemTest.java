@@ -11,6 +11,7 @@ import com.seattlesolvers.solverslib.command.button.Trigger;
 
 import org.firstinspires.ftc.teamcode.common.Globals;
 import org.firstinspires.ftc.teamcode.common.Halo;
+import org.firstinspires.ftc.teamcode.common.commandbase.commands.EnsuredOrderCmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.RapidAllCmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.RapidOrderCmd;
 import org.firstinspires.ftc.teamcode.common.commandbase.commands.utility.KickCommands;
@@ -37,19 +38,24 @@ public class SubsystemTest extends CommandOpMode {
     @Override
     public void initialize() {
         r = new Halo(hardwareMap, Globals.Positions.RED_CUBE_START, Globals.Alliance.RED, Globals.Match.TESTING);
-
+        r.shooter.setVelocityCap(1450);
+        r.shooter.setVelocityFloor(1100);
         r.dt.startDrive();
         telemetry = new PeacockTelemetry(this);
 
         intakeTrigger = new Trigger(
-                () -> gamepad1.right_trigger > 0.1 && !r.spinner.threeBallsDetected()
+                () -> gamepad1.right_trigger > 0.1
         );
 
         intakeTrigger
                 .whileActiveContinuous(
                         new ParallelCommandGroup(
-                                new InstantCommand(() -> r.spinner.intakeIn()),
-                                new InstantCommand(() -> r.spinner.openGate()),
+                                new InstantCommand(() -> {
+                                    if (!r.spinner.threeBallsDetected()) {
+                                        r.spinner.intakeIn();
+                                        r.spinner.openGate();
+                                    }
+                                }),
                                 new InstantCommand(() -> r.spinner.pivotIntake()),
                                 KickCommands.resetAll(r.kicker)
                         )
@@ -100,6 +106,7 @@ public class SubsystemTest extends CommandOpMode {
             telemetry.addData("Color 1", Globals.ballColors[0]);
             telemetry.addData("Color 2", Globals.ballColors[1]);
             telemetry.addData("Color 3", Globals.ballColors[2]);
+            telemetry.addData("Three Balls Detected: ", r.spinner.threeBallsDetected());
             telemetry.addData("Pivot State", Globals.pivotState);
             telemetry.addData("Intake State", Globals.intakeState);
             telemetry.addData("Transfer State", Globals.transferState);
@@ -111,11 +118,15 @@ public class SubsystemTest extends CommandOpMode {
         }
 
         if (gamepad1.rightBumperWasPressed()) {
-            schedule(new UninterruptibleCommand(new RapidOrderCmd(r)));
+            schedule(new UninterruptibleCommand(new EnsuredOrderCmd(r)));
         }
 
         if (gamepad1.leftBumperWasPressed()) {
-            schedule(new RapidAllCmd(r));
+            if (r.dt.getPose().getY() < 45) {
+                schedule (new RapidAllCmd(r, 100));
+            } else {
+                schedule(new RapidAllCmd(r));
+            }
         }
 
         boolean psPressed = gamepad1.ps;

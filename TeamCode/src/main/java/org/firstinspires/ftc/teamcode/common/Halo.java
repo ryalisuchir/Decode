@@ -2,7 +2,7 @@ package org.firstinspires.ftc.teamcode.common;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.bylazar.configurables.annotations.Configurable;
-import com.pedropathing.geometry.Pose;
+import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.lynx.LynxModule;
@@ -22,9 +22,11 @@ import com.seattlesolvers.solverslib.hardware.motors.Motor;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.common.commandbase.subsystems.Drivetrain;
 import org.firstinspires.ftc.teamcode.common.commandbase.subsystems.Kicker;
+import org.firstinspires.ftc.teamcode.common.commandbase.subsystems.SetShooter;
 import org.firstinspires.ftc.teamcode.common.commandbase.subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.common.commandbase.subsystems.Spinner;
 import org.firstinspires.ftc.teamcode.common.commandbase.subsystems.Turret;
+import com.pedropathing.geometry.Pose;
 import org.firstinspires.ftc.teamcode.common.utility.ObeliskVision;
 //import org.firstinspires.ftc.teamcode.common.utility.Vision;
 import org.firstinspires.ftc.teamcode.common.utility.Vision;
@@ -49,7 +51,9 @@ public class Halo {
     public WebcamName logitech;
     AnalogInput dist1, dist2, dist3;
     NormalizedColorSensor color1, color2, color3;
+
     public List<LynxModule> allHubs;
+    public GoBildaPinpointDriver pinpoint;
 
     //Subsystems:
     public Drivetrain dt;
@@ -57,30 +61,19 @@ public class Halo {
     public Spinner spinner;
     public Shooter shooter;
     public Turret turret;
+    public SetShooter setShooter;
 
     //QoL:
     public static Pose endPose;
     public double gX, gY;
 
     //Color Sensor/Indexing:
-    private static final double DISTANCE_THRESHOLD_ON = 18.0;
-    private static final double DISTANCE_THRESHOLD_OFF = 22.0;
-
-    private boolean[] ballPresent = new boolean[3];
-
-    private boolean readDistanceHysteresis(AnalogInput pin, boolean currentState) {
-        double dist = pin.getVoltage() / 3.3 * 100.0;
-        if (!currentState && dist < DISTANCE_THRESHOLD_ON) return true;
-        if (currentState && dist > DISTANCE_THRESHOLD_OFF) return false;
-        return currentState;
-    }
+    private static final float HUE_NONE_MAX = 120f;
+    private static final float HUE_GREEN_MIN = 122f;
+    private static final float HUE_GREEN_MAX = 133f;
+    private static final float HUE_PURPLE_MIN = 135f;
 
     private static final int COLOR_SAMPLE_COUNT = 5;
-
-    private static final float HUE_GREEN_MIN = 100f;
-    private static final float HUE_GREEN_MAX = 200f;
-    private static final float HUE_PURPLE_MIN = 205f;
-    private static final float HUE_PURPLE_MAX = 280f;
 
     private boolean colorReadDone = false;
     private int colorSamplesTaken = 0;
@@ -187,11 +180,13 @@ public class Halo {
         logitech = h.get(WebcamName.class, "logitech");
 
         Arrays.fill(Globals.ballColors, Globals.BallColor.NONE);
+        Arrays.fill(Globals.ballPresent, false);
 
         rr.setDirection(DcMotorEx.Direction.REVERSE);
         fr.setDirection(DcMotorEx.Direction.REVERSE);
         fl.setDirection(DcMotorEx.Direction.FORWARD);
         fr.setDirection(DcMotorEx.Direction.FORWARD);
+
         shooter2.setInverted(false);
         transfer.setDirection(DcMotorSimple.Direction.REVERSE);
 
@@ -199,12 +194,14 @@ public class Halo {
         intake.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         if (m == Globals.Match.AUTO || m == Globals.Match.TESTING) {
-            dt = new Drivetrain(h, s, p);
+            dt = new Drivetrain(h, s, m, p);
         } else {
             dt = (endPose != null)
-                    ? new Drivetrain(h, s, endPose)
-                    : new Drivetrain(h, s, p);
+                    ? new Drivetrain(h, s, m, endPose)
+                    : new Drivetrain(h, s, m, p);
         }
+
+
 
         if (s == Globals.Alliance.RED) {
             gX = Globals.Positions.RED_GOAL.getX();
@@ -222,7 +219,8 @@ public class Halo {
         kicker = new Kicker(k1, k2, k3);
         spinner = new Spinner(intake, transfer, gate, pivot);
         shooter = new Shooter(shooter1, shooter2, hood, dt.getFollower());
-        turret = new Turret(s, t1, t2, dt.getFollower());
+        setShooter = new SetShooter(shooter1, shooter2, hood);
+        turret = new Turret(s, t1, t2, dt.getFollower(), shooter);
     }
 
     public void initLoop(Halo r) {
@@ -238,6 +236,28 @@ public class Halo {
         dt.loop();
         spinner.periodic();
         shooter.loop();
+        turret.loop();
+        readColors();
+        updateVision();
+        CommandScheduler.getInstance().run();
+    }
+
+    public void farLoop(Halo r) {
+        clearCache();
+        dt.loop();
+        spinner.periodic();
+        setShooter.loop(1);
+        turret.loop();
+        readColors();
+        updateVision();
+        CommandScheduler.getInstance().run();
+    }
+
+    public void closeLoop(Halo r) {
+        clearCache();
+        dt.loop();
+        spinner.periodic();
+        setShooter.loop(2);
         turret.loop();
         readColors();
         updateVision();
@@ -263,6 +283,22 @@ public class Halo {
     public void noOuttakeLoop(Halo r) {
         clearCache();
         dt.loop();
+        spinner.periodic();
+        readColors();
+        updateVision();
+        CommandScheduler.getInstance().run();
+    }
+
+    public void dtLoop() {
+        clearCache();
+        dt.loop();
+        CommandScheduler.getInstance().run();
+    }
+
+    public void noShooterLoop(Halo r) {
+        clearCache();
+        dt.loop();
+        turret.loop();
         spinner.periodic();
         readColors();
         updateVision();
@@ -300,73 +336,26 @@ public class Halo {
         return pin.getVoltage() / 3.3 * 100.0;
     }
 
-    private void readColors() {
-        ballPresent[0] = readDistanceHysteresis(dist1, ballPresent[0]);
-        ballPresent[1] = readDistanceHysteresis(dist2, ballPresent[1]);
-        ballPresent[2] = readDistanceHysteresis(dist3, ballPresent[2]);
+    // Constants
 
-        boolean ball0 = ballPresent[0];
-        boolean ball1 = ballPresent[1];
-        boolean ball2 = ballPresent[2];
-
-        // Only clear individual ball colors if shoot order is not locked
-        if (!Globals.shootOrderLocked) {
-            if (!ball0) { Globals.ballColors[0] = Globals.BallColor.NONE; }
-            else if (Globals.ballColors[0] == Globals.BallColor.NONE) { Globals.ballColors[0] = Globals.BallColor.PRESENT; }
-
-            if (!ball1) { Globals.ballColors[1] = Globals.BallColor.NONE; }
-            else if (Globals.ballColors[1] == Globals.BallColor.NONE) { Globals.ballColors[1] = Globals.BallColor.PRESENT; }
-
-            if (!ball2) { Globals.ballColors[2] = Globals.BallColor.NONE; }
-            else if (Globals.ballColors[2] == Globals.BallColor.NONE) { Globals.ballColors[2] = Globals.BallColor.PRESENT; }
-        }
-
-        boolean threeBalls = ball0 && ball1 && ball2;
-
-        if (threeBalls && !colorReadDone) {
-            if (colorSamplesTaken < COLOR_SAMPLE_COUNT) {
-                sampleColorSensors();
-                colorSamplesTaken++;
-            }
-            if (colorSamplesTaken >= COLOR_SAMPLE_COUNT) {
-                applyColorResults(ball0, ball1, ball2);
-                colorReadDone = true;
-            }
-        }
-
-        // Only reset color read state if shoot order is not locked
-        if (!threeBalls && !Globals.shootOrderLocked) {
-            colorReadDone = false;
-            colorSamplesTaken = 0;
-            hsvAccumulator = new float[3][3];
-        }
+    private float readBushlandsHue(AnalogInput pin) {
+        return (float) (pin.getVoltage() / 3.3 * 360.0);
     }
 
-    private void sampleColorSensors() {
-        sampleOne(color1, 0);
-        sampleOne(color2, 1);
-        sampleOne(color3, 2);
-    }
-
-    private void sampleOne(NormalizedColorSensor sensor, int slot) {
-        NormalizedRGBA rgba = sensor.getNormalizedColors();
-        float[] hsv = new float[3];
-        android.graphics.Color.colorToHSV(rgba.toColor(), hsv);
-        hsvAccumulator[slot][0] += hsv[0]; // hue
-        hsvAccumulator[slot][1] += hsv[1]; // saturation
-        hsvAccumulator[slot][2] += hsv[2]; // value
-    }
-
-    private void applyColorResults(boolean b0, boolean b1, boolean b2) {
-        if (b0) Globals.ballColors[0] = classifyColor(hsvAccumulator[0][0] / COLOR_SAMPLE_COUNT);
-        if (b1) Globals.ballColors[1] = classifyColor(hsvAccumulator[1][0] / COLOR_SAMPLE_COUNT);
-        if (b2) Globals.ballColors[2] = classifyColor(hsvAccumulator[2][0] / COLOR_SAMPLE_COUNT);
-        Globals.shootOrderLocked = true; // latch — order is now fixed until all balls are shot
-    }
-
-    private Globals.BallColor classifyColor(float avgHue) {
-        if (avgHue >= HUE_GREEN_MIN && avgHue <= HUE_GREEN_MAX) return Globals.BallColor.G;
-        if (avgHue >= HUE_PURPLE_MIN && avgHue <= HUE_PURPLE_MAX) return Globals.BallColor.P;
+    private Globals.BallColor classifyBushlandsHue(float hue) {
+        if (hue < HUE_NONE_MAX)                           return Globals.BallColor.NONE;
+        if (hue >= HUE_GREEN_MIN && hue <= HUE_GREEN_MAX) return Globals.BallColor.G;
+        if (hue >= HUE_PURPLE_MIN)                        return Globals.BallColor.P;
         return Globals.BallColor.NONE;
+    }
+
+    private void readColors() {
+        Globals.ballColors[0] = classifyBushlandsHue(readBushlandsHue(dist1));
+        Globals.ballColors[1] = classifyBushlandsHue(readBushlandsHue(dist2));
+        Globals.ballColors[2] = classifyBushlandsHue(readBushlandsHue(dist3));
+
+        Globals.ballPresent[0] = Globals.ballColors[0] != Globals.BallColor.NONE;
+        Globals.ballPresent[1] = Globals.ballColors[1] != Globals.BallColor.NONE;
+        Globals.ballPresent[2] = Globals.ballColors[2] != Globals.BallColor.NONE;
     }
 }

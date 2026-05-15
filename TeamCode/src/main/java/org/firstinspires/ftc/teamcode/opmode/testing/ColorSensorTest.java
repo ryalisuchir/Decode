@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.opmode.testing;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.AnalogInput;
@@ -128,6 +129,6 @@ public class ColorSensorTest extends OpMode {
     }
 
     private double readDistance(AnalogInput pin) {
-        return pin.getVoltage() / 3.3 * 100.0;
+        return pin.getVoltage() / 3.3 * 360;
     }
 }

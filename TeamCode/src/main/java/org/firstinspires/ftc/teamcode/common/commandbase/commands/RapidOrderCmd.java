@@ -44,7 +44,8 @@ public class RapidOrderCmd extends SequentialCommandGroup {
         return new SequentialCommandGroup(
                 new InstantCommand(() -> Globals.shooterKicking = true),
                 KickCommands.kickOnce(kicker, slot),
-                new WaitCommand(Globals.Timings.KICK_SORT)
+                new WaitCommand(Globals.Timings.KICK_RAPID),
+                KickCommands.clearBallSlot(slot)
         );
     }
 
@@ -75,14 +76,25 @@ public class RapidOrderCmd extends SequentialCommandGroup {
             }
         }
 
-        // Pass 3: fire PRESENT (detected but unclassified) balls last
+        // Pass 3: fire PRESENT (detected but unclassified) balls
         for (SlotInfo s : slots) {
             if (!s.used && s.color == Globals.BallColor.PRESENT) {
                 order.add(s.slot);
+                s.used = true;
             }
         }
 
-        // NONE slots are simply never added — no empty kicks
+        // Pass 4: fire remaining NONE slots anyway as a misdetection fallback
+        int[] preferredOrder = {1, 3, 2};
+        for (int preferred : preferredOrder) {
+            for (SlotInfo s : slots) {
+                if (!s.used && s.slot == preferred) {
+                    order.add(s.slot);
+                    s.used = true;
+                }
+            }
+        }
+
         return order;
     }
 

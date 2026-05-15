@@ -10,6 +10,10 @@ import com.seattlesolvers.solverslib.command.WaitCommand;
 
 public class KickCommands {
 
+    public static Command clearBallSlot(int slot) {
+        return new InstantCommand(() -> Globals.ballColors[slot - 1] = Globals.BallColor.NONE);
+    }
+
     public static Command kickOnce(Kicker kicker, int slot) {
         return new InstantCommand(() -> kicker.kick(slot), kicker);
     }
@@ -22,6 +26,7 @@ public class KickCommands {
         return new SequentialCommandGroup(
                 new InstantCommand(() -> kicker.kick(slot), kicker),
                 new WaitCommand(Globals.Timings.KICK_SORT),
+                clearBallSlot(slot),
                 new InstantCommand(() -> kicker.reset(slot), kicker)
         );
     }

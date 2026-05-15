@@ -16,7 +16,7 @@ public class Kicker extends SubsystemBase {
         this.k2 = k2;
         this.k3 = k3;
 
-        resetAll();
+//        resetAll();
     }
 
     public void kickMany(int... slots) {

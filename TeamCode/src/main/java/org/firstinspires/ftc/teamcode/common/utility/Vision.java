@@ -14,7 +14,7 @@ public final class Vision {
 
     private static Limelight3A limelight;
     private static final int distance = 2, regular = 2;
-    private static final int pipeline = regular;
+    private static int currentPipeline = -1;
 
     private Vision() {}
 
@@ -48,8 +48,9 @@ public final class Vision {
     }
 
     public static double distanceFromTag() {
-        List<LLResultTypes.FiducialResult> r = limelight.getLatestResult().getFiducialResults();
-        limelight.getLatestResult().getBotpose_MT2();
+        LLResult result = limelight.getLatestResult();
+        if (result == null) return 0;
+        List<LLResultTypes.FiducialResult> r = result.getFiducialResults();
 
         if (r.isEmpty()) return 0;
 
@@ -57,15 +58,15 @@ public final class Vision {
 
         LLResultTypes.FiducialResult target = null;
         for (LLResultTypes.FiducialResult i: r) {
-            if (i != null && i.getFiducialId() ==  tagID) {
+            if (i != null && i.getFiducialId() == tagID) {
                 target = i;
                 break;
             }
         }
 
         if (target != null) {
-            double x = (target.getCameraPoseTargetSpace().getPosition().x / DistanceUnit.mPerInch) + 8; // right/left from tag
-            double z = (target.getCameraPoseTargetSpace().getPosition().z / DistanceUnit.mPerInch) + 8; // forward/back from tag
+            double x = (target.getCameraPoseTargetSpace().getPosition().x / DistanceUnit.mPerInch) + 8;
+            double z = (target.getCameraPoseTargetSpace().getPosition().z / DistanceUnit.mPerInch) + 8;
 
             Vector e = new Vector();
             e.setOrthogonalComponents(x, z);
@@ -98,15 +99,19 @@ public final class Vision {
     }
 
     public static void switchToRegular() {
-        if (pipeline != regular)
+        if (currentPipeline != regular) {
             limelight.pipelineSwitch(regular);
+            currentPipeline = regular;
+        }
         limelight.setPollRateHz(100);
         limelight.start();
     }
 
     public static void switchToDistance() {
-        if (pipeline != distance)
+        if (currentPipeline != distance) {
             limelight.pipelineSwitch(distance);
+            currentPipeline = distance;
+        }
         limelight.setPollRateHz(100);
         limelight.start();
     }
